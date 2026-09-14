@@ -37,13 +37,17 @@
     <param name="accept-blind-reg" value="false"/>
     <param name="accept-blind-auth" value="false"/>
     <param name="inbound-reg-force-matching-username" value="false"/>
+    <!-- Header hygiene towards customers: never generate P-Asserted-Identity /
+         Remote-Party-ID in our responses (Section 7). -->
+    <param name="pass-callee-id" value="false"/>
+    <param name="cid-in-1xx" value="false"/>
     <!-- Session timers (RFC 4028), D-33 -->
     <param name="enable-timer" value="true"/>
     <param name="session-timeout" value="1800"/>
     <param name="minimum-session-expires" value="120"/>
-    <!-- RTP timeouts, D-34 -->
-    <param name="rtp-timeout-sec" value="300"/>
-    <param name="rtp-hold-timeout-sec" value="1800"/>
+    <!-- RTP timeouts are per-channel variables in 1.10 (media_timeout,
+         media_hold_timeout, milliseconds); sbc-api sets them from
+         SBC_MEDIA_TIMEOUT_SEC / SBC_MEDIA_HOLD_TIMEOUT_SEC on both legs. -->
     <param name="rtp-timer-name" value="soft"/>
     <param name="rtp-autoflush-during-bridge" value="true"/>
     <param name="rtp-rewrite-timestamps" value="true"/>

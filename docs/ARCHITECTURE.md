@@ -110,7 +110,7 @@ Every rejection is a SIP response that Lua sends with `respond <code> <reason ph
 
 | Step | Condition | SIP response | CDR disposition |
 |------|-----------|--------------|-----------------|
-| 1 | IP unknown | `403 IP not authorized` | `rejected_auth` |
+| 1 | IP unknown | `403 IP not authorized` (`SBC_ACL_MODE=strict`: Sofia answers a bare `403 Forbidden` before the dialplan, no CDR) | `rejected_auth` |
 | 1 | customer not active | `403 Customer suspended` | `rejected_auth` |
 | 1 | concurrent calls exceeded | `480 Concurrent call limit` | `rejected_auth` |
 | 1 | CPS exceeded | `503 CPS limit` | `rejected_auth` |

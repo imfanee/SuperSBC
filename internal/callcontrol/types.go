@@ -73,24 +73,26 @@ type SkippedCarrier struct {
 
 // SetupResponse is the full decision.
 type SetupResponse struct {
-	Action           string           `json:"action"` // "dial" or "reject"
-	Reject           *Reject          `json:"reject,omitempty"`
-	RejectStep       string           `json:"reject_step,omitempty"`
-	CallUUID         string           `json:"call_uuid"`
-	CustomerID       *uuid.UUID       `json:"customer_id,omitempty"`
-	CustomerName     string           `json:"customer_name,omitempty"`
-	Caller           string           `json:"caller"`
-	Called           string           `json:"called"`
-	Sell             *SellRate        `json:"sell,omitempty"`
-	ReservedAmount   decimal.Decimal  `json:"reserved_amount"`
-	Available        decimal.Decimal  `json:"available_before"`
-	MaxCallSeconds   int              `json:"max_call_seconds"`
-	RouteID          *uuid.UUID       `json:"route_id,omitempty"`
-	RoutePrefix      string           `json:"route_prefix,omitempty"`
-	Carriers         []CarrierChoice  `json:"carriers"`
-	Skipped          []SkippedCarrier `json:"skipped,omitempty"`
-	OriginateTimeout int              `json:"originate_timeout"`
-	ProgressTimeout  int              `json:"progress_timeout"`
+	Action             string           `json:"action"` // "dial" or "reject"
+	Reject             *Reject          `json:"reject,omitempty"`
+	RejectStep         string           `json:"reject_step,omitempty"`
+	CallUUID           string           `json:"call_uuid"`
+	CustomerID         *uuid.UUID       `json:"customer_id,omitempty"`
+	CustomerName       string           `json:"customer_name,omitempty"`
+	Caller             string           `json:"caller"`
+	Called             string           `json:"called"`
+	Sell               *SellRate        `json:"sell,omitempty"`
+	ReservedAmount     decimal.Decimal  `json:"reserved_amount"`
+	Available          decimal.Decimal  `json:"available_before"`
+	MaxCallSeconds     int              `json:"max_call_seconds"`
+	RouteID            *uuid.UUID       `json:"route_id,omitempty"`
+	RoutePrefix        string           `json:"route_prefix,omitempty"`
+	Carriers           []CarrierChoice  `json:"carriers"`
+	Skipped            []SkippedCarrier `json:"skipped,omitempty"`
+	OriginateTimeout   int              `json:"originate_timeout"`
+	ProgressTimeout    int              `json:"progress_timeout"`
+	MediaTimeoutMs     int              `json:"media_timeout_ms"`
+	MediaHoldTimeoutMs int              `json:"media_hold_timeout_ms"`
 	// Vars are channel variables Lua sets on the a-leg so they land in the CDR.
 	Vars map[string]string `json:"vars"`
 }

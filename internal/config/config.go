@@ -56,6 +56,8 @@ type Routing struct {
 	BlockNegativeMargin bool
 	GlobalMaxCPS        int // 0 = unlimited
 	GlobalMaxChannels   int // 0 = unlimited
+	MediaTimeoutSec     int // hang up after this many seconds without RTP (D-34)
+	MediaHoldTimeoutSec int // same while on hold
 }
 
 // Failover holds the tunables of Section 6.
@@ -120,6 +122,8 @@ func Load() (*Config, error) {
 			BlockNegativeMargin: getbool("SBC_ROUTING_BLOCK_NEGATIVE_MARGIN", false),
 			GlobalMaxCPS:        getint("SBC_ROUTING_GLOBAL_MAX_CPS", 0),
 			GlobalMaxChannels:   getint("SBC_ROUTING_GLOBAL_MAX_CHANNELS", 0),
+			MediaTimeoutSec:     getint("SBC_MEDIA_TIMEOUT_SEC", 300),
+			MediaHoldTimeoutSec: getint("SBC_MEDIA_HOLD_TIMEOUT_SEC", 1800),
 		},
 		Failover: Failover{
 			RulesFile:                  getenv("SBC_FAILOVER_RULES_FILE", "/app/failover.yaml"),

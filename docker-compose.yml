@@ -62,6 +62,10 @@ services:
     env_file: .env
     environment:
       SBC_FS_CONFIG_DIR: /fsconfig
+      # Shell environment overrides .env for these (used by the e2e suite to
+      # exercise the max call duration cap and strict ACL mode).
+      SBC_BILLING_MAX_CALL_DURATION: ${SBC_BILLING_MAX_CALL_DURATION:-4h}
+      SBC_ACL_MODE: ${SBC_ACL_MODE:-dialplan}
     volumes:
       - fsconfig:/fsconfig
     ports:
@@ -97,7 +101,7 @@ services:
     # RTP and SIP are reachable inside the compose network without publishing.
     # For real customers use deploy/docker-compose.host.yml (network_mode: host).
     healthcheck:
-      test: ["CMD-SHELL", "fs_cli -H 127.0.0.1 -p \"$$SBC_ESL_PASSWORD\" -x 'sofia status' | grep -q 'external-ingress.*RUNNING'"]
+      test: ["CMD-SHELL", "fs_cli -H 127.0.0.1 -p \"$$SBC_ESL_PASSWORD\" -x status | grep -q 'is ready' && fs_cli -H 127.0.0.1 -p \"$$SBC_ESL_PASSWORD\" -x 'sofia status' | grep -q 'external-ingress.*RUNNING'"]
       interval: 5s
       timeout: 5s
       retries: 30
@@ -126,8 +130,8 @@ services:
   carrier-answer:
     image: ctaloi/sipp
     profiles: [e2e]
-    command: ["-sf", "/scenarios/uas_answer.xml", "-i", "172.28.0.61", "-p", "5060", "-mi", "172.28.0.61", "-mp", "6000", "-nostdin", "-trace_err", "-error_file", "/dev/null"]
-    volumes: ["./tests/e2e/scenarios:/scenarios:ro"]
+    command: ["-sf", "/scenarios/uas_answer.xml", "-i", "172.28.0.61", "-p", "5060", "-mi", "172.28.0.61", "-mp", "6000", "-nostdin", "-trace_err", "-error_file", "/dev/null", "-trace_msg", "-message_file", "/out/carrier-answer.msg"]
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.61 }
     restart: unless-stopped
@@ -177,6 +181,13 @@ services:
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.104 }
+  customer-epsilon:
+    image: ctaloi/sipp
+    profiles: [e2e-clients]
+    working_dir: /out
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
+    networks:
+      sbc: { ipv4_address: 172.28.0.105 }
   customer-unknown:
     image: ctaloi/sipp
     profiles: [e2e-clients]

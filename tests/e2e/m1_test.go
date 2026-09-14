@@ -3,6 +3,7 @@
 package e2e
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -10,8 +11,10 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	// The stack must already be up and seeded (make e2e does this).
-	m.Run()
+	// The stack must already be up and seeded (make e2e does this); wait for
+	// the FreeSWITCH core to report ready before the first INVITE.
+	waitFreeSWITCH()
+	os.Exit(m.Run())
 }
 
 // (a) unknown IP gets 403 IP not authorized

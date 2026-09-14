@@ -394,8 +394,12 @@ func (p *Pipeline) dialString(c CarrierChoice, callUUID string) string {
 		fmt.Sprintf("ignore_early_media=%t", c.IgnoreEarlyMedia),
 		fmt.Sprintf("originate_timeout=%d", p.cfg.Routing.OriginateTimeout),
 		fmt.Sprintf("progress_timeout=%d", p.cfg.Routing.ProgressTimeout),
+		// Topology hiding and header sanitisation on egress (Section 7):
+		// no customer X-* headers, no P-Asserted-Identity / Remote-Party-ID.
 		"sip_copy_custom_headers=false",
 		"sip_cid_type=none",
+		fmt.Sprintf("media_timeout=%d", p.cfg.Routing.MediaTimeoutSec*1000),
+		fmt.Sprintf("media_hold_timeout=%d", p.cfg.Routing.MediaHoldTimeoutSec*1000),
 		"sbc_carrier_id=" + c.CarrierID.String(),
 		"sbc_attempt_seq=" + fmt.Sprint(c.Seq),
 	}
@@ -414,7 +418,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	}
 	now := p.now()
 	resp := &SetupResponse{Action: "reject", CallUUID: req.CallUUID, Caller: req.Caller, Called: req.Called,
-		OriginateTimeout: p.cfg.Routing.OriginateTimeout, ProgressTimeout: p.cfg.Routing.ProgressTimeout, Vars: map[string]string{}}
+		OriginateTimeout: p.cfg.Routing.OriginateTimeout, ProgressTimeout: p.cfg.Routing.ProgressTimeout,
+		MediaTimeoutMs: p.cfg.Routing.MediaTimeoutSec * 1000, MediaHoldTimeoutMs: p.cfg.Routing.MediaHoldTimeoutSec * 1000, Vars: map[string]string{}}
 	node := p.cfg.NodeName
 	srcIP := req.SrcIP
 	cdr := &model.CDR{CallUUID: callUUID, SrcIP: &srcIP, SrcPort: &req.SrcPort, CallerNumberRaw: req.Caller, CalledNumberRaw: req.Called,

@@ -29,6 +29,7 @@ var customerIP = map[string]string{
 	"customer-beta":    "172.28.0.102",
 	"customer-gamma":   "172.28.0.103",
 	"customer-delta":   "172.28.0.104",
+	"customer-epsilon": "172.28.0.105",
 	"customer-unknown": "172.28.0.199",
 }
 
@@ -129,44 +130,10 @@ type callResult struct {
 	FinalLines []string
 }
 
-// placeCall runs sipp from a mock customer container.
+// placeCall runs sipp from a mock customer container with a 90 s global timeout.
 func placeCall(t *testing.T, customer, scenarioPath, called string, calls int) callResult {
 	t.Helper()
-	ip, ok := customerIP[customer]
-	if !ok {
-		t.Fatalf("unknown customer %s", customer)
-	}
-	logName := fmt.Sprintf("%s_%d.msg", strings.ReplaceAll(t.Name(), "/", "_"), time.Now().UnixNano())
-	args := []string{"--profile", "e2e-clients", "run", "--rm", "-T", customer,
-		"-sf", scenarioPath, "-i", ip, "-p", "5060", "-mi", ip, "-mp", "7000",
-		"-s", called, "-m", fmt.Sprint(calls), "-l", fmt.Sprint(calls), "-r", fmt.Sprint(calls), "-rp", "1000",
-		"-nostdin", "-trace_msg", "-message_file", "/out/" + logName, "-trace_err", "-error_file", "/dev/null",
-		// sipp's default Call-ID (%u-%p@%s) repeats across fresh containers (pid is always 1);
-		// a repeated Call-ID would be matched to the previous dialog by Sofia.
-		"-cid_str", fmt.Sprintf("%%u-%%p-%d@%%s", time.Now().UnixNano()),
-		"-timeout", "90s", "-timeout_error"}
-	args = append(args, sbcAddr)
-	cmd := compose(t, args...)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &out
-	err := cmd.Run()
-	res := callResult{}
-	if err != nil {
-		if ee, ok := err.(*exec.ExitError); ok {
-			res.ExitCode = ee.ExitCode()
-		} else {
-			t.Fatalf("run sipp: %v\n%s", err, out.String())
-		}
-	}
-	b, _ := os.ReadFile(filepath.Join(repoRoot(t), "tests", "e2e", "out", logName))
-	res.Messages = string(b)
-	re := regexp.MustCompile(`(?m)^SIP/2\.0 ([2-6]\d\d [^\r\n]*)`)
-	for _, m := range re.FindAllStringSubmatch(res.Messages, -1) {
-		res.FinalLines = append(res.FinalLines, strings.TrimSpace(m[1]))
-	}
-	t.Logf("sipp %s -> %s exit=%d finals=%v", customer, called, res.ExitCode, res.FinalLines)
-	return res
+	return placeCallArgs(t, customer, scenarioPath, called, calls, "-timeout", "90s", "-timeout_error")
 }
 
 // lastCDR waits for the most recent billed CDR of a customer for a number.
@@ -260,4 +227,115 @@ func activeCalls(t *testing.T) int {
 	t.Helper()
 	rows := sql(t, `SELECT count(*) AS n FROM active_calls`)
 	return int(rows[0]["n"].(float64))
+}
+
+// restartAPI recreates the api container with extra environment overrides
+// (compose interpolates the shell environment over .env) and waits for /readyz.
+func restartAPI(t *testing.T, env map[string]string) {
+	t.Helper()
+	cmd := compose(t, "up", "-d", "--no-build", "api")
+	cmd.Env = os.Environ()
+	for k, v := range env {
+		cmd.Env = append(cmd.Env, k+"="+v)
+	}
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("restart api: %v\n%s", err, out)
+	}
+	waitReady(t)
+}
+
+func waitReady(t *testing.T) {
+	t.Helper()
+	deadline := time.Now().Add(60 * time.Second)
+	for time.Now().Before(deadline) {
+		cmd := compose(t, "exec", "-T", "api", "wget", "-qO-", "http://127.0.0.1:8080/readyz")
+		out, err := cmd.Output()
+		if err == nil && strings.Contains(string(out), `"ready":true`) {
+			// give the ESL supervisor a moment to re-render and subscribe
+			time.Sleep(1500 * time.Millisecond)
+			return
+		}
+		time.Sleep(time.Second)
+	}
+	t.Fatal("api not ready after restart")
+}
+
+// carrierMessages returns the messages the carrier-answer mock logged.
+func carrierMessages(t *testing.T) string {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join(repoRoot(t), "tests", "e2e", "out", "carrier-answer.msg"))
+	if err != nil {
+		t.Fatalf("carrier message log: %v", err)
+	}
+	return string(b)
+}
+
+// inviteReceivedByCarrier extracts the INVITE block carrying the given X-SBC-Call uuid.
+func inviteReceivedByCarrier(t *testing.T, callUUID string) string {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		msgs := carrierMessages(t)
+		for _, block := range strings.Split(msgs, "----------------------------------------------- ") {
+			if strings.HasPrefix(strings.TrimSpace(block), "INVITE ") || strings.Contains(block, "\nINVITE sip:") {
+				if strings.Contains(block, "X-SBC-Call: "+callUUID) {
+					return block
+				}
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	t.Fatalf("carrier never logged an INVITE for %s", callUUID)
+	return ""
+}
+
+func placeCallArgs(t *testing.T, customer, scenarioPath, called string, calls int, extra ...string) callResult {
+	t.Helper()
+	ip := customerIP[customer]
+	logName := fmt.Sprintf("%s_%d.msg", strings.ReplaceAll(t.Name(), "/", "_"), time.Now().UnixNano())
+	args := []string{"--profile", "e2e-clients", "run", "--rm", "-T", customer,
+		"-sf", scenarioPath, "-i", ip, "-p", "5060", "-mi", ip, "-mp", "7000",
+		"-s", called, "-m", fmt.Sprint(calls), "-l", fmt.Sprint(calls), "-r", fmt.Sprint(calls), "-rp", "1000",
+		"-nostdin", "-trace_msg", "-message_file", "/out/" + logName, "-trace_err", "-error_file", "/dev/null",
+		"-cid_str", fmt.Sprintf("%%u-%%p-%d@%%s", time.Now().UnixNano())}
+	args = append(args, extra...)
+	args = append(args, sbcAddr)
+	cmd := compose(t, args...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	err := cmd.Run()
+	res := callResult{}
+	if err != nil {
+		if ee, ok := err.(*exec.ExitError); ok {
+			res.ExitCode = ee.ExitCode()
+		} else {
+			t.Fatalf("run sipp: %v\n%s", err, out.String())
+		}
+	}
+	b, _ := os.ReadFile(filepath.Join(repoRoot(t), "tests", "e2e", "out", logName))
+	res.Messages = string(b)
+	re := regexp.MustCompile(`(?m)^SIP/2\.0 ([2-6]\d\d [^\r\n]*)`)
+	for _, m := range re.FindAllStringSubmatch(res.Messages, -1) {
+		res.FinalLines = append(res.FinalLines, strings.TrimSpace(m[1]))
+	}
+	t.Logf("sipp %s -> %s exit=%d finals=%v", customer, called, res.ExitCode, res.FinalLines)
+	return res
+}
+
+// waitFreeSWITCH blocks until "fs_cli -x status" reports the core ready.
+func waitFreeSWITCH() {
+	deadline := time.Now().Add(90 * time.Second)
+	for time.Now().Before(deadline) {
+		cmd := exec.CommandContext(context.Background(), "docker", "compose", "exec", "-T", "freeswitch", "sh", "-c", "fs_cli -p \"$SBC_ESL_PASSWORD\" -x status")
+		wd, _ := os.Getwd()
+		cmd.Dir = filepath.Clean(filepath.Join(wd, "..", ".."))
+		out, err := cmd.Output()
+		if err == nil && strings.Contains(string(out), "is ready") {
+			time.Sleep(2 * time.Second)
+			return
+		}
+		time.Sleep(2 * time.Second)
+	}
+	fmt.Fprintln(os.Stderr, "warning: freeswitch did not report ready")
 }

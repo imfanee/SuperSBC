@@ -66,7 +66,7 @@ func (r *Renderer) RenderGateways(ctx context.Context) error {
 		if c.Status != "active" {
 			continue
 		}
-		want[c.GatewayName()] = GatewayXML(c)
+		want[c.GatewayName()] = GatewayXML(c, r.nodeIP)
 	}
 	var killed []string
 	// remove stale files
@@ -140,7 +140,7 @@ func (r *Renderer) RenderACLs(ctx context.Context) error {
 }
 
 // GatewayXML renders one carrier as a Sofia gateway.
-func GatewayXML(c model.Carrier) string {
+func GatewayXML(c model.Carrier, nodeIP string) string {
 	proxy := net.JoinHostPort(c.GatewayHost, fmt.Sprint(c.GatewayPort))
 	if c.Transport == "tcp" || c.Transport == "tls" {
 		proxy += ";transport=" + c.Transport
@@ -160,13 +160,17 @@ func GatewayXML(c model.Carrier) string {
 	fmt.Fprintf(&b, "  <param name=\"register\" value=\"%t\"/>\n", c.Register)
 	fmt.Fprintf(&b, "  <param name=\"username\" value=%q/>\n", user)
 	fmt.Fprintf(&b, "  <param name=\"password\" value=%q/>\n", pass)
-	if c.FromDomain != nil && *c.FromDomain != "" {
-		fmt.Fprintf(&b, "  <param name=\"from-domain\" value=%q/>\n", *c.FromDomain)
-		fmt.Fprintf(&b, "  <param name=\"realm\" value=%q/>\n", *c.FromDomain)
-	} else {
-		fmt.Fprintf(&b, "  <param name=\"from-domain\" value=%q/>\n", c.GatewayHost)
-		fmt.Fprintf(&b, "  <param name=\"realm\" value=%q/>\n", c.GatewayHost)
+	// From host: the carrier's from_domain when set, else our own address
+	// (topology hiding: the carrier only ever sees the SBC), else the proxy.
+	fromDomain := c.GatewayHost
+	if nodeIP != "" {
+		fromDomain = nodeIP
 	}
+	if c.FromDomain != nil && *c.FromDomain != "" {
+		fromDomain = *c.FromDomain
+	}
+	fmt.Fprintf(&b, "  <param name=\"from-domain\" value=%q/>\n", fromDomain)
+	fmt.Fprintf(&b, "  <param name=\"realm\" value=%q/>\n", c.GatewayHost)
 	if c.Transport == "tcp" || c.Transport == "tls" {
 		fmt.Fprintf(&b, "  <param name=\"register-transport\" value=%q/>\n", c.Transport)
 	}

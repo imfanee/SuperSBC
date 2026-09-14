@@ -79,7 +79,9 @@ function pipeline.run(session)
     src_ip = session:getVariable("sip_network_ip") or "",
     src_port = tonumber(session:getVariable("sip_network_port")) or 0,
     transport = (session:getVariable("sip_via_protocol") or "udp"):lower(),
-    caller = session:getVariable("caller_id_number") or session:getVariable("sip_from_user") or "",
+    -- The From user is the ANI (D-43). FreeSWITCH's caller_id_number would
+    -- prefer a customer supplied P-Asserted-Identity / Remote-Party-ID.
+    caller = session:getVariable("sip_from_user") or session:getVariable("caller_id_number") or "",
     called = session:getVariable("destination_number") or session:getVariable("sip_req_user") or "",
     sip_call_id = session:getVariable("sip_call_id") or "",
     offered_codecs = session:getVariable("ep_codec_string") or "",
@@ -106,6 +108,13 @@ function pipeline.run(session)
   local max_secs = tonumber(decision.max_call_seconds) or 0
   session:setVariable("continue_on_fail", "true")
   session:setVariable("hangup_after_bridge", "true")
+  -- Header hygiene towards the customer: no Remote-Party-ID / P-Asserted-Identity
+  -- in our responses, and RTP timeouts (media_timeout is milliseconds).
+  session:setVariable("sip_cid_type", "none")
+  -- Customer X-* headers stay on this side of the B2BUA (checked on the a-leg by mod_sofia).
+  session:setVariable("sip_copy_custom_headers", "false")
+  session:setVariable("media_timeout", tostring(decision.media_timeout_ms or 300000))
+  session:setVariable("media_hold_timeout", tostring(decision.media_hold_timeout_ms or 1800000))
   session:setVariable("sbc_answered", "false")
   session:setVariable("sbc_attempts", tostring(#carriers))
   if max_secs > 0 then

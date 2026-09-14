@@ -56,6 +56,9 @@ var (
 			{"44", "UK Fixed", "0.005800", "0", 60, 60}, {"447", "UK Mobile", "0.014500", "0", 60, 60}}},
 		{"carrier-404", "172.28.0.63", 5060, []rateRow{
 			{"44", "UK Fixed", "0.005000", "0", 60, 60}, {"447", "UK Mobile", "0.013000", "0", 60, 60}}},
+		// Nothing listens here: OPTIONS ping marks the gateway DOWN and routing skips it.
+		{"carrier-down", "172.28.0.250", 5060, []rateRow{
+			{"44", "UK Fixed", "0.004000", "0", 60, 60}, {"447", "UK Mobile", "0.012000", "0", 60, 60}}},
 	}
 	// prefix -> ordered carriers
 	routes = []struct {
@@ -69,6 +72,7 @@ var (
 		{"4477", "UK Mobile failover", []string{"carrier-503", "carrier-answer"}},
 		{"4478", "UK Mobile all fail", []string{"carrier-503", "carrier-503b"}},
 		{"4479", "UK Mobile number fault", []string{"carrier-404", "carrier-answer"}},
+		{"4476", "UK Mobile gateway down", []string{"carrier-down", "carrier-answer"}},
 		{"33", "France (no carriers)", []string{}},
 	}
 	customers = []customerDef{
@@ -76,6 +80,7 @@ var (
 		{"beta", "172.28.0.102/32", "0.000000", "0", 0, 0},
 		{"gamma", "172.28.0.103/32", "0.080000", "0", 0, 0},
 		{"delta-limited", "172.28.0.104/32", "100.000000", "0", 1, 0},
+		{"epsilon-cps", "172.28.0.105/32", "100.000000", "0", 0, 1},
 	}
 )
 
@@ -105,7 +110,7 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 		rgID := rg.ID
 		car, err := st.UpsertCarrier(ctx, &model.Carrier{
 			Name: c.name, Status: "active", RateGroupID: &rgID, GatewayHost: c.host, GatewayPort: c.port, Transport: "udp",
-			AllowedCodecs: []string{"PCMA", "PCMU"}, SIPOptionsPing: false,
+			AllowedCodecs: []string{"PCMA", "PCMU"}, SIPOptionsPing: c.name == "carrier-down",
 			Notes: "Demo carrier backed by a sipp UAS container (OPTIONS ping off: sipp UAS does not answer OPTIONS)",
 		})
 		if err != nil {

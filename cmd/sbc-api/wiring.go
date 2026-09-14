@@ -19,6 +19,7 @@ import (
 	"github.com/opensbc/opensbc/internal/esl"
 	"github.com/opensbc/opensbc/internal/failover"
 	"github.com/opensbc/opensbc/internal/fsconfig"
+	"github.com/opensbc/opensbc/internal/gateways"
 	"github.com/opensbc/opensbc/internal/httpapi/internalapi"
 	"github.com/opensbc/opensbc/internal/logging"
 	"github.com/opensbc/opensbc/internal/store"
@@ -41,6 +42,7 @@ type app struct {
 	bill     *billing.Engine
 	renderer *fsconfig.Renderer
 	internal *internalapi.Handler
+	gateways *gateways.Poller
 }
 
 func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *pgxpool.Pool, rdb *redis.Client, sup *esl.Supervisor) *app {
@@ -55,7 +57,9 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	pipe := callcontrol.New(cfg, log, st, rdb, tb, rules)
 	bill := billing.New(cfg, log, st, rdb)
 	renderer := fsconfig.New(cfg.FSConfigDir, cfg.ACLMode, cfg.FSNodeIP, st, sup, log)
-	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer}
+	gw := gateways.New(sup, "external-egress", time.Duration(cfg.Failover.GatewayPingIntervalSeconds)*time.Second, log)
+	pipe.SetHealth(gw)
+	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer, gateways: gw}
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
 
 	// Render gateways and ACLs before FreeSWITCH starts (compose depends_on)
@@ -108,6 +112,7 @@ func (a *app) onESLEvent(ev esl.Event) {
 func (a *app) startWorkers(ctx context.Context) {
 	go a.tables.Listen(ctx, a.rdb)
 	go a.listenConfigChanges(ctx)
+	go a.gateways.Run(ctx)
 	go billing.NewReconciler(a.bill, a.esl).Run(ctx, time.Minute)
 }
 

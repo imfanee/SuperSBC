@@ -13,13 +13,16 @@ func TestGatewayXML(t *testing.T) {
 	u := "user1"
 	p := "secret"
 	c := model.Carrier{ID: uuid.New(), Name: "carrier-a", GatewayHost: "10.0.0.5", GatewayPort: 5080, Transport: "tcp", AuthUsername: &u, AuthPassword: &p, SIPOptionsPing: true, AllowedCodecs: []string{"PCMA", "PCMU"}}
-	x := GatewayXML(c)
+	x := GatewayXML(c, "10.0.0.1")
 	for _, want := range []string{`<gateway name="carrier-a">`, `value="10.0.0.5:5080;transport=tcp"`, `name="username" value="user1"`, `name="ping" value="30"`, `sbc_carrier_codecs" value="PCMA,PCMU"`} {
 		if !strings.Contains(x, want) {
 			t.Errorf("missing %s in\n%s", want, x)
 		}
 	}
-	if hash(x) != hash(GatewayXML(c)) {
+	if !strings.Contains(x, `name="from-domain" value="10.0.0.1"`) {
+		t.Errorf("from-domain should be the node ip:\n%s", x)
+	}
+	if hash(x) != hash(GatewayXML(c, "10.0.0.1")) {
 		t.Error("hash must ignore the timestamp line")
 	}
 }

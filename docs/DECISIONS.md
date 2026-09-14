@@ -59,5 +59,7 @@ Every choice the specification left open, and the reason it was made. Numbered s
 
 ## Style
 
+* **D-43 ANI is the From user.** Customer supplied `P-Asserted-Identity` and `Remote-Party-ID` headers are ignored for caller identification and never forwarded (FreeSWITCH would otherwise prefer them as caller id). A per-customer "trust PAI" flag is on the roadmap together with Privacy handling.
+
 * **D-41 No em-dash character anywhere.** Enforced by `make lint` (`grep` over the tree).
 * **D-42 Conventional commits**, one per milestone, plus intermediate commits when a milestone is large.
