@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -11,9 +12,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/opensbc/opensbc/internal/billing"
+	"github.com/opensbc/opensbc/internal/callcontrol"
 	"github.com/opensbc/opensbc/internal/config"
 	"github.com/opensbc/opensbc/internal/db"
 	"github.com/opensbc/opensbc/internal/esl"
+	"github.com/opensbc/opensbc/internal/failover"
+	"github.com/opensbc/opensbc/internal/fsconfig"
+	"github.com/opensbc/opensbc/internal/httpapi/internalapi"
+	"github.com/opensbc/opensbc/internal/logging"
+	"github.com/opensbc/opensbc/internal/store"
+	"github.com/opensbc/opensbc/internal/tables"
 )
 
 type slogLogger = slog.Logger
@@ -21,22 +30,90 @@ type dbPool = *pgxpool.Pool
 
 // app holds the wired components. Milestones add fields here.
 type app struct {
-	cfg *config.Config
-	log *slog.Logger
-	db  *pgxpool.Pool
-	rdb *redis.Client
-	esl *esl.Supervisor
+	cfg      *config.Config
+	log      *slog.Logger
+	db       *pgxpool.Pool
+	rdb      *redis.Client
+	esl      *esl.Supervisor
+	st       *store.Store
+	tables   *tables.Tables
+	pipe     *callcontrol.Pipeline
+	bill     *billing.Engine
+	renderer *fsconfig.Renderer
+	internal *internalapi.Handler
 }
 
-func buildApp(_ context.Context, cfg *config.Config, log *slog.Logger, pool *pgxpool.Pool, rdb *redis.Client, sup *esl.Supervisor) *app {
-	return &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup}
+func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *pgxpool.Pool, rdb *redis.Client, sup *esl.Supervisor) *app {
+	st := store.New(pool)
+	rules, err := failover.Load(cfg.Failover.RulesFile)
+	if err != nil {
+		log.Warn("failover rules file not loaded, using built-in defaults", "path", cfg.Failover.RulesFile, "error", err)
+		rules = failover.Default()
+	}
+	rules.MinRingSecondsForNoAnswer = cfg.Failover.MinRingSecondsForNoAnswer
+	tb := tables.New(st, log)
+	pipe := callcontrol.New(cfg, log, st, rdb, tb, rules)
+	bill := billing.New(cfg, log, st, rdb)
+	renderer := fsconfig.New(cfg.FSConfigDir, cfg.ACLMode, cfg.FSNodeIP, st, sup, log)
+	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer}
+	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
+
+	// Render gateways and ACLs before FreeSWITCH starts (compose depends_on)
+	// and again after every ESL (re)connect so FreeSWITCH restarts pick up
+	// the current database state.
+	if err := renderer.RenderAll(ctx); err != nil {
+		log.Error("initial freeswitch config render failed", "error", err)
+	}
+	sup.OnConnect(func(c *esl.Client) {
+		if err := renderer.RenderAll(ctx); err != nil {
+			log.Error("freeswitch config render on connect failed", "error", err)
+		}
+	})
+	sup.Events(a.onESLEvent, "CHANNEL_HANGUP_COMPLETE")
+	return a
 }
 
-func (a *app) startWorkers(_ context.Context) {}
+// onESLEvent is billing trigger 1 of 2 (mod_json_cdr is 2 of 2).
+func (a *app) onESLEvent(ev esl.Event) {
+	if ev.Name != "CHANNEL_HANGUP_COMPLETE" {
+		return
+	}
+	if ev.Get("Call-Direction") != "inbound" || ev.Get("variable_sofia_profile_name") != "external-ingress" {
+		return
+	}
+	vars := make(map[string]string, len(ev.Headers))
+	for k, v := range ev.Headers {
+		if strings.HasPrefix(k, "variable_") {
+			vars[strings.TrimPrefix(k, "variable_")] = v
+		}
+	}
+	vars["uuid"] = ev.Get("Unique-ID")
+	if vars["hangup_cause"] == "" {
+		vars["hangup_cause"] = ev.Get("Hangup-Cause")
+	}
+	info, ok := billing.FromVariables(vars, "esl")
+	if !ok {
+		return
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		ctx = logging.WithCallUUID(ctx, a.log, info.CallUUID.String())
+		if _, err := a.bill.Bill(ctx, info); err != nil {
+			a.log.Error("bill from esl failed", "call_uuid", info.CallUUID, "error", err)
+		}
+	}()
+}
+
+func (a *app) startWorkers(ctx context.Context) {
+	go a.tables.Listen(ctx, a.rdb)
+	go a.listenConfigChanges(ctx)
+	go billing.NewReconciler(a.bill, a.esl).Run(ctx, time.Minute)
+}
 
 func (a *app) mountAdmin(_ chi.Router) {}
 
-func (a *app) mountInternal(_ chi.Router) {}
+func (a *app) mountInternal(r chi.Router) { a.internal.Mount(r) }
 
 func withDB(ctx context.Context, cfg *config.Config, f func(dbPool) error) error {
 	pool, err := db.Connect(ctx, cfg.DatabaseURL)
@@ -45,16 +122,6 @@ func withDB(ctx context.Context, cfg *config.Config, f func(dbPool) error) error
 	}
 	defer pool.Close()
 	return f(pool)
-}
-
-func runSeed(_ context.Context, _ *config.Config, log *slog.Logger) error {
-	log.Info("seed: nothing to do yet (M1)")
-	return nil
-}
-
-func runReconcile(_ context.Context, _ *config.Config, log *slog.Logger) error {
-	log.Info("reconcile: nothing to do yet (M1)")
-	return nil
 }
 
 // requestLogger logs one JSON line per request with the call_uuid header when

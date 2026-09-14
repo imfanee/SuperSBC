@@ -1,0 +1,41 @@
+package fsconfig
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/google/uuid"
+
+	"github.com/opensbc/opensbc/internal/model"
+)
+
+func TestGatewayXML(t *testing.T) {
+	u := "user1"
+	p := "secret"
+	c := model.Carrier{ID: uuid.New(), Name: "carrier-a", GatewayHost: "10.0.0.5", GatewayPort: 5080, Transport: "tcp", AuthUsername: &u, AuthPassword: &p, SIPOptionsPing: true, AllowedCodecs: []string{"PCMA", "PCMU"}}
+	x := GatewayXML(c)
+	for _, want := range []string{`<gateway name="carrier-a">`, `value="10.0.0.5:5080;transport=tcp"`, `name="username" value="user1"`, `name="ping" value="30"`, `sbc_carrier_codecs" value="PCMA,PCMU"`} {
+		if !strings.Contains(x, want) {
+			t.Errorf("missing %s in\n%s", want, x)
+		}
+	}
+	if hash(x) != hash(GatewayXML(c)) {
+		t.Error("hash must ignore the timestamp line")
+	}
+}
+
+func TestACLs(t *testing.T) {
+	ips := []model.CustomerIP{{IPCIDR: "203.0.113.5/32"}, {IPCIDR: "198.51.100.0/24"}, {IPCIDR: "203.0.113.5/32"}}
+	strict := CustomersACL(ips, "strict")
+	if !strings.Contains(strict, `default="deny"`) || strings.Count(strict, "<node") != 2 {
+		t.Errorf("strict acl wrong:\n%s", strict)
+	}
+	lax := CustomersACL(ips, "dialplan")
+	if !strings.Contains(lax, `default="allow"`) {
+		t.Errorf("dialplan acl wrong:\n%s", lax)
+	}
+	car := CarriersACL([]model.Carrier{{GatewayHost: "10.1.1.1"}, {GatewayHost: "sip.example.com"}})
+	if strings.Count(car, "<node") != 1 || !strings.Contains(car, "10.1.1.1/32") {
+		t.Errorf("carrier acl wrong:\n%s", car)
+	}
+}

@@ -30,6 +30,7 @@ type Config struct {
 	// FreeSWITCH rendered configuration (D-04)
 	FSConfigDir string // directory shared with FreeSWITCH, gateways and acl are rendered here
 	FSNodeIP    string // advertised IP of the FreeSWITCH host (used in ACL for ourselves)
+	ACLMode     string // "dialplan" (403 text always sent) or "strict" (unknown IPs dropped by Sofia)
 
 	Billing  Billing
 	Routing  Routing
@@ -104,6 +105,7 @@ func Load() (*Config, error) {
 		ESLPassword:    req("SBC_ESL_PASSWORD"),
 		FSConfigDir:    getenv("SBC_FS_CONFIG_DIR", "/fsconfig"),
 		FSNodeIP:       getenv("SBC_FS_NODE_IP", ""),
+		ACLMode:        getenv("SBC_ACL_MODE", "dialplan"),
 		LogLevel:       getenv("SBC_LOG_LEVEL", "info"),
 		Billing: Billing{
 			ReserveMinutes:      getint("SBC_BILLING_RESERVE_MINUTES", 5),

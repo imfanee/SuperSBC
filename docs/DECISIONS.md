@@ -54,7 +54,7 @@ Every choice the specification left open, and the reason it was made. Numbered s
 ## Testing
 
 * **D-38 Unit tests** for every pure package (`rating`, `numbering`, `prefix`, `failover`). **Integration tests** (`//go:build integration`) need `SBC_TEST_DATABASE_URL` and `SBC_TEST_REDIS_URL`, provided by `make test-integration` through compose. **E2E tests** are Go tests (`tests/e2e`, build tag `e2e`) that drive `sipp` containers with `docker compose run` and assert against the Admin API and Postgres.
-* **D-39 Mock carriers are sipp UAS containers** with three scenarios: `uas_answer.xml` (180, 200, waits for BYE), `uas_503.xml`, `uas_404.xml`. Routes in the seed data point different prefixes at different combinations so every e2e scenario in M1 is a plain call to a known number.
+* **D-39 Mock carriers are sipp UAS containers** with three scenarios: `uas_answer.xml` (180, 200, waits for BYE), `uas_503.xml`, `uas_404.xml`. Routes in the seed data point different prefixes at different combinations so every e2e scenario in M1 is a plain call to a known number. sipp UAS scenarios do not answer out-of-dialog OPTIONS (they abort the pseudo-call), so the demo carriers are seeded with `sip_options_ping = false`; real carriers keep the default `true`. Gateway DOWN handling is exercised by pointing a carrier at an unreachable host in the M2 tests.
 * **D-40 Seed data** is loaded by `sbc-api seed` (idempotent, keyed by name): customers `acme` (172.28.0.101, balance 10.00) and `beta` (172.28.0.102, balance 0.00), carriers `carrier-answer`, `carrier-503`, `carrier-404`, selling deck `retail-usd`, buying decks per carrier, route group `default`.
 
 ## Style

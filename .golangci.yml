@@ -19,7 +19,7 @@ linters:
   settings:
     misspell:
       locale: UK
-      ignore-rules: [center, color, initialize, initialized, normalize, normalized, serialize, authorize, authorized, authorization, organization, canceled, favor]
+      ignore-rules: [center, color, initialize, initialized, normalize, normalized, serialize, authorize, authorized, authorization, unauthorized, organization, canceled, favor]
 formatters:
   enable:
     - gofmt

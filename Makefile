@@ -38,8 +38,8 @@ test-unit: ## Unit tests
 
 test-integration: ## Integration tests against compose Postgres and Redis
 	$(COMPOSE) up -d postgres redis
-	SBC_TEST_DATABASE_URL=postgres://opensbc:$${POSTGRES_PASSWORD:-opensbc}@127.0.0.1:$$($(COMPOSE) port postgres 5432 | cut -d: -f2)/opensbc?sslmode=disable \
-	SBC_TEST_REDIS_URL=redis://127.0.0.1:$$($(COMPOSE) port redis 6379 | cut -d: -f2)/1 \
+	SBC_TEST_DATABASE_URL=postgres://opensbc:$${POSTGRES_PASSWORD:-opensbc}@127.0.0.1:$${SBC_PG_PORT:-15432}/opensbc_test?sslmode=disable \
+	SBC_TEST_REDIS_URL=redis://127.0.0.1:$${SBC_REDIS_PORT:-16379}/1 \
 	$(GO) test -race -count=1 -tags integration ./internal/... -run 'Integration'
 
 lint: lint-go lint-lua lint-emdash ## All linters
@@ -61,18 +61,18 @@ fmt: ## gofmt + prettier
 	cd web && npx prettier --write src >/dev/null 2>&1 || true
 
 seed: ## Load the demo data set (idempotent)
-	$(COMPOSE) run --rm --no-deps api seed
+	$(COMPOSE) exec api /app/sbc-api seed
 
 reconcile: ## Prove ledger and account invariants
-	$(COMPOSE) run --rm --no-deps api reconcile
+	$(COMPOSE) exec api /app/sbc-api reconcile
 
 e2e: ## End-to-end SIP tests with sipp mock customers and carriers
 	SBC_VERSION=$(VERSION) $(COMPOSE) --profile e2e up -d --build
-	$(COMPOSE) run --rm --no-deps api seed
+	$(COMPOSE) exec api /app/sbc-api seed
 	$(GO) test -count=1 -tags e2e -v -timeout 20m ./tests/e2e/...
 
 rollback: ## Roll back the latest database migration
-	$(COMPOSE) run --rm --no-deps api migrate-down
+	$(COMPOSE) exec api /app/sbc-api migrate-down
 
 openapi: ## Regenerate OpenAPI 3.1 document from handler annotations
 	swag init --v3.1 -g cmd/sbc-api/main.go -o internal/httpapi/admin/openapi --outputTypes json,yaml

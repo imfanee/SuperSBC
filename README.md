@@ -56,8 +56,8 @@ curl -s localhost:8080/readyz | jq
 | | Status |
 |---|---|
 | M0 Foundation | done |
-| M1 Core call pipeline and billing | in progress |
-| M2 SBC hardening | planned |
+| M1 Core call pipeline and billing | done |
+| M2 SBC hardening | in progress |
 | M3 Media, capacity and metrics | planned |
 | M4 Admin API completeness | planned |
 | M5 Web UI | planned |
