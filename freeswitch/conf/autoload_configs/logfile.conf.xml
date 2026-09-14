@@ -11,7 +11,8 @@
         <param name="uuid" value="true"/>
       </settings>
       <mappings>
-        <map name="all" value="debug,info,notice,warning,err,crit,alert"/>
+        <!-- "console" carries the Sofia SIP trace output (sofia global siptrace on). -->
+        <map name="all" value="console,debug,info,notice,warning,err,crit,alert"/>
       </mappings>
     </profile>
   </profiles>

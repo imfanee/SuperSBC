@@ -157,7 +157,7 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 		// Money
 		var price, cost decimal.Decimal
 		if h.AnswerTime != nil && cdr.SellRateID != nil {
-			sell, err := e.st.RateByID(ctx, *cdr.SellRateID)
+			sell, err := store.RateByIDQ(ctx, tx, *cdr.SellRateID)
 			if err != nil {
 				return fmt.Errorf("load sell rate: %w", err)
 			}
@@ -170,9 +170,9 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 				cid := *h.AnsweredCarrierID
 				cdr.CarrierID = &cid
 				if buyID := buyRateFor(cdr.Attempts, cid); buyID != nil {
-					buy, err := e.st.RateByID(ctx, *buyID)
+					buy, err := store.RateByIDQ(ctx, tx, *buyID)
 					if err == nil {
-						buyFX, buyCurrency := e.buyFX(ctx, buy, cid)
+						buyFX, buyCurrency := e.buyFX(ctx, tx, buy, cid)
 						cdr.BuyFX = buyFX
 						cdr.BuyCurrency = &buyCurrency
 						bb, bamt := rating.Price(cdr.Billsec, toRatingFX(buy, buyFX))
@@ -200,6 +200,33 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 			out.MediaMode = *cdr.MediaMode
 		}
 
+		// Per-call rows first, then the hot account rows last so their locks
+		// are held for the shortest possible time before commit.
+		if ac != nil {
+			cdr.ReleasedAmount = ac.ReservedAmount
+			out.Released = ac.ReservedAmount
+			if price.GreaterThan(decimal.Zero) {
+				cdr.ChargedAmount = price
+			}
+			if err := store.DeleteActiveCall(ctx, tx, h.CallUUID); err != nil {
+				return err
+			}
+		}
+		if err := store.FinalizeCDR(ctx, tx, cdr); err != nil {
+			return err
+		}
+		if cost.GreaterThan(decimal.Zero) && cdr.CarrierID != nil {
+			cacc, err := store.AccountByOwnerQ(ctx, tx, "carrier", *cdr.CarrierID)
+			if err == nil {
+				desc := fmt.Sprintf("cost of call to %s, %ds billed as %ds", cdr.CalledNumber, cdr.Billsec, cdr.BuyBilledSeconds)
+				// Post is an atomic UPDATE ... RETURNING; no separate lock needed.
+				if _, err := store.Post(ctx, tx, cacc.ID, &h.CallUUID, model.LedgerCost, cost.Neg(), desc, nil); err != nil {
+					return err
+				}
+			} else if !errors.Is(err, store.ErrNotFound) {
+				return err
+			}
+		}
 		if ac != nil {
 			acc, err := store.LockAccount(ctx, tx, ac.AccountID)
 			if err != nil {
@@ -208,40 +235,20 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 			if _, err := store.Release(ctx, tx, acc.ID, h.CallUUID, ac.ReservedAmount, "release reservation"); err != nil {
 				return err
 			}
-			cdr.ReleasedAmount = ac.ReservedAmount
-			out.Released = ac.ReservedAmount
 			if price.GreaterThan(decimal.Zero) {
 				desc := fmt.Sprintf("call to %s, %ds billed as %ds", cdr.CalledNumber, cdr.Billsec, cdr.SellBilledSeconds)
 				acc, err = store.Post(ctx, tx, acc.ID, &h.CallUUID, model.LedgerCharge, price.Neg(), desc, nil)
 				if err != nil {
 					return err
 				}
-				cdr.ChargedAmount = price
 			}
 			av := acc.Available()
 			out.Available = &av
 			if threshold, err := decimal.NewFromString(e.cfg.Billing.LowBalanceThreshold); err == nil && threshold.GreaterThan(decimal.Zero) && av.LessThan(threshold) {
 				lowBalance = acc
 			}
-			if err := store.DeleteActiveCall(ctx, tx, h.CallUUID); err != nil {
-				return err
-			}
 		}
-		if cost.GreaterThan(decimal.Zero) && cdr.CarrierID != nil {
-			cacc, err := e.st.AccountByOwner(ctx, "carrier", *cdr.CarrierID)
-			if err == nil {
-				if _, err := store.LockAccount(ctx, tx, cacc.ID); err != nil {
-					return err
-				}
-				desc := fmt.Sprintf("cost of call to %s, %ds billed as %ds", cdr.CalledNumber, cdr.Billsec, cdr.BuyBilledSeconds)
-				if _, err := store.Post(ctx, tx, cacc.ID, &h.CallUUID, model.LedgerCost, cost.Neg(), desc, nil); err != nil {
-					return err
-				}
-			} else if !errors.Is(err, store.ErrNotFound) {
-				return err
-			}
-		}
-		return store.FinalizeCDR(ctx, tx, cdr)
+		return nil
 	})
 	if err != nil {
 		return nil, err
@@ -348,13 +355,13 @@ func toRatingFX(r *model.Rate, fx decimal.Decimal) rating.Rate {
 
 // buyFX resolves the exchange rate between the carrier's rate deck and its
 // account currency at billing time (a small drift from setup is accepted).
-func (e *Engine) buyFX(ctx context.Context, buy *model.Rate, carrierID uuid.UUID) (decimal.Decimal, string) {
+func (e *Engine) buyFX(ctx context.Context, tx pgx.Tx, buy *model.Rate, carrierID uuid.UUID) (decimal.Decimal, string) {
 	one := decimal.NewFromInt(1)
-	deck, err := e.st.RateGroupByID(ctx, buy.RateGroupID)
+	deck, err := store.RateGroupByIDQ(ctx, tx, buy.RateGroupID)
 	if err != nil {
 		return one, e.cfg.Billing.Currency
 	}
-	acc, err := e.st.AccountByOwner(ctx, "carrier", carrierID)
+	acc, err := store.AccountByOwnerQ(ctx, tx, "carrier", carrierID)
 	if err != nil {
 		return one, deck.Currency
 	}

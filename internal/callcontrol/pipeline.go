@@ -259,21 +259,26 @@ func (p *Pipeline) Reserve(ctx context.Context, cust *model.Customer, rate *mode
 	maxSecs := rating.MaxCallSeconds(available, rr, capSecs)
 	res := &ReserveResult{Available: available, ReservedAmount: reserve, MaxCallSeconds: maxSecs}
 	err = p.st.WithTx(ctx, func(tx pgx.Tx) error {
-		locked, err := store.Reserve(ctx, tx, acc.ID, cdr.CallUUID, reserve, fmt.Sprintf("reserve %d min for %s", p.cfg.Billing.ReserveMinutes, cdr.CalledNumber))
-		if err != nil {
-			return err
-		}
-		res.Account = locked
+		// Per-call rows first; the account row lock (taken by the UPDATE in
+		// Reserve) is held only for the ledger insert that follows it.
 		cdr.ReservedAmount = reserve
 		cdr.Disposition = model.DispositionPending
 		if err := store.InsertCDRSetup(ctx, tx, cdr); err != nil {
 			return err
 		}
-		return store.InsertActiveCall(ctx, tx, &model.ActiveCall{
+		if err := store.InsertActiveCall(ctx, tx, &model.ActiveCall{
 			CallUUID: cdr.CallUUID, CustomerID: cust.ID, AccountID: acc.ID, CalledNumber: cdr.CalledNumber,
 			ReservedAmount: reserve, MaxCallSeconds: maxSecs, StartedAt: cdr.StartTime,
 			ExpiresAt: cdr.StartTime.Add(p.cfg.Billing.MaxCallDuration),
-		})
+		}); err != nil {
+			return err
+		}
+		locked, err := store.Reserve(ctx, tx, acc.ID, cdr.CallUUID, reserve, fmt.Sprintf("reserve %d min for %s", p.cfg.Billing.ReserveMinutes, cdr.CalledNumber))
+		if err != nil {
+			return err
+		}
+		res.Account = locked
+		return nil
 	})
 	if err != nil {
 		return res, err

@@ -14,7 +14,12 @@ const rateCols = `id, rate_group_id, prefix, destination, rate_per_min, connect_
 
 // RateGroupByID loads a rate group.
 func (s *Store) RateGroupByID(ctx context.Context, id uuid.UUID) (*model.RateGroup, error) {
-	return one[model.RateGroup](ctx, s.pool, `SELECT id, name, currency, description, created_at, updated_at FROM rate_groups WHERE id = $1 AND deleted_at IS NULL`, id)
+	return RateGroupByIDQ(ctx, s.pool, id)
+}
+
+// RateGroupByIDQ loads a rate group through q.
+func RateGroupByIDQ(ctx context.Context, q Querier, id uuid.UUID) (*model.RateGroup, error) {
+	return one[model.RateGroup](ctx, q, `SELECT id, name, currency, description, created_at, updated_at FROM rate_groups WHERE id = $1 AND deleted_at IS NULL`, id)
 }
 
 // RateGroupByName loads a rate group by name.
@@ -66,5 +71,12 @@ func (s *Store) UpsertRate(ctx context.Context, r *model.Rate) (*model.Rate, err
 
 // RateByID loads one rate row.
 func (s *Store) RateByID(ctx context.Context, id uuid.UUID) (*model.Rate, error) {
-	return one[model.Rate](ctx, s.pool, `SELECT `+rateCols+` FROM rates WHERE id = $1`, id)
+	return RateByIDQ(ctx, s.pool, id)
+}
+
+// RateByIDQ loads one rate row through q (use the transaction inside a
+// transaction: taking a second pool connection while one is held deadlocks
+// the pool under load).
+func RateByIDQ(ctx context.Context, q Querier, id uuid.UUID) (*model.Rate, error) {
+	return one[model.Rate](ctx, q, `SELECT `+rateCols+` FROM rates WHERE id = $1`, id)
 }

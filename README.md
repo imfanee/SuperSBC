@@ -22,6 +22,7 @@ curl -s localhost:8080/readyz | jq
 ```
 
 * Admin API: http://localhost:8080/api/v1 (OpenAPI at `/api/docs`)
+* Monitoring: `docker compose --profile monitoring up -d` then Grafana at http://localhost:3001 (admin / admin)
 * Web UI: http://localhost:3000 (login `admin@example.com` / the `SBC_BOOTSTRAP_ADMIN_PASSWORD` you set)
 * SIP ingress: `172.28.0.10:5060` inside the compose network (see docs/OPERATIONS.md for exposing it to real customers)
 
@@ -37,6 +38,8 @@ curl -s localhost:8080/readyz | jq
 | `make e2e-ui` | Playwright drives the web UI: login, customer and IP, rate deck import, route, simulator, CDRs |
 | `make lint` | golangci-lint, luacheck, em-dash check |
 | `make reconcile` | proves that balances equal the ledger and reservations equal open calls |
+| `make replay-cdrs` | re-posts CDRs spooled by mod_json_cdr while the API was down |
+| `make openapi` | regenerates the OpenAPI document and docs/API.md |
 | `make logs` | follow all logs |
 | `make down` / `make clean` | stop, or stop and delete data |
 
@@ -51,6 +54,8 @@ curl -s localhost:8080/readyz | jq
 | [docs/API.md](docs/API.md) | admin and internal API reference (OpenAPI 3.1) |
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | day-two operations: add a customer, a carrier, a rate deck; logs; rollback; backups |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | features not yet built and the FreeSWITCH mechanism for each |
+| [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | load test results (25 CPS sustained on a 4 vCPU VM) and the defects the test found |
+| [docs/SECURITY.md](docs/SECURITY.md) | OWASP ASVS level 1 walkthrough |
 
 ## Milestones
 
@@ -62,7 +67,7 @@ curl -s localhost:8080/readyz | jq
 | M3 Media, capacity and metrics | done |
 | M4 Admin API completeness | done |
 | M5 Web UI | done |
-| M6 Operations | in progress |
+| M6 Operations | done |
 
 ## Licence
 

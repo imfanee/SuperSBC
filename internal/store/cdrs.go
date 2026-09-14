@@ -149,6 +149,13 @@ func (s *Store) ExpiredActiveCalls(ctx context.Context, grace time.Duration, lim
 		FROM active_calls WHERE expires_at + $1::interval < now() ORDER BY expires_at LIMIT $2`, grace, limit)
 }
 
+// StaleActiveCalls lists reservations started more than age ago (candidates
+// for the reconciliation sweep when FreeSWITCH can be asked about them).
+func (s *Store) StaleActiveCalls(ctx context.Context, age time.Duration, limit int) ([]model.ActiveCall, error) {
+	return many[model.ActiveCall](ctx, s.pool, `SELECT call_uuid, customer_id, account_id, called_number, reserved_amount, max_call_seconds, started_at, expires_at
+		FROM active_calls WHERE started_at + $1::interval < now() ORDER BY started_at LIMIT $2`, age, limit)
+}
+
 // CountActiveCallsByCustomer returns the number of open reservations per customer.
 func (s *Store) CountActiveCallsByCustomer(ctx context.Context) (map[uuid.UUID]int, error) {
 	rows, err := s.pool.Query(ctx, `SELECT customer_id, count(*) FROM active_calls GROUP BY customer_id`)

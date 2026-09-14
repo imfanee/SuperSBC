@@ -168,8 +168,16 @@ func TestF_AllCarriersFail(t *testing.T) {
 
 // (g) two concurrent calls from one customer with balance for only one: the second gets 402
 func TestG_ConcurrentReservation(t *testing.T) {
+	// Reset gamma to exactly 0.08 (earlier runs charge it): one 0.05 reservation fits, two do not.
+	a := newAPIClient(t)
+	a.ok(a.login("admin@example.com", adminPassword(t)))
+	gammaID := findByName(t, a, "/customers", "gamma")
+	cur, _ := balance(t, "gamma")
+	if diff := decimal.RequireFromString("0.08").Sub(cur); !diff.IsZero() {
+		a.ok(a.do("POST", "/customers/"+gammaID+"/account/adjust", map[string]string{"amount": diff.StringFixed(6), "description": "e2e reset"}))
+	}
 	since := time.Now()
-	before, _ := balance(t, "gamma") // 0.08: one reservation of 0.05 fits, two do not
+	before, _ := balance(t, "gamma")
 	sc := scenario(t, "uac_call.xml.tmpl", map[string]string{"__TALK__": "4000"})
 	res := placeCall(t, "customer-gamma", sc, "442071234567", 2)
 	expectFinal(t, res, "200 OK")

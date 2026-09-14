@@ -19,7 +19,12 @@ const accountCols = `id, owner_type::text AS owner_type, owner_id, currency, bal
 
 // AccountByOwner loads the account of a customer or carrier.
 func (s *Store) AccountByOwner(ctx context.Context, ownerType string, ownerID uuid.UUID) (*model.Account, error) {
-	return one[model.Account](ctx, s.pool, `SELECT `+accountCols+` FROM accounts WHERE owner_type = $1::owner_kind AND owner_id = $2`, ownerType, ownerID)
+	return AccountByOwnerQ(ctx, s.pool, ownerType, ownerID)
+}
+
+// AccountByOwnerQ loads the account through q.
+func AccountByOwnerQ(ctx context.Context, q Querier, ownerType string, ownerID uuid.UUID) (*model.Account, error) {
+	return one[model.Account](ctx, q, `SELECT `+accountCols+` FROM accounts WHERE owner_type = $1::owner_kind AND owner_id = $2`, ownerType, ownerID)
 }
 
 // AccountByID loads an account.

@@ -9,6 +9,7 @@ import { RateGroupsPage, RateGroupDetailPage } from "@/pages/rate-groups";
 import { RouteGroupsPage, RouteGroupDetailPage } from "@/pages/route-groups";
 import { SimulatorPage } from "@/pages/simulator";
 import { CDRsPage } from "@/pages/cdrs";
+import { CallTracePage } from "@/pages/call-trace";
 import { ReportsPage } from "@/pages/reports";
 import { LiveCallsPage } from "@/pages/live-calls";
 import { SystemPage, UsersPage, AuditPage } from "@/pages/system";
@@ -45,6 +46,7 @@ export function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/calls" element={<LiveCallsPage />} />
         <Route path="/cdrs" element={<CDRsPage />} />
+        <Route path="/cdrs/:id/trace" element={<CallTracePage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/customers" element={<CustomersPage />} />
         <Route path="/customers/:id" element={<CustomerDetailPage />} />

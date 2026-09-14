@@ -4,7 +4,7 @@ COMPOSE ?= docker compose
 GO ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile fmt web-build openapi clean rollback
+.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -74,6 +74,9 @@ e2e: ## End-to-end SIP tests with sipp mock customers and carriers
 e2e-ui: ## Playwright tests against the running web UI (needs make up and make seed)
 	cd web && npx playwright install chromium >/dev/null 2>&1 || true
 	cd web && npx playwright test
+
+replay-cdrs: ## Re-post CDRs spooled by mod_json_cdr while the API was down
+	$(COMPOSE) exec freeswitch sh /etc/freeswitch/replay_json_cdr.sh
 
 rollback: ## Roll back the latest database migration
 	$(COMPOSE) exec api /app/sbc-api migrate-down

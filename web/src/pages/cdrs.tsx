@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Download, Save } from "lucide-react";
 import { toast } from "sonner";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
@@ -333,7 +333,15 @@ export function CDRDetail({ cdr: c }: { cdr: CDR }) {
         <div className="mb-1 font-medium">Call</div>
         <KV
           items={[
-            ["UUID", <span className="font-mono text-xs">{c.call_uuid}</span>],
+            [
+              "UUID",
+              <span className="font-mono text-xs">
+                {c.call_uuid}{" "}
+                <Link to={`/cdrs/${c.call_uuid}/trace`} className="underline">
+                  trace
+                </Link>
+              </span>,
+            ],
             ["Source", `${c.src_ip ?? ""}:${c.src_port ?? ""}`],
             ["Dialled", <span className="font-mono">{c.called_number_raw}</span>],
             ["Start", dt(c.start_time)],

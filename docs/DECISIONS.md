@@ -9,7 +9,7 @@ Every choice the specification left open, and the reason it was made. Numbered s
 * **D-03 Lua VM is Lua 5.2** (bundled with FreeSWITCH 1.10). `luacheck` runs with `std = "lua52"` plus the FreeSWITCH globals.
 * **D-04 Gateway and ACL configuration are rendered to files by Go, not served by `mod_xml_curl`.** Reasons: FreeSWITCH boots and keeps working when the API is down, the rendered XML is visible on disk for debugging, and `sofia profile external-egress rescan` plus `reloadacl` are documented operations. The files live on a shared Docker volume mounted at `/etc/freeswitch/sip_profiles/external-egress/` and `/etc/freeswitch/autoload_configs/acl.conf.xml`. `mod_xml_curl` is kept loaded but unused so the roadmap item is a config change, not a rebuild.
 * **D-05 Docker networking: one bridge network with static IPs** (`172.28.0.0/24`). This makes the e2e tests deterministic (customer containers have known source IPs). For production, `deploy/docker-compose.host.yml` switches FreeSWITCH to `network_mode: host`; documented in OPERATIONS.md.
-* **D-06 Ports.** Ingress profile 5060 (customers), egress profile 5080 (carriers), RTP 16384 to 16484 in compose (narrow on purpose for the e2e tests; production should use the full 16384 to 32768), Admin API 8080, internal API 8081 (docker network only), ESL 8021 (docker network only), Web UI 3000.
+* **D-06 Ports.** Ingress profile 5060 (customers), egress profile 5080 (carriers), RTP 16384 to 32768 (each call uses two RTP sessions, so the range bounds concurrent calls at about 4000), Admin API 8080, internal API 8081 (docker network only), ESL 8021 (docker network only), Web UI 3000.
 
 ## Go
 
@@ -66,6 +66,10 @@ Every choice the specification left open, and the reason it was made. Numbered s
 
 * **D-46 Web stack versions.** React 18.3 as specified (the Vite template defaults to 19; both work with the code), Vite 7, TypeScript 5.9, Tailwind CSS 4 with the `@tailwindcss/vite` plugin, shadcn/ui components written into `web/src/components/ui` by hand on Radix primitives (the shadcn CLI needs interactive prompts and vendors more than we use), TanStack Query 5, TanStack Table 8, React Router 7, react-hook-form 7 with zod 4, Recharts 3, sonner, next-themes. The build stage uses `node:22-bookworm-slim` because the npm lockfile generated on glibc omits the musl rollup binary. Money is displayed at 4 decimals (`lib/utils.money`), never rounded anywhere else.
 * **D-47 Password reset without email.** OpenSBC sends no email. An admin generates a one-time reset link (`POST /users/{id}/reset-token`, valid one hour) and hands it to the user; the forgot-password page explains this.
+
+* **D-48 Reconciliation sweep.** With FreeSWITCH reachable, any reservation older than `orphan_timeout` whose channel is absent from `show channels` is released, not only those past `max_call_duration + orphan_timeout`; the channel list is authoritative, and this repairs an API restart that lost hangup events within minutes. Without FreeSWITCH the specification's timing applies.
+* **D-49 Hourly roll-ups feed the dashboard only.** `cdr_hourly_stats` is recomputed every minute for the current and previous hour and for any hour whose CDRs changed; the dashboard's hourly profile reads it. All other reports query `cdrs` directly so any filter combination works; the roll-up is the fast path, not a second source of truth.
+* **D-50 SIP trace scope.** Sofia traces a whole profile, not one address; the UI enables tracing on the ingress profile for N minutes (auto-off) and filters the captured messages by address when displaying them. The trace is captured in `freeswitch.log` because the logfile profile maps the `console` level.
 
 * **D-41 No em-dash character anywhere.** Enforced by `make lint` (`grep` over the tree).
 * **D-42 Conventional commits**, one per milestone, plus intermediate commits when a milestone is large.

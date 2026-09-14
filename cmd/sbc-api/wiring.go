@@ -31,6 +31,7 @@ import (
 	"github.com/opensbc/opensbc/internal/reports"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
+	"github.com/opensbc/opensbc/internal/trace"
 )
 
 type slogLogger = slog.Logger
@@ -75,6 +76,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
 	a.admin = admin.New(admin.Deps{Cfg: cfg, Log: log, Store: st, Redis: rdb, Pipe: pipe, Bill: bill, Tables: tb, ESL: sup, Gateways: gw, Renderer: renderer, Version: version,
 		Reports: admin.NewReports(reports.New(pool), cfg.Billing.LowBalanceThreshold),
+		Trace:   trace.New(rdb, cfg.FSLogFile, sup),
 		Ready: func(ctx context.Context) any {
 			return health.Deps{DB: pool, Redis: rdb, ESL: sup, Profiles: []string{"external-ingress", "external-egress"}, Version: version, Node: cfg.NodeName}.Check(ctx)
 		}})
@@ -165,6 +167,7 @@ func (a *app) startWorkers(ctx context.Context) {
 	go a.gateways.Run(ctx)
 	go billing.NewReconciler(a.bill, a.esl).Run(ctx, time.Minute)
 	go a.gaugeLoop(ctx)
+	go reports.NewRollup(reports.New(a.db), a.log).Run(ctx, time.Minute)
 }
 
 // gaugeLoop refreshes the gauge metrics every few seconds.

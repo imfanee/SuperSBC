@@ -569,6 +569,24 @@
                 ],
                 "type": "object"
             },
+            "admin.sipTraceInput": {
+                "properties": {
+                    "minutes": {
+                        "maximum": 120,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "scope": {
+                        "enum": [
+                            "global",
+                            "external-ingress",
+                            "external-egress"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "admin.totpCodeRequest": {
                 "properties": {
                     "code": {
@@ -1643,6 +1661,20 @@
                         "type": "string"
                     },
                     "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "trace.SIPTraceState": {
+                "properties": {
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "scope": {
+                        "type": "string"
+                    },
+                    "until": {
                         "type": "string"
                     }
                 },
@@ -2741,6 +2773,38 @@
                     }
                 },
                 "summary": "One CDR with attempts and RTP statistics",
+                "tags": [
+                    "cdrs"
+                ]
+            }
+        },
+        "/cdrs/{id}/trace": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "call uuid",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Per-call trace: CDR, ledger entries, sbc-api log lines and FreeSWITCH log lines (Lua and Sofia) for one call uuid",
                 "tags": [
                     "cdrs"
                 ]
@@ -4784,6 +4848,108 @@
                     }
                 },
                 "summary": "Upsert settings rows",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/siptrace": {
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Disable SIP tracing",
+                "tags": [
+                    "system"
+                ]
+            },
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/trace.SIPTraceState"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "SIP trace toggle state",
+                "tags": [
+                    "system"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.sipTraceInput",
+                                "summary": "body",
+                                "description": "scope and minutes"
+                            }
+                        }
+                    },
+                    "description": "scope and minutes",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/trace.SIPTraceState"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Enable Sofia SIP tracing for N minutes (global or one profile); messages land in the FreeSWITCH log",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/siptrace/messages": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "address",
+                        "in": "query",
+                        "name": "ip",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "max messages (default 200)",
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Traced SIP messages involving one address (customer or carrier IP) from the FreeSWITCH log",
                 "tags": [
                     "system"
                 ]

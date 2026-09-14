@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: opensbc
+    folder: OpenSBC
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

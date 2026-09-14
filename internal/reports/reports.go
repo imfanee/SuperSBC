@@ -158,7 +158,18 @@ func (s *Service) Traffic(ctx context.Context, r Range, groupBy, orderBy string,
 	if err != nil {
 		return nil, err
 	}
-	return pgx.CollectRows(rows, pgx.RowToStructByNameLax[Row])
+	return collectRows(rows)
+}
+
+func collectRows(rows pgx.Rows) ([]Row, error) {
+	out, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Row])
+	if err != nil {
+		return nil, err
+	}
+	if out == nil {
+		out = []Row{}
+	}
+	return out, nil
 }
 
 // Summary is the dashboard payload.
@@ -190,7 +201,9 @@ func (s *Service) Summary(ctx context.Context, r Range, lowBalance string) (*Sum
 	if len(total) > 0 {
 		out.Total = total[0]
 	}
-	if out.Hourly, err = s.Traffic(ctx, r, "hour", "key", 200); err != nil {
+	// The hourly profile comes from the roll-up table (fast on large CDR
+	// tables); the worker refreshes the current hour every minute.
+	if out.Hourly, err = s.HourlyFromRollup(ctx, r); err != nil {
 		return nil, err
 	}
 	if out.TopDestination, err = s.Traffic(ctx, r, "destination", "minutes", 10); err != nil {

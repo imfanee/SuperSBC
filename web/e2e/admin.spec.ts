@@ -12,7 +12,9 @@ test("login rejects a wrong password and accepts the admin", async ({ page }) =>
   await login(page);
 });
 
-test("create a customer with an IP, import a rate deck, build a route, simulate, see the CDR", async ({ page }) => {
+test("create a customer with an IP, import a rate deck, build a route, simulate, see the CDR", async ({
+  page,
+}) => {
   await login(page);
 
   // rate group with a CSV import (validate, then import)
@@ -26,7 +28,9 @@ test("create a customer with an IP, import a rate deck, build a route, simulate,
   await page.getByTestId("import-file").setInputFiles({
     name: "rates.csv",
     mimeType: "text/csv",
-    buffer: Buffer.from("prefix,destination,rate_per_min,connect_fee,initial_increment,subsequent_increment\n44,UK Fixed,0.0100,0,60,60\n447,UK Mobile,0.0200,0,60,60\n4477,UK O2,0.0190,0,30,6\n"),
+    buffer: Buffer.from(
+      "prefix,destination,rate_per_min,connect_fee,initial_increment,subsequent_increment\n44,UK Fixed,0.0100,0,60,60\n447,UK Mobile,0.0200,0,60,60\n4477,UK O2,0.0190,0,30,6\n",
+    ),
   });
   await page.getByTestId("import-validate").click();
   await expect(page.getByText("3 valid")).toBeVisible();
@@ -65,9 +69,11 @@ test("create a customer with an IP, import a rate deck, build a route, simulate,
   await page.getByTestId("customer-submit").click();
   await expect(page.getByRole("heading", { name: customer })).toBeVisible();
   await page.getByRole("tab", { name: "IPs" }).click();
-  await page.getByTestId("ip-cidr").fill("192.0.2.77");
+  const n = Date.now();
+  const ip = `10.${(n >> 16) & 255}.${(n >> 8) & 255}.${(n & 253) + 1}`;
+  await page.getByTestId("ip-cidr").fill(ip);
   await page.getByTestId("ip-add").click();
-  await expect(page.getByText("192.0.2.77/32")).toBeVisible();
+  await expect(page.getByText(`${ip}/32`)).toBeVisible();
   await page.getByRole("tab", { name: "Account" }).click();
   await page.getByTestId("topup-amount").fill("25.00");
   await page.getByTestId("topup-submit").click();
@@ -104,6 +110,9 @@ test("dashboard, live calls, reports and system pages render", async ({ page }) 
   // command palette
   await page.keyboard.press("Control+k");
   await page.getByPlaceholder("Type a page name...").fill("carriers");
-  await page.getByRole("option", { name: /Carriers/ }).first().click();
+  await page
+    .getByRole("option", { name: /Carriers/ })
+    .first()
+    .click();
   await expect(page.getByRole("heading", { name: "Carriers" })).toBeVisible();
 });

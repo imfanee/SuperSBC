@@ -3,6 +3,7 @@
 package internalapi
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
@@ -274,7 +275,11 @@ func (h *Handler) cdr(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "missing uuid"})
 		return
 	}
-	ctx := logging.WithCallUUID(r.Context(), h.log, info.CallUUID.String())
+	// Billing must not be aborted by mod_json_cdr giving up on the HTTP
+	// request (its timeout is 10 s): detach from the request context.
+	bctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), 30*time.Second)
+	defer cancel()
+	ctx := logging.WithCallUUID(bctx, h.log, info.CallUUID.String())
 	out, err := h.bill.Bill(ctx, info)
 	if err != nil {
 		logging.FromContext(ctx, h.log).Error("bill from json_cdr failed", "error", err)

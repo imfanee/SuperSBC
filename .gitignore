@@ -6,3 +6,4 @@ web/dist/
 tests/e2e/out/*
 !tests/e2e/out/.gitkeep
 coverage.out
+backups/

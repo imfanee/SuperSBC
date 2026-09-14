@@ -30,6 +30,7 @@ import (
 	"github.com/opensbc/opensbc/internal/model"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
+	"github.com/opensbc/opensbc/internal/trace"
 )
 
 // Deps are the collaborators of the admin API.
@@ -47,6 +48,7 @@ type Deps struct {
 	Version  string
 	Ready    func(context.Context) any
 	Reports  *ReportsHandler
+	Trace    *trace.Store
 }
 
 // Handler is the admin API.
@@ -108,6 +110,7 @@ func (h *Handler) Mount(r chi.Router) {
 			h.mountCDRs(r)
 			h.mountSystem(r)
 			h.mountUsers(r)
+			h.mountTrace(r)
 			if h.Reports != nil {
 				h.Reports.h = h
 				h.Reports.Mount(r)

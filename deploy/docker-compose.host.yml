@@ -1,0 +1,16 @@
+# Production override: FreeSWITCH on the host network so customers and
+# carriers reach the real interface (SBC_FS_NODE_IP) and RTP needs no NAT.
+#
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.host.yml up -d
+#
+# Set in .env: SBC_FS_NODE_IP=<public or DMZ address>, SBC_ESL_HOST=<that address>,
+# SBC_API_INTERNAL_URL=http://<address of the api container as seen from the host, e.g. 172.28.0.20>:8081
+services:
+  freeswitch:
+    network_mode: host
+    networks: !reset []
+    healthcheck:
+      test: ["CMD-SHELL", "fs_cli -H 127.0.0.1 -p \"$$SBC_ESL_PASSWORD\" -x status | grep -q 'is ready'"]
+  api:
+    environment:
+      SBC_ESL_HOST: ${SBC_ESL_HOST:-172.17.0.1}

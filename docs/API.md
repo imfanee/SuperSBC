@@ -64,6 +64,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | Method | Path | Summary |
 |---|---|---|
 | `GET` | `/cdrs/export` | Stream CDRs as CSV with the same filters as the list |
+| `GET` | `/cdrs/{id}/trace` | Per-call trace: CDR, ledger entries, sbc-api log lines and FreeSWITCH log lines (Lua and Sofia) for one call uuid |
 | `GET` | `/cdrs/{id}` | One CDR with attempts and RTP statistics |
 | `GET` | `/cdrs` | Search CDRs<br>Query: `from`, `to`, `customer_id`, `carrier_id`, `prefix`, `caller`, `disposition`, `sip_code`, `min_billsec`, `max_billsec`, `src_ip`, `negative_margin`, `page`, `per_page`, `sort` |
 
@@ -142,13 +143,17 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 
 | Method | Path | Summary |
 |---|---|---|
+| `DELETE` | `/system/siptrace` | Disable SIP tracing |
 | `GET` | `/audit-log` | Audit log<br>Query: `entity_type`, `entity_id`, `actor` |
 | `GET` | `/system/failover-rules` | The failure classification table (read only) |
 | `GET` | `/system/gateways` | Sofia gateway states from the OPTIONS ping poller |
 | `GET` | `/system/notifications` | Recent notifications (low balance etc.) |
 | `GET` | `/system/settings` | System settings rows (free-form key/value, e.g. UI preferences, sip trace state) |
+| `GET` | `/system/siptrace/messages` | Traced SIP messages involving one address (customer or carrier IP) from the FreeSWITCH log<br>Query: `ip` (required), `limit` |
+| `GET` | `/system/siptrace` | SIP trace toggle state |
 | `GET` | `/system/status` | Readiness of every dependency plus configuration summary |
 | `GET` | `/system/version` | Build version (unauthenticated) |
+| `POST` | `/system/siptrace` | Enable Sofia SIP tracing for N minutes (global or one profile); messages land in the FreeSWITCH log |
 | `PUT` | `/system/settings` | Upsert settings rows |
 
 ## Users

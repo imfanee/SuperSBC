@@ -866,59 +866,147 @@ function BlocksTab({ customerId }: { customerId: string }) {
 }
 
 function TraceTab({ customerId }: { customerId: string }) {
+  const { can } = useAuth();
   const q = useQuery({
     queryKey: ["trace-cdrs", customerId],
     queryFn: () => get<Listing<CDR>>("/cdrs", { customer_id: customerId, per_page: 20, sort: "-start_time" }),
   });
+  const ips = useQuery({
+    queryKey: ["customer-ips", customerId],
+    queryFn: () => get<CustomerIP[]>(`/customers/${customerId}/ips`),
+  });
+  const state = useQuery({
+    queryKey: ["siptrace"],
+    queryFn: () => get<{ enabled: boolean; scope: string; until: string }>("/system/siptrace"),
+    refetchInterval: 10_000,
+  });
+  const [minutes, setMinutes] = useState("5");
+  const [ip, setIp] = useState("");
+  const [messages, setMessages] = useState<string[] | null>(null);
+  const firstIp = ips.data?.[0]?.ip_cidr.split("/")[0] ?? "";
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Latest calls with their decision path</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2 text-sm">
-        {(q.data?.items ?? []).map((c) => (
-          <details key={c.call_uuid} className="rounded-md border p-2">
-            <summary className="cursor-pointer">
-              <span className="font-mono text-xs">{c.call_uuid}</span> {dt(c.start_time)} to {c.called_number}{" "}
-              <Badge variant={stateVariant(c.disposition)}>{c.disposition}</Badge> {c.sip_final_code}{" "}
-              {c.sip_final_reason}
-            </summary>
-            <ol className="mt-2 space-y-1 border-l pl-3 text-xs">
-              <li>
-                INVITE from {c.src_ip}: caller {c.caller_number}, dialled {c.called_number_raw}, normalised{" "}
-                {c.called_number}
-              </li>
-              {c.reject_reason && <li className="text-danger">Rejected: {c.reject_reason}</li>}
-              {c.sell_rate_per_min && (
-                <li>
-                  Sell rate {c.sell_destination} {money(c.sell_rate_per_min, 6)}/min, reserved{" "}
-                  {money(c.reserved_amount)}
-                </li>
-              )}
-              {c.attempts.map((a) => (
-                <li key={a.seq}>
-                  Attempt {a.seq}: {a.carrier_name}{" "}
-                  {a.sip_code ? `${a.sip_code} ${a.reason}` : a.hangup_cause} ({a.classification}
-                  {a.pdd_ms !== null ? `, PDD ${a.pdd_ms} ms` : ""})
-                </li>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            SIP trace{" "}
+            {state.data?.enabled ? (
+              <Badge variant="warning">
+                on ({state.data.scope}) until {dt(state.data.until)}
+              </Badge>
+            ) : (
+              <Badge variant="secondary">off</Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p className="text-xs text-muted-foreground">
+            Enables Sofia SIP tracing on the ingress profile for a few minutes (all customers are traced; the
+            messages below are filtered to one address).
+          </p>
+          <div className="flex flex-wrap items-end gap-2">
+            {can("write") && (
+              <>
+                <Field label="Minutes">
+                  <Input value={minutes} onChange={(e) => setMinutes(e.target.value)} className="w-20" />
+                </Field>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    post("/system/siptrace", { scope: "external-ingress", minutes: Number(minutes) || 5 })
+                      .then(() => (toast.success("SIP trace enabled"), state.refetch()))
+                      .catch((e) => toast.error(e.message))
+                  }
+                >
+                  Enable trace
+                </Button>
+                <Button variant="outline" onClick={() => del("/system/siptrace").then(() => state.refetch())}>
+                  Disable
+                </Button>
+              </>
+            )}
+            <Field label="Address to show">
+              <Input
+                value={ip || firstIp}
+                onChange={(e) => setIp(e.target.value)}
+                className="w-40 font-mono"
+              />
+            </Field>
+            <Button
+              onClick={() =>
+                get<{ messages: string[] }>("/system/siptrace/messages", { ip: ip || firstIp, limit: 100 })
+                  .then((r) => setMessages(r.messages))
+                  .catch((e) => toast.error(e.message))
+              }
+            >
+              Show messages
+            </Button>
+          </div>
+          {messages && (
+            <div className="max-h-96 space-y-2 overflow-auto rounded-md border bg-muted/30 p-2 font-mono text-[11px]">
+              {messages.map((m, i) => (
+                <pre key={i} className="whitespace-pre-wrap border-b border-dashed pb-1">
+                  {m}
+                </pre>
               ))}
-              {c.answer_time && (
-                <li>
-                  Answered, billsec {c.billsec} s billed as {c.sell_billed_seconds} s: price{" "}
-                  {money(c.sell_price, 6)}, cost {money(c.cost, 6)}
-                </li>
+              {messages.length === 0 && (
+                <div className="text-muted-foreground">No traced messages for this address in the log.</div>
               )}
-              <li>
-                Hangup {c.hangup_cause}, final {c.sip_final_code} {c.sip_final_reason}, node {c.sbc_node}
-              </li>
-              <li className="text-muted-foreground">
-                grep {c.call_uuid} in the api logs and /var/log/freeswitch/freeswitch.log for the full trace
-              </li>
-            </ol>
-          </details>
-        ))}
-        {q.data?.items.length === 0 && <div className="text-muted-foreground">No calls yet.</div>}
-      </CardContent>
-    </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Latest calls with their decision path</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {(q.data?.items ?? []).map((c) => (
+            <details key={c.call_uuid} className="rounded-md border p-2">
+              <summary className="cursor-pointer">
+                <span className="font-mono text-xs">{c.call_uuid}</span> {dt(c.start_time)} to{" "}
+                {c.called_number} <Badge variant={stateVariant(c.disposition)}>{c.disposition}</Badge>{" "}
+                {c.sip_final_code} {c.sip_final_reason}
+              </summary>
+              <ol className="mt-2 space-y-1 border-l pl-3 text-xs">
+                <li>
+                  INVITE from {c.src_ip}: caller {c.caller_number}, dialled {c.called_number_raw}, normalised{" "}
+                  {c.called_number}
+                </li>
+                {c.reject_reason && <li className="text-danger">Rejected: {c.reject_reason}</li>}
+                {c.sell_rate_per_min && (
+                  <li>
+                    Sell rate {c.sell_destination} {money(c.sell_rate_per_min, 6)}/min, reserved{" "}
+                    {money(c.reserved_amount)}
+                  </li>
+                )}
+                {c.attempts.map((a) => (
+                  <li key={a.seq}>
+                    Attempt {a.seq}: {a.carrier_name}{" "}
+                    {a.sip_code ? `${a.sip_code} ${a.reason}` : a.hangup_cause} ({a.classification}
+                    {a.pdd_ms !== null ? `, PDD ${a.pdd_ms} ms` : ""})
+                  </li>
+                ))}
+                {c.answer_time && (
+                  <li>
+                    Answered, billsec {c.billsec} s billed as {c.sell_billed_seconds} s: price{" "}
+                    {money(c.sell_price, 6)}, cost {money(c.cost, 6)}
+                  </li>
+                )}
+                <li>
+                  Hangup {c.hangup_cause}, final {c.sip_final_code} {c.sip_final_reason}, node {c.sbc_node}
+                </li>
+                <li>
+                  <Link to={`/cdrs/${c.call_uuid}/trace`} className="underline">
+                    full stitched trace (api, Lua, FreeSWITCH)
+                  </Link>
+                </li>
+              </ol>
+            </details>
+          ))}
+          {q.data?.items.length === 0 && <div className="text-muted-foreground">No calls yet.</div>}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/opensbc/opensbc/internal/esl"
+	"github.com/opensbc/opensbc/internal/model"
 )
 
 // Reconciler releases reservations of calls whose hangup was never billed
@@ -42,10 +43,20 @@ func (r *Reconciler) Run(ctx context.Context, every time.Duration) {
 	}
 }
 
-// Once performs one pass: for every reservation past expiry + orphan_timeout,
-// check whether the channel still exists; if not, bill it as orphaned.
+// Once performs one pass. With FreeSWITCH reachable, every reservation older
+// than orphan_timeout whose channel no longer exists is released (the
+// channel list is authoritative, so an API restart that lost hangup events
+// is repaired within minutes). Without FreeSWITCH only reservations past
+// expiry + orphan_timeout are released, as the specification requires.
 func (r *Reconciler) Once(ctx context.Context) (int, error) {
-	expired, err := r.eng.st.ExpiredActiveCalls(ctx, r.eng.cfg.Billing.OrphanTimeout, 200)
+	connected := r.esl != nil && r.esl.Connected()
+	var expired []model.ActiveCall
+	var err error
+	if connected {
+		expired, err = r.eng.st.StaleActiveCalls(ctx, r.eng.cfg.Billing.OrphanTimeout, 500)
+	} else {
+		expired, err = r.eng.st.ExpiredActiveCalls(ctx, r.eng.cfg.Billing.OrphanTimeout, 200)
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -53,7 +64,7 @@ func (r *Reconciler) Once(ctx context.Context) (int, error) {
 		return 0, nil
 	}
 	live := map[uuid.UUID]bool{}
-	if r.esl != nil && r.esl.Connected() {
+	if connected {
 		out, err := r.esl.API(ctx, "show channels as delim |")
 		if err != nil {
 			return 0, fmt.Errorf("show channels: %w", err)
