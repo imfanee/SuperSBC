@@ -188,6 +188,13 @@ services:
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.105 }
+  customer-euro:
+    image: ctaloi/sipp
+    profiles: [e2e-clients]
+    working_dir: /out
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
+    networks:
+      sbc: { ipv4_address: 172.28.0.106 }
   customer-unknown:
     image: ctaloi/sipp
     profiles: [e2e-clients]

@@ -37,7 +37,8 @@ type Config struct {
 	Failover Failover
 	Auth     Auth
 
-	LogLevel string
+	LogLevel    string
+	OpenAPIFile string // optional path overriding the embedded OpenAPI document
 }
 
 // Billing holds the money related tunables of Section 3 and 5.
@@ -109,6 +110,7 @@ func Load() (*Config, error) {
 		FSNodeIP:       getenv("SBC_FS_NODE_IP", ""),
 		ACLMode:        getenv("SBC_ACL_MODE", "dialplan"),
 		LogLevel:       getenv("SBC_LOG_LEVEL", "info"),
+		OpenAPIFile:    getenv("SBC_OPENAPI_FILE", ""),
 		Billing: Billing{
 			ReserveMinutes:      getint("SBC_BILLING_RESERVE_MINUTES", 5),
 			MaxCallDuration:     getduration("SBC_BILLING_MAX_CALL_DURATION", 4*time.Hour),

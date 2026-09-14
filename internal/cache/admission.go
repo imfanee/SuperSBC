@@ -122,10 +122,12 @@ func Publish(ctx context.Context, rdb *redis.Client, channel, payload string) {
 
 // Channel names.
 const (
-	ChanRateDeckChanged = "ratedeck:changed"
-	ChanRoutesChanged   = "routes:changed"
-	ChanCarriersChanged = "carriers:changed"
-	ChanCustomerIPs     = "customer_ips:changed"
-	ChanCDRCompleted    = "cdr.completed"
-	ChanCallStarted     = "call.started"
+	ChanRateDeckChanged  = "ratedeck:changed"
+	ChanRoutesChanged    = "routes:changed"
+	ChanCarriersChanged  = "carriers:changed"
+	ChanCustomerIPs      = "customer_ips:changed"
+	ChanCDRCompleted     = "cdr.completed"
+	ChanCallStarted      = "call.started"
+	ChanBlocklistChanged = "blocklist:changed"
+	ChanFXChanged        = "fx:changed"
 )

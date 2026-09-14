@@ -1,0 +1,4386 @@
+{
+    "components": {
+        "schemas": {
+            "admin.ImportPreview": {
+                "properties": {
+                    "dry_run": {
+                        "type": "boolean"
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/admin.ImportRow"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "imported": {
+                        "type": "integer"
+                    },
+                    "invalid": {
+                        "type": "integer"
+                    },
+                    "replace": {
+                        "type": "boolean"
+                    },
+                    "sample": {
+                        "items": {
+                            "$ref": "#/components/schemas/admin.ImportRow"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "total": {
+                        "type": "integer"
+                    },
+                    "valid": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "admin.ImportRow": {
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    },
+                    "line": {
+                        "type": "integer"
+                    },
+                    "rate": {
+                        "$ref": "#/components/schemas/model.Rate"
+                    }
+                },
+                "type": "object"
+            },
+            "admin.blockInput": {
+                "properties": {
+                    "prefix": {
+                        "maxLength": 15,
+                        "type": "string"
+                    },
+                    "reason": {
+                        "maxLength": 200,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "prefix"
+                ],
+                "type": "object"
+            },
+            "admin.bulkDeleteInput": {
+                "properties": {
+                    "ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "ids"
+                ],
+                "type": "object"
+            },
+            "admin.carrierInput": {
+                "properties": {
+                    "allowed_codecs": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "ani_prefix": {
+                        "maxLength": 16,
+                        "type": "string"
+                    },
+                    "auth_password": {
+                        "type": "string"
+                    },
+                    "auth_username": {
+                        "type": "string"
+                    },
+                    "charge_failed_attempts": {
+                        "type": "boolean"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "dni_prefix": {
+                        "maxLength": 16,
+                        "type": "string"
+                    },
+                    "failover_sip_codes": {
+                        "items": {
+                            "type": "integer"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "from_domain": {
+                        "type": "string"
+                    },
+                    "gateway_host": {
+                        "type": "string"
+                    },
+                    "gateway_port": {
+                        "maximum": 65535,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "ignore_early_media": {
+                        "type": "boolean"
+                    },
+                    "max_concurrent_calls": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "max_cps": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "name": {
+                        "maxLength": 64,
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "rate_group_id": {
+                        "type": "string"
+                    },
+                    "register": {
+                        "type": "boolean"
+                    },
+                    "sip_options_ping": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "enum": [
+                            "active",
+                            "disabled"
+                        ],
+                        "type": "string"
+                    },
+                    "strip_digits": {
+                        "maximum": 15,
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "transport": {
+                        "enum": [
+                            "udp",
+                            "tcp",
+                            "tls"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "gateway_host",
+                    "name"
+                ],
+                "type": "object"
+            },
+            "admin.changePasswordRequest": {
+                "properties": {
+                    "current_password": {
+                        "type": "string"
+                    },
+                    "new_password": {
+                        "minLength": 10,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "current_password",
+                    "new_password"
+                ],
+                "type": "object"
+            },
+            "admin.createAPIKeyRequest": {
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "type": "object"
+            },
+            "admin.creditInput": {
+                "properties": {
+                    "allowed_credit": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "allowed_credit"
+                ],
+                "type": "object"
+            },
+            "admin.customerInput": {
+                "properties": {
+                    "allowed_codecs": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "blocked_prefixes_enabled": {
+                        "type": "boolean"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "default_country_code": {
+                        "maxLength": 4,
+                        "type": "string"
+                    },
+                    "intl_prefix": {
+                        "maxLength": 4,
+                        "type": "string"
+                    },
+                    "max_concurrent_calls": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "max_cps": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "rate_group_id": {
+                        "type": "string"
+                    },
+                    "route_group_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "active",
+                            "suspended",
+                            "blocked"
+                        ],
+                        "type": "string"
+                    },
+                    "tech_prefix": {
+                        "type": "string"
+                    },
+                    "trust_pai": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "type": "object"
+            },
+            "admin.errorBody": {
+                "properties": {
+                    "details": {
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "type": "object"
+                    },
+                    "error": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "admin.fxInput": {
+                "properties": {
+                    "base": {
+                        "type": "string"
+                    },
+                    "effective_from": {
+                        "type": "string"
+                    },
+                    "quote": {
+                        "type": "string"
+                    },
+                    "rate": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "base",
+                    "quote",
+                    "rate"
+                ],
+                "type": "object"
+            },
+            "admin.ipInput": {
+                "properties": {
+                    "ip_cidr": {
+                        "type": "string"
+                    },
+                    "port": {
+                        "maximum": 65535,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "transport": {
+                        "enum": [
+                            "udp",
+                            "tcp",
+                            "tls",
+                            "any"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "ip_cidr"
+                ],
+                "type": "object"
+            },
+            "admin.loginRequest": {
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "totp_code": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "type": "object"
+            },
+            "admin.meResponse": {
+                "properties": {
+                    "csrf_token": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string"
+                    },
+                    "totp_enabled": {
+                        "type": "boolean"
+                    },
+                    "via_api_key": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "admin.moneyInput": {
+                "properties": {
+                    "amount": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "maxLength": 500,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "amount"
+                ],
+                "type": "object"
+            },
+            "admin.passwordInput": {
+                "properties": {
+                    "password": {
+                        "minLength": 10,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "password"
+                ],
+                "type": "object"
+            },
+            "admin.rateGroupInput": {
+                "properties": {
+                    "currency": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "type": "object"
+            },
+            "admin.rateInput": {
+                "properties": {
+                    "connect_fee": {
+                        "type": "string"
+                    },
+                    "destination": {
+                        "maxLength": 200,
+                        "type": "string"
+                    },
+                    "effective_from": {
+                        "type": "string"
+                    },
+                    "effective_to": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "initial_increment": {
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "min_duration": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "prefix": {
+                        "maxLength": 15,
+                        "type": "string"
+                    },
+                    "rate_per_min": {
+                        "type": "string"
+                    },
+                    "subsequent_increment": {
+                        "minimum": 1,
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "prefix",
+                    "rate_per_min"
+                ],
+                "type": "object"
+            },
+            "admin.routeCarriersInput": {
+                "properties": {
+                    "carriers": {
+                        "items": {
+                            "$ref": "#/components/schemas/store.RouteCarrierSpec"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "carriers"
+                ],
+                "type": "object"
+            },
+            "admin.routeGroupInput": {
+                "properties": {
+                    "description": {
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "lcr_mode": {
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "type": "object"
+            },
+            "admin.routeInput": {
+                "properties": {
+                    "carriers": {
+                        "items": {
+                            "$ref": "#/components/schemas/store.RouteCarrierSpec"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "destination": {
+                        "maxLength": 200,
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "prefix": {
+                        "maxLength": 15,
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "admin.settingsInput": {
+                "properties": {
+                    "values": {
+                        "additionalProperties": {},
+                        "type": "object"
+                    }
+                },
+                "required": [
+                    "values"
+                ],
+                "type": "object"
+            },
+            "admin.totpCodeRequest": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code"
+                ],
+                "type": "object"
+            },
+            "admin.userInput": {
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "minLength": 10,
+                        "type": "string"
+                    },
+                    "role": {
+                        "enum": [
+                            "admin",
+                            "operator",
+                            "viewer"
+                        ],
+                        "type": "string"
+                    },
+                    "status": {
+                        "enum": [
+                            "active",
+                            "disabled"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "email",
+                    "role"
+                ],
+                "type": "object"
+            },
+            "model.APIKey": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "key_prefix": {
+                        "type": "string"
+                    },
+                    "last_used_at": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "revoked_at": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.AttemptRecord": {
+                "properties": {
+                    "buy_rate_id": {
+                        "type": "string"
+                    },
+                    "buy_rate_per_min": {
+                        "type": "string"
+                    },
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "carrier_name": {
+                        "type": "string"
+                    },
+                    "classification": {
+                        "type": "string"
+                    },
+                    "ended_at": {
+                        "type": "string"
+                    },
+                    "gateway": {
+                        "type": "string"
+                    },
+                    "hangup_cause": {
+                        "type": "string"
+                    },
+                    "pdd_ms": {
+                        "type": "integer"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "seq": {
+                        "type": "integer"
+                    },
+                    "sip_code": {
+                        "type": "integer"
+                    },
+                    "started_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.BlockedPrefix": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "customer_id": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.Carrier": {
+                "properties": {
+                    "allowed_codecs": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "ani_prefix": {
+                        "type": "string"
+                    },
+                    "auth_password": {
+                        "type": "string"
+                    },
+                    "auth_username": {
+                        "type": "string"
+                    },
+                    "charge_failed_attempts": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "dni_prefix": {
+                        "type": "string"
+                    },
+                    "failover_sip_codes": {
+                        "items": {
+                            "type": "integer"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "from_domain": {
+                        "type": "string"
+                    },
+                    "gateway_host": {
+                        "type": "string"
+                    },
+                    "gateway_port": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "ignore_early_media": {
+                        "type": "boolean"
+                    },
+                    "max_concurrent_calls": {
+                        "type": "integer"
+                    },
+                    "max_cps": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "rate_group_id": {
+                        "type": "string"
+                    },
+                    "register": {
+                        "type": "boolean"
+                    },
+                    "sip_options_ping": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "strip_digits": {
+                        "type": "integer"
+                    },
+                    "transport": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.Customer": {
+                "properties": {
+                    "allowed_codecs": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "blocked_prefixes_enabled": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "default_country_code": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "intl_prefix": {
+                        "type": "string"
+                    },
+                    "max_concurrent_calls": {
+                        "type": "integer"
+                    },
+                    "max_cps": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "rate_group_id": {
+                        "type": "string"
+                    },
+                    "route_group_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "tech_prefix": {
+                        "type": "string"
+                    },
+                    "trust_pai": {
+                        "type": "boolean"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.CustomerIP": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "customer_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "ip_cidr": {
+                        "type": "string"
+                    },
+                    "port": {
+                        "type": "integer"
+                    },
+                    "transport": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.FXRate": {
+                "properties": {
+                    "base": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "created_by": {
+                        "type": "string"
+                    },
+                    "effective_from": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "quote": {
+                        "type": "string"
+                    },
+                    "rate": {
+                        "type": "number"
+                    }
+                },
+                "type": "object"
+            },
+            "model.LedgerEntry": {
+                "properties": {
+                    "account_id": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number"
+                    },
+                    "balance_after": {
+                        "type": "number"
+                    },
+                    "call_uuid": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "created_by": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.Notification": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "delivered_at": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "owner_id": {
+                        "type": "string"
+                    },
+                    "owner_type": {
+                        "type": "string"
+                    },
+                    "payload": {
+                        "additionalProperties": {},
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "model.Rate": {
+                "properties": {
+                    "connect_fee": {
+                        "type": "number"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "destination": {
+                        "type": "string"
+                    },
+                    "effective_from": {
+                        "type": "string"
+                    },
+                    "effective_to": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "initial_increment": {
+                        "type": "integer"
+                    },
+                    "min_duration": {
+                        "type": "integer"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    },
+                    "rate_group_id": {
+                        "type": "string"
+                    },
+                    "rate_per_min": {
+                        "type": "number"
+                    },
+                    "subsequent_increment": {
+                        "type": "integer"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.RateGroup": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.RouteCarrier": {
+                "properties": {
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "route_id": {
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "model.RouteGroup": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "lcr_mode": {
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.Setting": {
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "updated_by": {
+                        "type": "string"
+                    },
+                    "value": {}
+                },
+                "type": "object"
+            },
+            "model.User": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "last_login_at": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "totp_enabled": {
+                        "type": "boolean"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "store.CDRRow": {
+                "properties": {
+                    "answer_time": {
+                        "type": "string"
+                    },
+                    "attempts": {
+                        "items": {
+                            "$ref": "#/components/schemas/model.AttemptRecord"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "billed_at": {
+                        "type": "string"
+                    },
+                    "billed_by": {
+                        "type": "string"
+                    },
+                    "billsec": {
+                        "type": "integer"
+                    },
+                    "buy_billed_seconds": {
+                        "type": "integer"
+                    },
+                    "buy_currency": {
+                        "type": "string"
+                    },
+                    "buy_fx": {
+                        "type": "number"
+                    },
+                    "buy_rate_id": {
+                        "type": "string"
+                    },
+                    "buy_rate_per_min": {
+                        "type": "number"
+                    },
+                    "call_uuid": {
+                        "type": "string"
+                    },
+                    "called_number": {
+                        "type": "string"
+                    },
+                    "called_number_raw": {
+                        "type": "string"
+                    },
+                    "caller_number": {
+                        "type": "string"
+                    },
+                    "caller_number_raw": {
+                        "type": "string"
+                    },
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "carrier_name": {
+                        "type": "string"
+                    },
+                    "charged_amount": {
+                        "type": "number"
+                    },
+                    "codec_in": {
+                        "type": "string"
+                    },
+                    "codec_out": {
+                        "type": "string"
+                    },
+                    "cost": {
+                        "type": "number"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "customer_id": {
+                        "type": "string"
+                    },
+                    "customer_name": {
+                        "type": "string"
+                    },
+                    "disposition": {
+                        "type": "string"
+                    },
+                    "duration": {
+                        "type": "integer"
+                    },
+                    "end_time": {
+                        "type": "string"
+                    },
+                    "failover_depth": {
+                        "type": "integer"
+                    },
+                    "hangup_cause": {
+                        "type": "string"
+                    },
+                    "margin": {
+                        "type": "number"
+                    },
+                    "media_mode": {
+                        "type": "string"
+                    },
+                    "negative_margin": {
+                        "type": "boolean"
+                    },
+                    "pdd_ms": {
+                        "type": "integer"
+                    },
+                    "progress_time": {
+                        "type": "string"
+                    },
+                    "reject_reason": {
+                        "type": "string"
+                    },
+                    "released_amount": {
+                        "type": "number"
+                    },
+                    "reserved_amount": {
+                        "type": "number"
+                    },
+                    "ring_seconds": {
+                        "type": "integer"
+                    },
+                    "rtp_stats": {
+                        "additionalProperties": {},
+                        "type": "object"
+                    },
+                    "sbc_node": {
+                        "type": "string"
+                    },
+                    "sell_billed_seconds": {
+                        "type": "integer"
+                    },
+                    "sell_currency": {
+                        "type": "string"
+                    },
+                    "sell_destination": {
+                        "type": "string"
+                    },
+                    "sell_fx": {
+                        "type": "number"
+                    },
+                    "sell_price": {
+                        "type": "number"
+                    },
+                    "sell_rate_id": {
+                        "type": "string"
+                    },
+                    "sell_rate_per_min": {
+                        "type": "number"
+                    },
+                    "sip_final_code": {
+                        "type": "integer"
+                    },
+                    "sip_final_reason": {
+                        "type": "string"
+                    },
+                    "src_ip": {
+                        "type": "string"
+                    },
+                    "src_port": {
+                        "type": "integer"
+                    },
+                    "start_time": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "store.RouteCarrierRow": {
+                "properties": {
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "carrier_name": {
+                        "type": "string"
+                    },
+                    "carrier_status": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "route_id": {
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "store.RouteCarrierSpec": {
+                "properties": {
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "weight": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "store.RouteRow": {
+                "properties": {
+                    "carriers": {
+                        "items": {
+                            "$ref": "#/components/schemas/store.RouteCarrierRow"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "destination": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "lcr_mode": {
+                        "type": "boolean"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    },
+                    "route_group_id": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "description": "\"Bearer sbc_...\" API key, or the sbc_access cookie set by POST /auth/login (with X-CSRF-Token for state changes).",
+                "in": "header",
+                "name": "Authorization",
+                "type": "apiKey"
+            }
+        }
+    },
+    "info": {
+        "description": "Session Border Controller control plane: customers, carriers, rate decks, routing, CDRs, reports.",
+        "title": "OpenSBC Admin API",
+        "version": "1.0"
+    },
+    "externalDocs": {
+        "description": "",
+        "url": ""
+    },
+    "paths": {
+        "/audit-log": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "entity type",
+                        "in": "query",
+                        "name": "entity_type",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "entity id",
+                        "in": "query",
+                        "name": "entity_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "actor email substring",
+                        "in": "query",
+                        "name": "actor",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Audit log",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/auth/api-keys": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.APIKey"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List API keys (own keys; admins see all)",
+                "tags": [
+                    "auth"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.createAPIKeyRequest",
+                                "summary": "body",
+                                "description": "name"
+                            }
+                        }
+                    },
+                    "description": "name",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Create an API key (the plaintext is returned once)",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/api-keys/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "key id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Revoke an API key",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.loginRequest",
+                                "summary": "body",
+                                "description": "credentials"
+                            }
+                        }
+                    },
+                    "description": "credentials",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.meResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.errorBody"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.errorBody"
+                                }
+                            }
+                        },
+                        "description": "Too Many Requests"
+                    }
+                },
+                "summary": "Log in with email and password (and TOTP code when enabled)",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Log out (revokes the refresh session and clears cookies)",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.meResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Current principal",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/password": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.changePasswordRequest",
+                                "summary": "body",
+                                "description": "passwords"
+                            }
+                        }
+                    },
+                    "description": "passwords",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Change own password (revokes other sessions)",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.meResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.errorBody"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    }
+                },
+                "summary": "Rotate the refresh token and issue a new access token",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/totp/confirm": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.totpCodeRequest",
+                                "summary": "body",
+                                "description": "code"
+                            }
+                        }
+                    },
+                    "description": "code",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Confirm a TOTP code and enable 2FA",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/totp/disable": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.totpCodeRequest",
+                                "summary": "body",
+                                "description": "code"
+                            }
+                        }
+                    },
+                    "description": "code",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Disable 2FA (requires a valid code)",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/totp/setup": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Generate a TOTP secret (not enabled until confirmed)",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/blocked-prefixes": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.BlockedPrefix"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Global blacklist of prefixes",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.blockInput",
+                                "summary": "body",
+                                "description": "prefix"
+                            }
+                        }
+                    },
+                    "description": "prefix",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.BlockedPrefix"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Block a prefix for every customer",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/blocked-prefixes/{blockId}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "block id",
+                        "in": "path",
+                        "name": "blockId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Remove a blocked prefix",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/calls/active": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Calls in progress (from active_calls, enriched from FreeSWITCH when connected)",
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/calls/active/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "call uuid",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Hang up a call in progress (uuid_kill)",
+                "tags": [
+                    "calls"
+                ]
+            }
+        },
+        "/carriers": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "name or host substring",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "active|disabled",
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "page",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "per page",
+                        "in": "query",
+                        "name": "per_page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List carriers with account and gateway state",
+                "tags": [
+                    "carriers"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.carrierInput",
+                                "summary": "body",
+                                "description": "carrier"
+                            }
+                        }
+                    },
+                    "description": "carrier",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.Carrier"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Create a carrier (renders its FreeSWITCH gateway)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/status": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "additionalProperties": {},
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Gateway state of every carrier (dashboard health cards)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete a carrier (soft delete, removed from routes)",
+                "tags": [
+                    "carriers"
+                ]
+            },
+            "get": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Get a carrier with account, gateway state and breaker statistics",
+                "tags": [
+                    "carriers"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.carrierInput",
+                                "summary": "body",
+                                "description": "carrier"
+                            }
+                        }
+                    },
+                    "description": "carrier",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.Carrier"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update a carrier (re-renders its gateway)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/account": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Account of a carrier",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/account/adjust": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.moneyInput",
+                                "summary": "body",
+                                "description": "signed amount"
+                            }
+                        }
+                    },
+                    "description": "signed amount",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Adjust a carrier balance (signed)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/account/ledger": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Ledger entries of a carrier account",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/account/topup": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.moneyInput",
+                                "summary": "body",
+                                "description": "amount"
+                            }
+                        }
+                    },
+                    "description": "amount",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Record a payment to the carrier (ledger type topup)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/status": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Gateway ping state, circuit breaker and live channel count of a carrier",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/cdrs": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "RFC3339 or date",
+                        "in": "query",
+                        "name": "from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "RFC3339 or date",
+                        "in": "query",
+                        "name": "to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "uuid",
+                        "in": "query",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "uuid",
+                        "in": "query",
+                        "name": "carrier_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "called number prefix",
+                        "in": "query",
+                        "name": "prefix",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "caller prefix",
+                        "in": "query",
+                        "name": "caller",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "answered|no_answer|busy|failed|rejected_auth|rejected_balance|rejected_route|cancelled",
+                        "in": "query",
+                        "name": "disposition",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "final SIP code",
+                        "in": "query",
+                        "name": "sip_code",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "min billsec",
+                        "in": "query",
+                        "name": "min_billsec",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "max billsec",
+                        "in": "query",
+                        "name": "max_billsec",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "source ip",
+                        "in": "query",
+                        "name": "src_ip",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "only negative margin",
+                        "in": "query",
+                        "name": "negative_margin",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "description": "page",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "per page",
+                        "in": "query",
+                        "name": "per_page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "start_time|billsec|sell_price|cost|margin|pdd_ms (prefix - for descending)",
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Search CDRs",
+                "tags": [
+                    "cdrs"
+                ]
+            }
+        },
+        "/cdrs/export": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "csv"
+                    }
+                },
+                "summary": "Stream CDRs as CSV with the same filters as the list",
+                "tags": [
+                    "cdrs"
+                ]
+            }
+        },
+        "/cdrs/{id}": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "call uuid",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/store.CDRRow"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "One CDR with attempts and RTP statistics",
+                "tags": [
+                    "cdrs"
+                ]
+            }
+        },
+        "/customers": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "name or IP substring",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "active|suspended|blocked",
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "page",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "per page",
+                        "in": "query",
+                        "name": "per_page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "name|status|balance|created_at (prefix - for descending)",
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List customers with account summary",
+                "tags": [
+                    "customers"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.customerInput",
+                                "summary": "body",
+                                "description": "customer"
+                            }
+                        }
+                    },
+                    "description": "customer",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.Customer"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Create a customer (and its account)",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete a customer (soft delete, IPs removed, history kept)",
+                "tags": [
+                    "customers"
+                ]
+            },
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Get a customer with account, IPs and group names",
+                "tags": [
+                    "customers"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.customerInput",
+                                "summary": "body",
+                                "description": "customer"
+                            }
+                        }
+                    },
+                    "description": "customer",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.Customer"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update a customer",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/account": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Account of a customer",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/account/adjust": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.moneyInput",
+                                "summary": "body",
+                                "description": "signed amount"
+                            }
+                        }
+                    },
+                    "description": "signed amount",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Adjust a customer balance (signed decimal, ledger type adjustment)",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/account/credit": {
+            "put": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.creditInput",
+                                "summary": "body",
+                                "description": "credit"
+                            }
+                        }
+                    },
+                    "description": "credit",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Set the credit limit of a customer",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/account/ledger": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "page",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "per page",
+                        "in": "query",
+                        "name": "per_page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.LedgerEntry"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Ledger entries of a customer account",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/account/topup": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.moneyInput",
+                                "summary": "body",
+                                "description": "amount (positive decimal string)"
+                            }
+                        }
+                    },
+                    "description": "amount (positive decimal string)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Add money to a customer account (ledger type topup)",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/blocked-prefixes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.BlockedPrefix"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Blocked prefixes of a customer",
+                "tags": [
+                    "customers"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.blockInput",
+                                "summary": "body",
+                                "description": "prefix"
+                            }
+                        }
+                    },
+                    "description": "prefix",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.BlockedPrefix"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Block a prefix for one customer",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/ips": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.CustomerIP"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List a customer's authorised addresses",
+                "tags": [
+                    "customers"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.ipInput",
+                                "summary": "body",
+                                "description": "address"
+                            }
+                        }
+                    },
+                    "description": "address",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.CustomerIP"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Authorise an address (single IP or CIDR) for a customer",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/customers/{id}/ips/{ipId}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "address id",
+                        "in": "path",
+                        "name": "ipId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Remove an authorised address",
+                "tags": [
+                    "customers"
+                ]
+            }
+        },
+        "/fx-rates": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.FXRate"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Current exchange rates",
+                "tags": [
+                    "rates"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.fxInput",
+                                "summary": "body",
+                                "description": "rate"
+                            }
+                        }
+                    },
+                    "description": "rate",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.FXRate"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Add an exchange rate (1 base = rate quote)",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "name substring",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List rate groups (rate decks)",
+                "tags": [
+                    "rates"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.rateGroupInput",
+                                "summary": "body",
+                                "description": "rate group"
+                            }
+                        }
+                    },
+                    "description": "rate group",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.RateGroup"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Create a rate group",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete an unused rate group",
+                "tags": [
+                    "rates"
+                ]
+            },
+            "get": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.RateGroup"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Get a rate group",
+                "tags": [
+                    "rates"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.rateGroupInput",
+                                "summary": "body",
+                                "description": "rate group"
+                            }
+                        }
+                    },
+                    "description": "rate group",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.RateGroup"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update a rate group",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups/{id}/rates": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "prefix or destination",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "only enabled",
+                        "in": "query",
+                        "name": "enabled",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List rates of a group",
+                "tags": [
+                    "rates"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.rateInput",
+                                "summary": "body",
+                                "description": "rate"
+                            }
+                        }
+                    },
+                    "description": "rate",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.Rate"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Add a rate row",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups/{id}/rates/bulk-delete": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.bulkDeleteInput",
+                                "summary": "body",
+                                "description": "ids"
+                            }
+                        }
+                    },
+                    "description": "ids",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "integer"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Delete several rate rows",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups/{id}/rates/export": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "description": "csv"
+                    }
+                },
+                "summary": "Export a rate deck as CSV",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups/{id}/rates/import": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "validate only",
+                        "in": "query",
+                        "name": "dry_run",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "description": "replace the whole deck",
+                        "in": "query",
+                        "name": "replace",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "file": {
+                                        "description": "csv",
+                                        "format": "binary",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "csv",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.ImportPreview"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Import a CSV rate deck (multipart file or raw text/csv body); ?dry_run=true validates only; ?replace=true replaces the deck",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups/{id}/rates/test": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "E.164 digits",
+                        "in": "query",
+                        "name": "number",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Longest-prefix match of a number in a rate group (trie and SQL must agree)",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/rate-groups/{id}/rates/{rateId}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "rate id",
+                        "in": "path",
+                        "name": "rateId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete a rate row",
+                "tags": [
+                    "rates"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "rate group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "rate id",
+                        "in": "path",
+                        "name": "rateId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.rateInput",
+                                "summary": "body",
+                                "description": "rate"
+                            }
+                        }
+                    },
+                    "description": "rate",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.Rate"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update a rate row",
+                "tags": [
+                    "rates"
+                ]
+            }
+        },
+        "/route-groups": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List route groups",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.routeGroupInput",
+                                "summary": "body",
+                                "description": "route group"
+                            }
+                        }
+                    },
+                    "description": "route group",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.RouteGroup"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Create a route group",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/route-groups/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "route group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete an unused route group",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "get": {
+                "parameters": [
+                    {
+                        "description": "route group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.RouteGroup"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Get a route group",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "route group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.routeGroupInput",
+                                "summary": "body",
+                                "description": "route group"
+                            }
+                        }
+                    },
+                    "description": "route group",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.RouteGroup"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update a route group (name, description, LCR mode)",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/route-groups/{id}/routes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "route group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "prefix or destination",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/store.RouteRow"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Routes of a group with their ordered carriers",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "description": "route group id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.routeInput",
+                                "summary": "body",
+                                "description": "route"
+                            }
+                        }
+                    },
+                    "description": "route",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/store.RouteRow"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Create a route (optionally with its carriers)",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/routes/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "route id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete a route",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "get": {
+                "parameters": [
+                    {
+                        "description": "route id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/store.RouteRow"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Get a route with its carriers",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "route id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.routeInput",
+                                "summary": "body",
+                                "description": "route"
+                            }
+                        }
+                    },
+                    "description": "route",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/store.RouteRow"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update a route (and replace its carriers when given)",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/routes/{id}/carriers": {
+            "put": {
+                "parameters": [
+                    {
+                        "description": "route id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.routeCarriersInput",
+                                "summary": "body",
+                                "description": "ordered carriers"
+                            }
+                        }
+                    },
+                    "description": "ordered carriers",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/store.RouteRow"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Replace the ordered carrier list of a route (reorder endpoint)",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/routes/{id}/preview": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "route id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "sample number (defaults to the route prefix padded)",
+                        "in": "query",
+                        "name": "number",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "selling deck to compute margin against",
+                        "in": "query",
+                        "name": "sell_rate_group_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Buy rate and margin per carrier of a route for a sample number",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/routing/simulate": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer id",
+                        "in": "query",
+                        "name": "customer_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "dialled number as the customer would send it",
+                        "in": "query",
+                        "name": "number",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "caller id",
+                        "in": "query",
+                        "name": "caller",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Routing simulator: the whole setup decision for a customer and number without dialling",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
+        "/system/failover-rules": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "The failure classification table (read only)",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/gateways": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Sofia gateway states from the OPTIONS ping poller",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/notifications": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.Notification"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Recent notifications (low balance etc.)",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/settings": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.Setting"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "System settings rows (free-form key/value, e.g. UI preferences, sip trace state)",
+                "tags": [
+                    "system"
+                ]
+            },
+            "put": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.settingsInput",
+                                "summary": "body",
+                                "description": "values"
+                            }
+                        }
+                    },
+                    "description": "values",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.Setting"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Upsert settings rows",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/status": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Readiness of every dependency plus configuration summary",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/version": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Build version (unauthenticated)",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.User"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List users",
+                "tags": [
+                    "users"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.userInput",
+                                "summary": "body",
+                                "description": "user"
+                            }
+                        }
+                    },
+                    "description": "user",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.User"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Create a user",
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/users/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "user id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete a user",
+                "tags": [
+                    "users"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "user id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.userInput",
+                                "summary": "body",
+                                "description": "user"
+                            }
+                        }
+                    },
+                    "description": "user",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.User"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update role and status of a user",
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/users/{id}/password": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "user id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.passwordInput",
+                                "summary": "body",
+                                "description": "password"
+                            }
+                        }
+                    },
+                    "description": "password",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Set a user's password (admin), revoking their sessions",
+                "tags": [
+                    "users"
+                ]
+            }
+        }
+    },
+    "openapi": "3.1.0",
+    "servers": [
+        {
+            "url": "/api/v1"
+        }
+    ]
+}

@@ -7,13 +7,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 
 	"github.com/opensbc/opensbc/internal/model"
 )
 
 const cdrCols = `call_uuid, customer_id, carrier_id, src_ip::text AS src_ip, src_port, caller_number_raw, caller_number, called_number_raw, called_number,
 	start_time, progress_time, answer_time, end_time, pdd_ms, ring_seconds, billsec, duration, sip_final_code, sip_final_reason, hangup_cause,
-	disposition::text AS disposition, reject_reason, sell_rate_id, sell_rate_per_min, sell_billed_seconds, sell_price, sell_destination,
+	disposition::text AS disposition, reject_reason, sell_rate_id, sell_rate_per_min, sell_billed_seconds, sell_price, sell_destination, sell_currency, buy_currency, sell_fx, buy_fx,
 	buy_rate_id, buy_rate_per_min, buy_billed_seconds, cost, margin, negative_margin, reserved_amount, charged_amount, released_amount,
 	attempts, failover_depth, codec_in, codec_out, media_mode, COALESCE(rtp_stats, 'null'::jsonb) AS rtp_stats, sbc_node, billed_at, billed_by, created_at, updated_at`
 
@@ -27,13 +28,20 @@ func InsertCDRSetup(ctx context.Context, q Querier, c *model.CDR) error {
 	_, err := q.Exec(ctx, `
 		INSERT INTO cdrs (call_uuid, customer_id, carrier_id, src_ip, src_port, caller_number_raw, caller_number, called_number_raw, called_number,
 		  start_time, end_time, disposition, reject_reason, sip_final_code, sip_final_reason, hangup_cause,
-		  sell_rate_id, sell_rate_per_min, sell_destination, reserved_amount, attempts, sbc_node, billed_at, billed_by)
-		VALUES ($1, $2, $3, NULLIF($4, '')::inet, $5, $6, $7, $8, $9, $10, $11, $12::disposition_kind, $13, $14, $15, $16, $17, $18::numeric, $19, $20::numeric, $21::jsonb, $22, $23, $24)
+		  sell_rate_id, sell_rate_per_min, sell_destination, reserved_amount, attempts, sbc_node, billed_at, billed_by, sell_currency, sell_fx)
+		VALUES ($1, $2, $3, NULLIF($4, '')::inet, $5, $6, $7, $8, $9, $10, $11, $12::disposition_kind, $13, $14, $15, $16, $17, $18::numeric, $19, $20::numeric, $21::jsonb, $22, $23, $24, $25, COALESCE(NULLIF($26, '')::numeric, 1))
 		ON CONFLICT (call_uuid) DO NOTHING`,
 		c.CallUUID, c.CustomerID, c.CarrierID, deref(c.SrcIP), c.SrcPort, c.CallerNumberRaw, c.CallerNumber, c.CalledNumberRaw, c.CalledNumber,
 		c.StartTime, c.EndTime, c.Disposition, c.RejectReason, c.SIPFinalCode, c.SIPFinalReason, c.HangupCause,
-		c.SellRateID, c.SellRatePerMin, c.SellDestination, c.ReservedAmount, string(attempts), c.SBCNode, c.BilledAt, c.BilledBy)
+		c.SellRateID, c.SellRatePerMin, c.SellDestination, c.ReservedAmount, string(attempts), c.SBCNode, c.BilledAt, c.BilledBy, c.SellCurrency, fxString(c.SellFX))
 	return wrapErr(err)
+}
+
+func fxString(d decimal.Decimal) string {
+	if d.IsZero() {
+		return ""
+	}
+	return d.String()
 }
 
 func deref(s *string) string {
@@ -89,13 +97,14 @@ func FinalizeCDR(ctx context.Context, tx pgx.Tx, c *model.CDR) error {
 		  sell_billed_seconds = $15, sell_price = $16::numeric, buy_rate_id = $17, buy_rate_per_min = $18::numeric, buy_billed_seconds = $19, cost = $20::numeric,
 		  negative_margin = $21, charged_amount = $22::numeric, released_amount = $23::numeric, attempts = $24::jsonb,
 		  failover_depth = GREATEST(jsonb_array_length($24::jsonb) - 1, 0),
-		  codec_in = $25, codec_out = $26, media_mode = $27, rtp_stats = $28::jsonb, sbc_node = $29, billed_at = $30, billed_by = $31
+		  codec_in = $25, codec_out = COALESCE(codec_out, $26), media_mode = COALESCE($27, media_mode), rtp_stats = COALESCE($28::jsonb, rtp_stats), sbc_node = $29, billed_at = $30, billed_by = $31,
+		  buy_currency = $32, buy_fx = COALESCE(NULLIF($33, '')::numeric, 1)
 		WHERE call_uuid = $1`,
 		c.CallUUID, c.CarrierID, c.ProgressTime, c.AnswerTime, c.EndTime, c.PDDMs, c.RingSeconds, c.Billsec, c.Duration,
 		c.SIPFinalCode, c.SIPFinalReason, c.HangupCause, c.Disposition, c.RejectReason,
 		c.SellBilledSeconds, c.SellPrice, c.BuyRateID, c.BuyRatePerMin, c.BuyBilledSeconds, c.Cost,
 		c.NegativeMargin, c.ChargedAmount, c.ReleasedAmount, string(attempts),
-		c.CodecIn, c.CodecOut, c.MediaMode, rtp, c.SBCNode, c.BilledAt, c.BilledBy)
+		c.CodecIn, c.CodecOut, c.MediaMode, rtp, c.SBCNode, c.BilledAt, c.BilledBy, c.BuyCurrency, fxString(c.BuyFX))
 	return wrapErr(err)
 }
 

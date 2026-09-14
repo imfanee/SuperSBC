@@ -1,6 +1,15 @@
 // Command sbc-api is the OpenSBC control plane: internal call control API,
 // admin REST API, billing engine, ESL consumer and background workers.
 //
+//	@title			OpenSBC Admin API
+//	@version		1.0
+//	@description	Session Border Controller control plane: customers, carriers, rate decks, routing, CDRs, reports.
+//	@BasePath		/api/v1
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in				header
+//	@name			Authorization
+//	@description	"Bearer sbc_..." API key, or the sbc_access cookie set by POST /auth/login (with X-CSRF-Token for state changes).
+//
 // Usage:
 //
 //	sbc-api [serve]        run everything (default)

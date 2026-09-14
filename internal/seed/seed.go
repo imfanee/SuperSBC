@@ -158,7 +158,7 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 		cust, err := st.UpsertCustomer(ctx, &model.Customer{
 			Name: c.name, Status: "active", RateGroupID: &sellID, RouteGroupID: &routeID,
 			MaxConcurrentCalls: c.maxCC, MaxCPS: c.maxCPS, AllowedCodecs: []string{"PCMA", "PCMU", "OPUS", "G722"},
-			Notes: "Demo customer",
+			IntlPrefix: "00", BlockedPrefixesEnabled: true, Notes: "Demo customer",
 		})
 		if err != nil {
 			return err

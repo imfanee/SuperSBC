@@ -11,19 +11,22 @@ import (
 
 // Customer is a client identified by source IP.
 type Customer struct {
-	ID                 uuid.UUID  `json:"id" db:"id"`
-	Name               string     `json:"name" db:"name"`
-	Status             string     `json:"status" db:"status"`
-	RateGroupID        *uuid.UUID `json:"rate_group_id" db:"rate_group_id"`
-	RouteGroupID       *uuid.UUID `json:"route_group_id" db:"route_group_id"`
-	MaxConcurrentCalls int        `json:"max_concurrent_calls" db:"max_concurrent_calls"`
-	MaxCPS             int        `json:"max_cps" db:"max_cps"`
-	AllowedCodecs      []string   `json:"allowed_codecs" db:"allowed_codecs"`
-	TechPrefix         *string    `json:"tech_prefix" db:"tech_prefix"`
-	DefaultCountryCode *string    `json:"default_country_code" db:"default_country_code"`
-	Notes              string     `json:"notes" db:"notes"`
-	CreatedAt          time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt          time.Time  `json:"updated_at" db:"updated_at"`
+	ID                     uuid.UUID  `json:"id" db:"id"`
+	Name                   string     `json:"name" db:"name"`
+	Status                 string     `json:"status" db:"status"`
+	RateGroupID            *uuid.UUID `json:"rate_group_id" db:"rate_group_id"`
+	RouteGroupID           *uuid.UUID `json:"route_group_id" db:"route_group_id"`
+	MaxConcurrentCalls     int        `json:"max_concurrent_calls" db:"max_concurrent_calls"`
+	MaxCPS                 int        `json:"max_cps" db:"max_cps"`
+	AllowedCodecs          []string   `json:"allowed_codecs" db:"allowed_codecs"`
+	TechPrefix             *string    `json:"tech_prefix" db:"tech_prefix"`
+	DefaultCountryCode     *string    `json:"default_country_code" db:"default_country_code"`
+	IntlPrefix             string     `json:"intl_prefix" db:"intl_prefix"`
+	TrustPAI               bool       `json:"trust_pai" db:"trust_pai"`
+	BlockedPrefixesEnabled bool       `json:"blocked_prefixes_enabled" db:"blocked_prefixes_enabled"`
+	Notes                  string     `json:"notes" db:"notes"`
+	CreatedAt              time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt              time.Time  `json:"updated_at" db:"updated_at"`
 }
 
 // CustomerIP is one authorised source address of a customer.
@@ -205,6 +208,10 @@ type CDR struct {
 	SellBilledSeconds int              `json:"sell_billed_seconds" db:"sell_billed_seconds"`
 	SellPrice         decimal.Decimal  `json:"sell_price" db:"sell_price"`
 	SellDestination   *string          `json:"sell_destination" db:"sell_destination"`
+	SellCurrency      *string          `json:"sell_currency" db:"sell_currency"`
+	BuyCurrency       *string          `json:"buy_currency" db:"buy_currency"`
+	SellFX            decimal.Decimal  `json:"sell_fx" db:"sell_fx"`
+	BuyFX             decimal.Decimal  `json:"buy_fx" db:"buy_fx"`
 	BuyRateID         *uuid.UUID       `json:"buy_rate_id" db:"buy_rate_id"`
 	BuyRatePerMin     *decimal.Decimal `json:"buy_rate_per_min" db:"buy_rate_per_min"`
 	BuyBilledSeconds  int              `json:"buy_billed_seconds" db:"buy_billed_seconds"`

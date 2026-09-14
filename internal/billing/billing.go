@@ -23,6 +23,11 @@ import (
 	"github.com/opensbc/opensbc/internal/store"
 )
 
+// FXSource resolves exchange rates (implemented by tables.Tables).
+type FXSource interface {
+	FX(ctx context.Context, base, quote string) (decimal.Decimal, bool)
+}
+
 // Engine bills finished calls.
 type Engine struct {
 	cfg *config.Config
@@ -31,7 +36,11 @@ type Engine struct {
 	rdb *redis.Client
 	adm *cache.Admission
 	now func() time.Time
+	fx  FXSource
 }
+
+// SetFX installs the exchange rate source.
+func (e *Engine) SetFX(f FXSource) { e.fx = f }
 
 // New creates the billing engine.
 func New(cfg *config.Config, log *slog.Logger, st *store.Store, rdb *redis.Client) *Engine {
@@ -152,7 +161,7 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 			if err != nil {
 				return fmt.Errorf("load sell rate: %w", err)
 			}
-			billed, amt := rating.Price(cdr.Billsec, toRating(sell))
+			billed, amt := rating.Price(cdr.Billsec, toRatingFX(sell, cdr.SellFX))
 			cdr.SellBilledSeconds = billed
 			cdr.SellPrice = amt
 			price = amt
@@ -163,9 +172,12 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 				if buyID := buyRateFor(cdr.Attempts, cid); buyID != nil {
 					buy, err := e.st.RateByID(ctx, *buyID)
 					if err == nil {
-						bb, bamt := rating.Price(cdr.Billsec, toRating(buy))
+						buyFX, buyCurrency := e.buyFX(ctx, buy, cid)
+						cdr.BuyFX = buyFX
+						cdr.BuyCurrency = &buyCurrency
+						bb, bamt := rating.Price(cdr.Billsec, toRatingFX(buy, buyFX))
 						cdr.BuyRateID = buyID
-						rate := buy.RatePerMin
+						rate := buy.RatePerMin.Mul(buyFX).Round(rating.Scale)
 						cdr.BuyRatePerMin = &rate
 						cdr.BuyBilledSeconds = bb
 						cdr.Cost = bamt
@@ -325,9 +337,36 @@ func Disposition(answered bool, cause string, sipCode int) string {
 	return model.DispositionFailed
 }
 
-func toRating(r *model.Rate) rating.Rate {
-	return rating.Rate{PerMinute: r.RatePerMin, ConnectFee: r.ConnectFee,
+// toRatingFX converts the deck money into the account currency (D-45).
+func toRatingFX(r *model.Rate, fx decimal.Decimal) rating.Rate {
+	if fx.IsZero() {
+		fx = decimal.NewFromInt(1)
+	}
+	return rating.Rate{PerMinute: r.RatePerMin.Mul(fx).Round(rating.Scale), ConnectFee: r.ConnectFee.Mul(fx).Round(rating.Scale),
 		Increments: rating.Increments{Initial: r.InitialIncrement, Subsequent: r.SubsequentIncrement, MinDuration: r.MinDuration}}
+}
+
+// buyFX resolves the exchange rate between the carrier's rate deck and its
+// account currency at billing time (a small drift from setup is accepted).
+func (e *Engine) buyFX(ctx context.Context, buy *model.Rate, carrierID uuid.UUID) (decimal.Decimal, string) {
+	one := decimal.NewFromInt(1)
+	deck, err := e.st.RateGroupByID(ctx, buy.RateGroupID)
+	if err != nil {
+		return one, e.cfg.Billing.Currency
+	}
+	acc, err := e.st.AccountByOwner(ctx, "carrier", carrierID)
+	if err != nil {
+		return one, deck.Currency
+	}
+	if e.fx == nil {
+		return one, acc.Currency
+	}
+	fx, ok := e.fx.FX(ctx, deck.Currency, acc.Currency)
+	if !ok {
+		e.log.Error("no exchange rate for buy deck, costing at 1:1", "rate_group_id", buy.RateGroupID, "carrier_id", carrierID)
+		return one, acc.Currency
+	}
+	return fx, acc.Currency
 }
 
 func buyRateFor(attempts []model.AttemptRecord, carrierID uuid.UUID) *uuid.UUID {

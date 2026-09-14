@@ -7,11 +7,13 @@ package tables
 import (
 	"context"
 	"log/slog"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"github.com/shopspring/decimal"
 
 	"github.com/opensbc/opensbc/internal/cache"
 	"github.com/opensbc/opensbc/internal/model"
@@ -27,6 +29,8 @@ type Tables struct {
 	mu     sync.RWMutex
 	rates  map[uuid.UUID]*entry[model.Rate]
 	routes map[uuid.UUID]*entry[model.Route]
+	blocks *blockEntry
+	fx     *fxEntry
 
 	// MaxAge forces a reload of a table older than this.
 	MaxAge time.Duration
@@ -34,6 +38,17 @@ type Tables struct {
 
 type entry[T any] struct {
 	trie     *prefix.Trie[T]
+	loadedAt time.Time
+}
+
+type blockEntry struct {
+	global   *prefix.Trie[model.BlockedPrefix]
+	customer map[uuid.UUID]*prefix.Trie[model.BlockedPrefix]
+	loadedAt time.Time
+}
+
+type fxEntry struct {
+	rates    map[string]decimal.Decimal // "BASE/QUOTE"
 	loadedAt time.Time
 }
 
@@ -118,6 +133,96 @@ func (t *Tables) routeTrie(ctx context.Context, id uuid.UUID) (*prefix.Trie[mode
 	return tr, nil
 }
 
+// Blocked returns the matching block for number: the customer's own list
+// first, then the global blacklist (Section 7, blocking rules).
+func (t *Tables) Blocked(ctx context.Context, customerID uuid.UUID, number string) (*model.BlockedPrefix, error) {
+	t.mu.RLock()
+	b := t.blocks
+	t.mu.RUnlock()
+	if b == nil || time.Since(b.loadedAt) >= t.MaxAge {
+		rows, err := t.st.AllEnabledBlockedPrefixes(ctx)
+		if err != nil {
+			if b == nil {
+				return nil, err
+			}
+		} else {
+			nb := &blockEntry{global: prefix.New[model.BlockedPrefix](), customer: map[uuid.UUID]*prefix.Trie[model.BlockedPrefix]{}, loadedAt: time.Now()}
+			for _, r := range rows {
+				if r.CustomerID == nil {
+					nb.global.Insert(r.Prefix, r)
+					continue
+				}
+				tr := nb.customer[*r.CustomerID]
+				if tr == nil {
+					tr = prefix.New[model.BlockedPrefix]()
+					nb.customer[*r.CustomerID] = tr
+				}
+				tr.Insert(r.Prefix, r)
+			}
+			t.mu.Lock()
+			t.blocks = nb
+			t.mu.Unlock()
+			b = nb
+		}
+	}
+	if tr := b.customer[customerID]; tr != nil {
+		if m, _, ok := tr.Match(number); ok {
+			return &m, nil
+		}
+	}
+	if m, _, ok := b.global.Match(number); ok {
+		return &m, nil
+	}
+	return nil, nil
+}
+
+// InvalidateBlocks drops the block list tables.
+func (t *Tables) InvalidateBlocks() {
+	t.mu.Lock()
+	t.blocks = nil
+	t.mu.Unlock()
+}
+
+// FX returns the multiplier converting an amount in base to quote (D-45).
+// Same currency is 1. When no rate exists ok is false.
+func (t *Tables) FX(ctx context.Context, base, quote string) (decimal.Decimal, bool) {
+	if base == "" || quote == "" || strings.EqualFold(base, quote) {
+		return decimal.NewFromInt(1), true
+	}
+	t.mu.RLock()
+	f := t.fx
+	t.mu.RUnlock()
+	if f == nil || time.Since(f.loadedAt) >= time.Minute {
+		rows, err := t.st.FXRates(ctx)
+		if err == nil {
+			nf := &fxEntry{rates: map[string]decimal.Decimal{}, loadedAt: time.Now()}
+			for _, r := range rows {
+				nf.rates[strings.ToUpper(r.Base)+"/"+strings.ToUpper(r.Quote)] = r.Rate
+			}
+			t.mu.Lock()
+			t.fx = nf
+			t.mu.Unlock()
+			f = nf
+		} else if f == nil {
+			return decimal.Zero, false
+		}
+	}
+	if r, ok := f.rates[strings.ToUpper(base)+"/"+strings.ToUpper(quote)]; ok {
+		return r, true
+	}
+	if r, ok := f.rates[strings.ToUpper(quote)+"/"+strings.ToUpper(base)]; ok && !r.IsZero() {
+		return decimal.NewFromInt(1).DivRound(r, 8), true
+	}
+	return decimal.Zero, false
+}
+
+// InvalidateFX drops the exchange rate cache.
+func (t *Tables) InvalidateFX() {
+	t.mu.Lock()
+	t.fx = nil
+	t.mu.Unlock()
+}
+
 // InvalidateRates drops a rate group's table (or all when id is Nil).
 func (t *Tables) InvalidateRates(id uuid.UUID) {
 	t.mu.Lock()
@@ -144,7 +249,7 @@ func (t *Tables) InvalidateRoutes(id uuid.UUID) {
 
 // Listen subscribes to the invalidation channels until ctx ends.
 func (t *Tables) Listen(ctx context.Context, rdb *redis.Client) {
-	sub := rdb.Subscribe(ctx, cache.ChanRateDeckChanged, cache.ChanRoutesChanged, cache.ChanCarriersChanged)
+	sub := rdb.Subscribe(ctx, cache.ChanRateDeckChanged, cache.ChanRoutesChanged, cache.ChanCarriersChanged, cache.ChanBlocklistChanged, cache.ChanFXChanged)
 	defer func() { _ = sub.Close() }()
 	ch := sub.Channel()
 	for {
@@ -163,6 +268,10 @@ func (t *Tables) Listen(ctx context.Context, rdb *redis.Client) {
 				t.InvalidateRoutes(id)
 			case cache.ChanCarriersChanged:
 				t.InvalidateRoutes(uuid.Nil)
+			case cache.ChanBlocklistChanged:
+				t.InvalidateBlocks()
+			case cache.ChanFXChanged:
+				t.InvalidateFX()
 			}
 			t.log.Debug("table invalidated", "channel", m.Channel, "id", m.Payload)
 		}

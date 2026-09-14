@@ -14,6 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/opensbc/opensbc/internal/auth"
 	"github.com/opensbc/opensbc/internal/billing"
 	"github.com/opensbc/opensbc/internal/callcontrol"
 	"github.com/opensbc/opensbc/internal/config"
@@ -22,6 +23,8 @@ import (
 	"github.com/opensbc/opensbc/internal/failover"
 	"github.com/opensbc/opensbc/internal/fsconfig"
 	"github.com/opensbc/opensbc/internal/gateways"
+	"github.com/opensbc/opensbc/internal/httpapi/admin"
+	"github.com/opensbc/opensbc/internal/httpapi/health"
 	"github.com/opensbc/opensbc/internal/httpapi/internalapi"
 	"github.com/opensbc/opensbc/internal/logging"
 	"github.com/opensbc/opensbc/internal/metrics"
@@ -46,6 +49,7 @@ type app struct {
 	renderer *fsconfig.Renderer
 	internal *internalapi.Handler
 	gateways *gateways.Poller
+	admin    *admin.Handler
 }
 
 func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *pgxpool.Pool, rdb *redis.Client, sup *esl.Supervisor) *app {
@@ -59,6 +63,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	tb := tables.New(st, log)
 	pipe := callcontrol.New(cfg, log, st, rdb, tb, rules)
 	bill := billing.New(cfg, log, st, rdb)
+	bill.SetFX(tb)
 	renderer := fsconfig.New(cfg.FSConfigDir, cfg.ACLMode, cfg.FSNodeIP, st, sup, log)
 	gw := gateways.New(sup, "external-egress", time.Duration(cfg.Failover.GatewayPingIntervalSeconds)*time.Second, log)
 	breaker := callcontrol.NewBreaker(rdb, cfg.Failover.BreakerConsecutiveFaults, cfg.Failover.BreakerASRThresholdPercent, cfg.Failover.BreakerASRMinSamples, cfg.Failover.BreakerDegradedSeconds)
@@ -67,6 +72,11 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	pipe.SetHealth(gw)
 	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer, gateways: gw}
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
+	a.admin = admin.New(admin.Deps{Cfg: cfg, Log: log, Store: st, Redis: rdb, Pipe: pipe, Bill: bill, Tables: tb, ESL: sup, Gateways: gw, Renderer: renderer, Version: version,
+		Ready: func(ctx context.Context) any {
+			return health.Deps{DB: pool, Redis: rdb, ESL: sup, Profiles: []string{"external-ingress", "external-egress"}, Version: version, Node: cfg.NodeName}.Check(ctx)
+		}})
+	a.bootstrapAdmin(ctx)
 
 	// Render gateways and ACLs before FreeSWITCH starts (compose depends_on)
 	// and again after every ESL (re)connect so FreeSWITCH restarts pick up
@@ -190,6 +200,36 @@ func (a *app) gaugeLoop(ctx context.Context) {
 
 func (a *app) mountAdmin(r chi.Router) {
 	r.Handle("/metrics", promhttp.Handler())
+	a.admin.Mount(r)
+}
+
+// bootstrapAdmin creates the first admin user from the environment when the
+// users table is empty, so a fresh install can log in.
+func (a *app) bootstrapAdmin(ctx context.Context) {
+	n, err := a.st.CountUsers(ctx)
+	if err != nil || n > 0 {
+		return
+	}
+	pw := a.cfg.Auth.BootstrapAdminPassword
+	if pw == "" {
+		a.log.Warn("no users exist and SBC_BOOTSTRAP_ADMIN_PASSWORD is empty: nobody can log in")
+		return
+	}
+	if err := auth.CheckPasswordPolicy(pw); err != nil {
+		a.log.Error("bootstrap admin password rejected", "error", err)
+		return
+	}
+	hash, err := auth.HashPassword(pw)
+	if err != nil {
+		a.log.Error("bootstrap admin", "error", err)
+		return
+	}
+	u, err := a.st.CreateUser(ctx, a.cfg.Auth.BootstrapAdminEmail, hash, "admin")
+	if err != nil {
+		a.log.Error("bootstrap admin", "error", err)
+		return
+	}
+	a.log.Info("bootstrap admin user created", "email", u.Email)
 }
 
 func (a *app) mountInternal(r chi.Router) { a.internal.Mount(r) }

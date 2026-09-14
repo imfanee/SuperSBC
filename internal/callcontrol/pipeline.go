@@ -206,6 +206,27 @@ func toRating(r *model.Rate) rating.Rate {
 		Increments: rating.Increments{Initial: r.InitialIncrement, Subsequent: r.SubsequentIncrement, MinDuration: r.MinDuration}}
 }
 
+// ConvertRate returns a copy of r with money converted from the rate deck
+// currency into the account currency (D-45). ok is false when no exchange
+// rate exists, which callers treat as "no rate for destination".
+func (p *Pipeline) ConvertRate(ctx context.Context, r *model.Rate, accountCurrency string) (*model.Rate, decimal.Decimal, bool) {
+	deck, err := p.st.RateGroupByID(ctx, r.RateGroupID)
+	if err != nil {
+		return r, decimal.NewFromInt(1), true
+	}
+	fx, ok := p.tables.FX(ctx, deck.Currency, accountCurrency)
+	if !ok {
+		return r, decimal.Zero, false
+	}
+	if fx.Equal(decimal.NewFromInt(1)) {
+		return r, fx, true
+	}
+	c := *r
+	c.RatePerMin = r.RatePerMin.Mul(fx).Round(rating.Scale)
+	c.ConnectFee = r.ConnectFee.Mul(fx).Round(rating.Scale)
+	return &c, fx, true
+}
+
 // ---- Step 4 and 5: balance check and reservation ----
 
 // ReserveResult is the outcome of Reserve.
@@ -525,6 +546,14 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	resp.Called = called
 	resp.Caller = caller
 
+	// Step 2b: block lists (Section 7, routing and policy). D-44.
+	if cust.BlockedPrefixesEnabled {
+		if blk, err := p.tables.Blocked(ctx, cust.ID, called); err == nil && blk != nil {
+			log.Info("destination blocked", "prefix", blk.Prefix, "reason", blk.Reason, "global", blk.CustomerID == nil)
+			return rejectAdmitted("blocklist", Reject{403, "Destination blocked"}, model.DispositionRejectedRoute), nil
+		}
+	}
+
 	// Step 3
 	sell, err := p.SellRateFor(ctx, cust, called)
 	if err != nil {
@@ -533,6 +562,19 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	if sell == nil {
 		return rejectAdmitted("rate", Reject{404, "No rate for destination"}, model.DispositionRejectedRoute), nil
 	}
+	// Multi-currency (D-45): rate in the customer's account currency.
+	acctCurrency := p.cfg.Billing.Currency
+	if acc, err := p.st.AccountByOwner(ctx, "customer", cust.ID); err == nil {
+		acctCurrency = acc.Currency
+	}
+	sellConv, sellFX, fxOK := p.ConvertRate(ctx, sell, acctCurrency)
+	if !fxOK {
+		log.Error("no exchange rate for sell deck", "rate_group_id", sell.RateGroupID, "account_currency", acctCurrency)
+		return rejectAdmitted("rate", Reject{404, "No rate for destination"}, model.DispositionRejectedRoute), nil
+	}
+	sell = sellConv
+	cdr.SellCurrency = &acctCurrency
+	cdr.SellFX = sellFX
 	sellID := sell.ID
 	sellRate := sell.RatePerMin
 	sellDest := sell.Destination

@@ -74,5 +74,6 @@ e2e: ## End-to-end SIP tests with sipp mock customers and carriers
 rollback: ## Roll back the latest database migration
 	$(COMPOSE) exec api /app/sbc-api migrate-down
 
-openapi: ## Regenerate OpenAPI 3.1 document from handler annotations
-	swag init --v3.1 -g cmd/sbc-api/main.go -o internal/httpapi/admin/openapi --outputTypes json,yaml
+openapi: ## Regenerate the OpenAPI 3.1 document (swag v2) and docs/API.md
+	swag init --v3.1 -g main.go -d ./cmd/sbc-api,./internal/httpapi/admin -o internal/httpapi/admin/openapi --outputTypes json --parseDependency --parseInternal >/dev/null 2>&1
+	$(GO) run ./cmd/apidoc internal/httpapi/admin/openapi/swagger.json docs/API.md
