@@ -301,3 +301,73 @@ func TestIntegrationReconcileOrphan(t *testing.T) {
 		t.Fatalf("orphan reason: %v", cdr.RejectReason)
 	}
 }
+
+// The circuit breaker degrades a carrier after consecutive faults and the
+// route then tries it last.
+func TestIntegrationBreakerReorders(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	rdb, _ := cache.Connect(ctx, os.Getenv("SBC_TEST_REDIS_URL"))
+	defer func() { _ = rdb.Close() }()
+	br := callcontrol.NewBreaker(rdb, 3, 10, 50, 60)
+	e.pipe.SetBreaker(br)
+	e.pipe.SetHealth(breakerHealth{br})
+	c503, _ := e.st.CarrierByName(ctx, "carrier-503")
+	cust, _ := e.st.CustomerByName(ctx, "acme")
+	first := func() string {
+		r, err := e.pipe.Route(ctx, cust, "447700900123", "1", nil, uuid.New().String())
+		if err != nil || len(r.Carriers) != 2 {
+			t.Fatalf("route: %v %+v", err, r)
+		}
+		return r.Carriers[0].Name
+	}
+	if first() != "carrier-503" {
+		t.Fatal("carrier-503 should be primary before the breaker trips")
+	}
+	for i := 0; i < 3; i++ {
+		br.Record(ctx, c503.ID, failover.CarrierFault)
+	}
+	if !br.Degraded(ctx, c503.ID) || br.Reason(ctx, c503.ID) != "consecutive_faults" {
+		t.Fatalf("breaker did not trip: %v", br.Reason(ctx, c503.ID))
+	}
+	if first() != "carrier-answer" {
+		t.Fatal("degraded carrier should be tried last")
+	}
+	att, ans, consec := br.Stats(ctx, c503.ID)
+	if att != 3 || ans != 0 || consec != 0 {
+		t.Fatalf("stats: att=%d ans=%d consec=%d", att, ans, consec)
+	}
+	// an answered call resets the consecutive counter (the degraded TTL still runs)
+	br.Record(ctx, c503.ID, failover.Answered)
+	_, ans, _ = br.Stats(ctx, c503.ID)
+	if ans != 1 {
+		t.Fatalf("answered not counted")
+	}
+}
+
+type breakerHealth struct{ b *callcontrol.Breaker }
+
+func (breakerHealth) GatewayDown(string) bool { return false }
+func (h breakerHealth) Degraded(id uuid.UUID) bool {
+	return h.b.Degraded(context.Background(), id)
+}
+
+// Carrier capacity: BeginAttempt refuses the second slot on a one-channel carrier.
+func TestIntegrationCarrierCapacity(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	cap1, _ := e.st.CarrierByName(ctx, "carrier-cap1")
+	ok, _, err := e.pipe.BeginAttempt(ctx, cap1.ID)
+	if err != nil || !ok {
+		t.Fatalf("first slot: %v %v", ok, err)
+	}
+	ok, reason, _ := e.pipe.BeginAttempt(ctx, cap1.ID)
+	if ok || reason != "carrier_capacity" {
+		t.Fatalf("second slot should be refused: %v %s", ok, reason)
+	}
+	cust, _ := e.st.CustomerByName(ctx, "acme")
+	r, err := e.pipe.Route(ctx, cust, "442271234567", "1", nil, uuid.New().String())
+	if err != nil || len(r.Carriers) != 1 || r.Carriers[0].Name != "carrier-answer" || len(r.Skipped) != 1 || r.Skipped[0].Reason != "carrier_capacity" {
+		t.Fatalf("route should skip the full carrier: %+v", r)
+	}
+}

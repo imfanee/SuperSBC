@@ -91,6 +91,7 @@ type SetupResponse struct {
 	Skipped            []SkippedCarrier `json:"skipped,omitempty"`
 	OriginateTimeout   int              `json:"originate_timeout"`
 	ProgressTimeout    int              `json:"progress_timeout"`
+	CustomerCodecs     string           `json:"customer_codecs"`
 	MediaTimeoutMs     int              `json:"media_timeout_ms"`
 	MediaHoldTimeoutMs int              `json:"media_hold_timeout_ms"`
 	// Vars are channel variables Lua sets on the a-leg so they land in the CDR.

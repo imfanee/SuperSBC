@@ -29,8 +29,8 @@ func (s *Store) UpsertRouteGroup(ctx context.Context, name, description string) 
 // RoutesForGroup returns the enabled routes of a group with their ordered,
 // enabled carriers (the input of the route trie).
 func (s *Store) RoutesForGroup(ctx context.Context, groupID uuid.UUID) ([]model.Route, error) {
-	routes, err := many[model.Route](ctx, s.pool, `SELECT id, route_group_id, prefix, destination, enabled, created_at, updated_at
-		FROM routes WHERE route_group_id = $1 AND enabled ORDER BY prefix`, groupID)
+	routes, err := many[model.Route](ctx, s.pool, `SELECT r.id, r.route_group_id, r.prefix, r.destination, r.enabled, g.lcr_mode, r.created_at, r.updated_at
+		FROM routes r JOIN route_groups g ON g.id = r.route_group_id WHERE r.route_group_id = $1 AND r.enabled ORDER BY r.prefix`, groupID)
 	if err != nil {
 		return nil, err
 	}

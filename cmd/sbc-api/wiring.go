@@ -9,7 +9,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/opensbc/opensbc/internal/billing"
@@ -22,6 +24,7 @@ import (
 	"github.com/opensbc/opensbc/internal/gateways"
 	"github.com/opensbc/opensbc/internal/httpapi/internalapi"
 	"github.com/opensbc/opensbc/internal/logging"
+	"github.com/opensbc/opensbc/internal/metrics"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
 )
@@ -58,6 +61,9 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	bill := billing.New(cfg, log, st, rdb)
 	renderer := fsconfig.New(cfg.FSConfigDir, cfg.ACLMode, cfg.FSNodeIP, st, sup, log)
 	gw := gateways.New(sup, "external-egress", time.Duration(cfg.Failover.GatewayPingIntervalSeconds)*time.Second, log)
+	breaker := callcontrol.NewBreaker(rdb, cfg.Failover.BreakerConsecutiveFaults, cfg.Failover.BreakerASRThresholdPercent, cfg.Failover.BreakerASRMinSamples, cfg.Failover.BreakerDegradedSeconds)
+	pipe.SetBreaker(breaker)
+	gw.SetDegrader(breaker)
 	pipe.SetHealth(gw)
 	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer, gateways: gw}
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
@@ -80,6 +86,10 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 // onESLEvent is billing trigger 1 of 2 (mod_json_cdr is 2 of 2).
 func (a *app) onESLEvent(ev esl.Event) {
 	if ev.Name != "CHANNEL_HANGUP_COMPLETE" {
+		return
+	}
+	if ev.Get("Call-Direction") == "outbound" && ev.Get("variable_sofia_profile_name") == "external-egress" {
+		a.onBLegHangup(ev)
 		return
 	}
 	if ev.Get("Call-Direction") != "inbound" || ev.Get("variable_sofia_profile_name") != "external-ingress" {
@@ -109,14 +119,78 @@ func (a *app) onESLEvent(ev esl.Event) {
 	}()
 }
 
+// onBLegHangup enriches the a-leg CDR with the carrier side codec and RTP
+// statistics (Section 7: media_mode, per-call RTP stats).
+func (a *app) onBLegHangup(ev esl.Event) {
+	id, err := uuid.Parse(ev.Get("variable_sip_h_X-SBC-Call"))
+	if err != nil {
+		if id, err = uuid.Parse(ev.Get("Other-Leg-Unique-ID")); err != nil {
+			return
+		}
+	}
+	codec := ev.Get("variable_read_codec")
+	stats := map[string]any{}
+	for k, v := range ev.Headers {
+		if strings.HasPrefix(k, "variable_rtp_audio_") {
+			stats[strings.TrimPrefix(k, "variable_")] = v
+		}
+	}
+	if len(stats) == 0 {
+		stats = nil
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := a.bill.RecordBLeg(ctx, id, codec, stats); err != nil {
+			a.log.Warn("record b-leg failed", "call_uuid", id, "error", err)
+		}
+	}()
+}
+
 func (a *app) startWorkers(ctx context.Context) {
 	go a.tables.Listen(ctx, a.rdb)
 	go a.listenConfigChanges(ctx)
 	go a.gateways.Run(ctx)
 	go billing.NewReconciler(a.bill, a.esl).Run(ctx, time.Minute)
+	go a.gaugeLoop(ctx)
 }
 
-func (a *app) mountAdmin(_ chi.Router) {}
+// gaugeLoop refreshes the gauge metrics every few seconds.
+func (a *app) gaugeLoop(ctx context.Context) {
+	t := time.NewTicker(5 * time.Second)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			var n int
+			if err := a.db.QueryRow(ctx, `SELECT count(*) FROM active_calls`).Scan(&n); err == nil {
+				metrics.CallsInProgress.Set(float64(n))
+			}
+			for name, st := range a.gateways.States() {
+				v := 0.0
+				if st.Status == "UP" {
+					v = 1
+				}
+				metrics.GatewayUp.WithLabelValues(name).Set(v)
+			}
+			if carriers, err := a.st.Carriers(ctx); err == nil {
+				for _, c := range carriers {
+					v := 0.0
+					if a.pipe.Breaker().Degraded(ctx, c.ID) {
+						v = 1
+					}
+					metrics.CarrierDegraded.WithLabelValues(c.Name).Set(v)
+				}
+			}
+		}
+	}
+}
+
+func (a *app) mountAdmin(r chi.Router) {
+	r.Handle("/metrics", promhttp.Handler())
+}
 
 func (a *app) mountInternal(r chi.Router) { a.internal.Mount(r) }
 

@@ -80,8 +80,9 @@ func FromVariables(v map[string]string, source string) (HangupInfo, bool) {
 	if cid, err := uuid.Parse(v["sbc_carrier_id"]); err == nil && v["sbc_answered"] == "true" {
 		h.AnsweredCarrierID = &cid
 	}
+	// read_codec is what this leg receives; the carrier side codec comes from
+	// the b-leg hangup (Engine.RecordBLeg), never from the a-leg's write_codec.
 	h.CodecIn = v["read_codec"]
-	h.CodecOut = v["write_codec"]
 	h.RejectReason = v["sbc_reject_reason"]
 	stats := map[string]any{}
 	for k, val := range v {

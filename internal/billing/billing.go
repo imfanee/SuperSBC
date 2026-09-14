@@ -2,6 +2,7 @@ package billing
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -16,6 +17,7 @@ import (
 	"github.com/opensbc/opensbc/internal/cache"
 	"github.com/opensbc/opensbc/internal/config"
 	"github.com/opensbc/opensbc/internal/logging"
+	"github.com/opensbc/opensbc/internal/metrics"
 	"github.com/opensbc/opensbc/internal/model"
 	"github.com/opensbc/opensbc/internal/rating"
 	"github.com/opensbc/opensbc/internal/store"
@@ -48,6 +50,10 @@ type Outcome struct {
 	Released      decimal.Decimal
 	CustomerID    *uuid.UUID
 	Available     *decimal.Decimal
+	CarrierID     *uuid.UUID
+	MediaMode     string
+	CustomerName  string
+	CarrierName   string
 }
 
 // Bill applies Section 5 in one transaction. It is idempotent on call_uuid:
@@ -124,10 +130,6 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 			ci := h.CodecIn
 			cdr.CodecIn = &ci
 		}
-		if h.CodecOut != "" {
-			co := h.CodecOut
-			cdr.CodecOut = &co
-		}
 		if h.RTPStats != nil {
 			cdr.RTPStats = h.RTPStats
 		}
@@ -181,6 +183,10 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 		out.Price = price
 		out.Cost = cost
 		out.Disposition = cdr.Disposition
+		out.CarrierID = cdr.CarrierID
+		if cdr.MediaMode != nil {
+			out.MediaMode = *cdr.MediaMode
+		}
 
 		if ac != nil {
 			acc, err := store.LockAccount(ctx, tx, ac.AccountID)
@@ -243,6 +249,10 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 			e.adm.Leave(ctx, "global", uuid.Nil)
 		}
 	}
+	if h.AnsweredCarrierID != nil {
+		e.adm.Leave(ctx, "carrier", *h.AnsweredCarrierID)
+	}
+	e.observe(ctx, out)
 	if lowBalance != nil {
 		_, _ = e.st.Pool().Exec(ctx, `INSERT INTO notifications (kind, owner_type, owner_id, payload) VALUES ('low_balance', 'customer', $1, jsonb_build_object('available', $2::text, 'threshold', $3::text))`,
 			lowBalance.OwnerID, lowBalance.Available().StringFixed(6), e.cfg.Billing.LowBalanceThreshold)
@@ -251,6 +261,51 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 	log.Info("billed", "disposition", out.Disposition, "billsec", out.Billsec, "billed_seconds", out.BilledSeconds,
 		"price", out.Price.StringFixed(6), "cost", out.Cost.StringFixed(6), "released", out.Released.StringFixed(6), "cause", h.HangupCause, "sip_code", h.SIPCode)
 	return out, nil
+}
+
+// RecordBLeg stores what the carrier leg negotiated (codec, RTP statistics)
+// on the a-leg CDR, keyed by the X-SBC-Call header we sent. It runs
+// independently of Bill: whichever comes second completes media_mode.
+func (e *Engine) RecordBLeg(ctx context.Context, aLegUUID uuid.UUID, codec string, stats map[string]any) error {
+	var statsJSON any
+	if stats != nil {
+		b, _ := json.Marshal(stats)
+		statsJSON = string(b)
+	}
+	_, err := e.st.Pool().Exec(ctx, `
+		UPDATE cdrs SET
+		  codec_out = NULLIF($2, ''),
+		  media_mode = CASE WHEN codec_in IS NULL OR $2 = '' THEN media_mode WHEN upper(codec_in) = upper($2) THEN 'relay' ELSE 'transcode' END,
+		  rtp_stats = CASE WHEN $3::jsonb IS NULL THEN rtp_stats ELSE COALESCE(rtp_stats, '{}'::jsonb) || jsonb_build_object('carrier', $3::jsonb) END
+		WHERE call_uuid = $1`, aLegUUID, codec, statsJSON)
+	return err
+}
+
+// observe records the Prometheus counters for a billed call.
+func (e *Engine) observe(ctx context.Context, out *Outcome) {
+	if out.CustomerID != nil {
+		if c, err := e.st.CustomerByID(ctx, *out.CustomerID); err == nil {
+			out.CustomerName = c.Name
+		}
+	}
+	if out.CarrierID != nil {
+		if c, err := e.st.CarrierByID(ctx, *out.CarrierID); err == nil {
+			out.CarrierName = c.Name
+		}
+	}
+	metrics.Billed.WithLabelValues(out.CustomerName, out.CarrierName, out.Disposition).Inc()
+	if out.Billsec > 0 {
+		metrics.Billsec.WithLabelValues(out.CustomerName, out.CarrierName).Add(float64(out.Billsec))
+	}
+	if p, _ := out.Price.Float64(); p > 0 {
+		metrics.Revenue.WithLabelValues(out.CustomerName).Add(p)
+	}
+	if c, _ := out.Cost.Float64(); c > 0 {
+		metrics.Cost.WithLabelValues(out.CarrierName).Add(c)
+	}
+	if out.MediaMode != "" {
+		metrics.MediaMode.WithLabelValues(out.MediaMode).Inc()
+	}
 }
 
 // Disposition derives the CDR disposition from the outcome.

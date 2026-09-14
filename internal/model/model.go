@@ -112,6 +112,7 @@ type Route struct {
 	Prefix       string         `json:"prefix" db:"prefix"`
 	Destination  string         `json:"destination" db:"destination"`
 	Enabled      bool           `json:"enabled" db:"enabled"`
+	LCRMode      bool           `json:"lcr_mode" db:"lcr_mode"`
 	Carriers     []RouteCarrier `json:"carriers" db:"carriers"`
 	CreatedAt    time.Time      `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at" db:"updated_at"`

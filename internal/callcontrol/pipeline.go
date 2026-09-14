@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"sort"
+	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ import (
 	"github.com/opensbc/opensbc/internal/config"
 	"github.com/opensbc/opensbc/internal/failover"
 	"github.com/opensbc/opensbc/internal/logging"
+	"github.com/opensbc/opensbc/internal/metrics"
 	"github.com/opensbc/opensbc/internal/model"
 	"github.com/opensbc/opensbc/internal/numbering"
 	"github.com/opensbc/opensbc/internal/rating"
@@ -49,6 +51,10 @@ type Pipeline struct {
 	rules  *failover.Rules
 	health CarrierHealth
 	now    func() time.Time
+
+	breaker *Breaker
+	rndMu   sync.Mutex
+	rnd     *rand.Rand
 }
 
 // New wires the pipeline.
@@ -57,8 +63,15 @@ func New(cfg *config.Config, log *slog.Logger, st *store.Store, rdb *redis.Clien
 		cfg: cfg, log: log, st: st, rdb: rdb,
 		adm: cache.NewAdmission(rdb), ips: cache.NewIPCache(rdb),
 		tables: tb, rules: rules, health: noHealth{}, now: time.Now,
+		rnd: rand.New(rand.NewSource(time.Now().UnixNano())), //nolint:gosec // weighted distribution, not security
 	}
 }
+
+// SetBreaker installs the circuit breaker.
+func (p *Pipeline) SetBreaker(b *Breaker) { p.breaker = b }
+
+// Breaker exposes the circuit breaker (may be nil).
+func (p *Pipeline) Breaker() *Breaker { return p.breaker }
 
 // SetHealth installs the carrier health source.
 func (p *Pipeline) SetHealth(h CarrierHealth) { p.health = h }
@@ -299,6 +312,13 @@ func (p *Pipeline) Route(ctx context.Context, cust *model.Customer, called, call
 			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "gateway_down"})
 			continue
 		}
+		// Carrier capacity (Section 7): skip a carrier already at its channel limit.
+		if c.MaxConcurrentCalls > 0 {
+			if n, err := p.adm.Concurrent(ctx, "carrier", c.ID); err == nil && n >= int64(c.MaxConcurrentCalls) {
+				res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "carrier_capacity"})
+				continue
+			}
+		}
 		var buy *model.Rate
 		if c.RateGroupID != nil {
 			r, ok, err := p.tables.MatchRate(ctx, *c.RateGroupID, called)
@@ -331,22 +351,42 @@ func (p *Pipeline) Route(ctx context.Context, cust *model.Customer, called, call
 		ch.DialString = p.dialString(ch, callUUID)
 		cands = append(cands, cand{choice: ch, rc: rc, buy: buy})
 	}
-	// LCR mode (M4): order by buy rate ascending instead of priority.
-	sort.SliceStable(cands, func(i, j int) bool {
-		a, b := cands[i], cands[j]
-		if a.choice.Degraded != b.choice.Degraded {
-			return !a.choice.Degraded
-		}
-		if a.rc.Priority != b.rc.Priority {
-			return a.rc.Priority < b.rc.Priority
-		}
-		return a.rc.Weight > b.rc.Weight
-	})
-	for i := range cands {
-		cands[i].choice.Seq = i + 1
+	// Order: priority, then weighted random within a priority, degraded last;
+	// LCR mode orders by buy rate instead of priority (Section 7).
+	ord := make([]orderable, len(cands))
+	for i, c := range cands {
+		rate, _ := c.buy.RatePerMin.Float64()
+		ord[i] = orderable{priority: c.rc.Priority, weight: c.rc.Weight, degraded: c.choice.Degraded, buyRate: rate}
+	}
+	p.rndMu.Lock()
+	order := orderCandidates(ord, route.LCRMode, p.rnd)
+	p.rndMu.Unlock()
+	for seq, i := range order {
+		cands[i].choice.Seq = seq + 1
 		res.Carriers = append(res.Carriers, cands[i].choice)
 	}
 	return res, nil
+}
+
+// BeginAttempt takes a concurrency and CPS slot on the carrier before Lua
+// dials it. When the carrier is at capacity the attempt is refused and Lua
+// moves to the next carrier without dialling.
+func (p *Pipeline) BeginAttempt(ctx context.Context, carrierID uuid.UUID) (bool, string, error) {
+	c, err := p.st.CarrierByID(ctx, carrierID)
+	if err != nil {
+		return false, "unknown_carrier", nil
+	}
+	res, err := p.adm.Admit(ctx, "carrier", c.ID, c.MaxConcurrentCalls, c.MaxCPS)
+	if err != nil {
+		return false, "admission_unavailable", err
+	}
+	if res.ConcurrentExceeded {
+		return false, "carrier_capacity", nil
+	}
+	if res.CPSExceeded {
+		return false, "carrier_cps", nil
+	}
+	return true, "", nil
 }
 
 func buildDialNumber(called string, c model.Carrier) string {
@@ -443,6 +483,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		if err := store.InsertCDRSetup(ctx, p.st.Pool(), cdr); err != nil {
 			log.Error("write rejected cdr", "error", err)
 		}
+		metrics.Setups.WithLabelValues(resp.CustomerName, "reject_"+step).Inc()
+		metrics.Rejections.WithLabelValues(step, fmt.Sprint(r.Code)).Inc()
 		log.Info("call rejected", "step", step, "code", r.Code, "reason", r.Reason, "src_ip", req.SrcIP, "called", req.Called)
 		return resp
 	}
@@ -459,6 +501,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		resp.CustomerName = auth.Customer.Name
 		resp.Vars["sbc_customer_id"] = id.String()
 		resp.Vars["sbc_customer_name"] = auth.Customer.Name
+		resp.CustomerCodecs = strings.Join(auth.Customer.AllowedCodecs, ",")
 	}
 	if auth.Reject != nil {
 		return reject("authorize", *auth.Reject, model.DispositionRejectedAuth), nil
@@ -510,6 +553,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 				resp.ReservedAmount = rr.ReservedAmount
 				resp.Available = rr.Available
 			}
+			metrics.ReservationFailures.WithLabelValues(cust.Name).Inc()
 			return rejectAdmitted("balance", Reject{402, "Not enough funds"}, model.DispositionRejectedBalance), nil
 		}
 		return nil, err
@@ -530,6 +574,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		resp.RejectStep = step
 		resp.Vars["sbc_reject_reason"] = r.Reason
 		resp.Vars["sbc_reject_step"] = step
+		metrics.Setups.WithLabelValues(cust.Name, "reject_"+step).Inc()
+		metrics.Rejections.WithLabelValues(step, fmt.Sprint(r.Code)).Inc()
 		log.Info("call rejected", "step", step, "code", r.Code, "reason", r.Reason, "called", called)
 		return resp
 	}
@@ -552,6 +598,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	if p.rdb != nil {
 		cache.Publish(ctx, p.rdb, cache.ChanCallStarted, req.CallUUID)
 	}
+	metrics.Setups.WithLabelValues(cust.Name, "dial").Inc()
 	log.Info("call setup", "customer", cust.Name, "called", called, "sell_rate", sell.RatePerMin.StringFixed(6),
 		"reserved", rr.ReservedAmount.StringFixed(6), "max_call_seconds", rr.MaxCallSeconds, "carriers", len(route.Carriers))
 	return resp, nil
@@ -632,6 +679,25 @@ func (p *Pipeline) RecordAttempt(ctx context.Context, req AttemptRequest) (*Atte
 	if err := p.st.AppendAttempt(ctx, callUUID, rec); err != nil {
 		return nil, err
 	}
+	// The carrier slot taken by BeginAttempt is released here for failed
+	// attempts; answered calls release it when billed.
+	if !req.Answered {
+		p.adm.Leave(ctx, "carrier", req.CarrierID)
+	}
+	degraded := false
+	if p.breaker != nil {
+		degraded = p.breaker.Record(ctx, req.CarrierID, class)
+		if degraded {
+			metrics.CarrierDegraded.WithLabelValues(carrierName).Set(1)
+		}
+	}
+	metrics.Attempts.WithLabelValues(carrierName, string(class)).Inc()
+	if req.SIPCode > 0 {
+		metrics.AttemptSIPCodes.WithLabelValues(carrierName, fmt.Sprint(req.SIPCode)).Inc()
+	}
+	if req.PDDMs != nil {
+		metrics.PDD.WithLabelValues(carrierName).Observe(float64(*req.PDDMs) / 1000)
+	}
 	resp := &AttemptResponse{Classification: string(class), Continue: failover.Continue(class)}
 	code := req.SIPCode
 	reason := req.Reason
@@ -644,6 +710,6 @@ func (p *Pipeline) RecordAttempt(ctx context.Context, req AttemptRequest) (*Atte
 	resp.RelayCode = code
 	resp.RelayReason = reason
 	logging.FromContext(ctx, p.log).Info("attempt", "seq", req.Seq, "carrier", carrierName, "sip_code", req.SIPCode,
-		"cause", req.HangupCause, "classification", class, "continue", resp.Continue, "pdd_ms", req.PDDMs)
+		"cause", req.HangupCause, "classification", class, "continue", resp.Continue, "pdd_ms", req.PDDMs, "carrier_degraded", degraded)
 	return resp, nil
 }

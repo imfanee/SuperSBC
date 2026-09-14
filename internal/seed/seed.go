@@ -27,6 +27,8 @@ type carrierDef struct {
 	name, host string
 	port       int
 	rates      []rateRow
+	codecs     []string
+	maxCC      int
 }
 
 type customerDef struct {
@@ -49,16 +51,22 @@ var (
 	carriers = []carrierDef{
 		{"carrier-answer", "172.28.0.61", 5060, []rateRow{
 			{"1", "USA", "0.005000", "0", 6, 6}, {"44", "UK Fixed", "0.006000", "0", 60, 60}, {"447", "UK Mobile", "0.015000", "0", 60, 60},
-			{"33", "France", "0.010000", "0", 60, 60}, {"49", "Germany", "0.009000", "0", 1, 1}, {"93", "Afghanistan", "0.300000", "0", 60, 60}}},
+			{"33", "France", "0.010000", "0", 60, 60}, {"49", "Germany", "0.009000", "0", 1, 1}, {"93", "Afghanistan", "0.300000", "0", 60, 60}}, nil, 0},
 		{"carrier-503", "172.28.0.62", 5060, []rateRow{
-			{"44", "UK Fixed", "0.005500", "0", 60, 60}, {"447", "UK Mobile", "0.014000", "0", 60, 60}}},
+			{"44", "UK Fixed", "0.005500", "0", 60, 60}, {"447", "UK Mobile", "0.014000", "0", 60, 60}}, nil, 0},
 		{"carrier-503b", "172.28.0.62", 5060, []rateRow{
-			{"44", "UK Fixed", "0.005800", "0", 60, 60}, {"447", "UK Mobile", "0.014500", "0", 60, 60}}},
+			{"44", "UK Fixed", "0.005800", "0", 60, 60}, {"447", "UK Mobile", "0.014500", "0", 60, 60}}, nil, 0},
 		{"carrier-404", "172.28.0.63", 5060, []rateRow{
-			{"44", "UK Fixed", "0.005000", "0", 60, 60}, {"447", "UK Mobile", "0.013000", "0", 60, 60}}},
+			{"44", "UK Fixed", "0.005000", "0", 60, 60}, {"447", "UK Mobile", "0.013000", "0", 60, 60}}, nil, 0},
 		// Nothing listens here: OPTIONS ping marks the gateway DOWN and routing skips it.
 		{"carrier-down", "172.28.0.250", 5060, []rateRow{
-			{"44", "UK Fixed", "0.004000", "0", 60, 60}, {"447", "UK Mobile", "0.012000", "0", 60, 60}}},
+			{"44", "UK Fixed", "0.004000", "0", 60, 60}, {"447", "UK Mobile", "0.012000", "0", 60, 60}}, nil, 0},
+		// Same UAS as carrier-answer but PCMU only: forces transcoding from a PCMA customer.
+		{"carrier-pcmu", "172.28.0.61", 5060, []rateRow{
+			{"44", "UK Fixed", "0.007000", "0", 60, 60}}, []string{"PCMU"}, 0},
+		// Same UAS, one channel: the second concurrent call must fail over.
+		{"carrier-cap1", "172.28.0.61", 5060, []rateRow{
+			{"44", "UK Fixed", "0.005000", "0", 60, 60}}, nil, 1},
 	}
 	// prefix -> ordered carriers
 	routes = []struct {
@@ -73,6 +81,8 @@ var (
 		{"4478", "UK Mobile all fail", []string{"carrier-503", "carrier-503b"}},
 		{"4479", "UK Mobile number fault", []string{"carrier-404", "carrier-answer"}},
 		{"4476", "UK Mobile gateway down", []string{"carrier-down", "carrier-answer"}},
+		{"4421", "UK London transcode", []string{"carrier-pcmu"}},
+		{"4422", "UK London capacity", []string{"carrier-cap1", "carrier-answer"}},
 		{"33", "France (no carriers)", []string{}},
 	}
 	customers = []customerDef{
@@ -108,9 +118,13 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 			}
 		}
 		rgID := rg.ID
+		codecs := c.codecs
+		if codecs == nil {
+			codecs = []string{"PCMA", "PCMU"}
+		}
 		car, err := st.UpsertCarrier(ctx, &model.Carrier{
 			Name: c.name, Status: "active", RateGroupID: &rgID, GatewayHost: c.host, GatewayPort: c.port, Transport: "udp",
-			AllowedCodecs: []string{"PCMA", "PCMU"}, SIPOptionsPing: c.name == "carrier-down",
+			AllowedCodecs: codecs, MaxConcurrentCalls: c.maxCC, SIPOptionsPing: c.name == "carrier-down",
 			Notes: "Demo carrier backed by a sipp UAS container (OPTIONS ping off: sipp UAS does not answer OPTIONS)",
 		})
 		if err != nil {

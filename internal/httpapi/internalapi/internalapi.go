@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -17,6 +18,7 @@ import (
 	"github.com/opensbc/opensbc/internal/billing"
 	"github.com/opensbc/opensbc/internal/callcontrol"
 	"github.com/opensbc/opensbc/internal/logging"
+	"github.com/opensbc/opensbc/internal/metrics"
 	"github.com/opensbc/opensbc/internal/model"
 	"github.com/opensbc/opensbc/internal/store"
 )
@@ -38,11 +40,12 @@ func New(secret string, log *slog.Logger, pipe *callcontrol.Pipeline, bill *bill
 // Mount registers the routes under /internal/v1.
 func (h *Handler) Mount(r chi.Router) {
 	r.Route("/internal/v1", func(r chi.Router) {
-		r.Use(h.auth)
+		r.Use(h.auth, observe)
 		r.Post("/call/setup", h.setup)
 		r.Post("/call/authorize", h.authorize)
 		r.Post("/call/rate", h.rate)
 		r.Post("/call/route", h.route)
+		r.Post("/call/attempt/begin", h.attemptBegin)
 		r.Post("/call/attempt", h.attempt)
 		r.Post("/call/release", h.release)
 		r.Post("/cdr", h.cdr)
@@ -65,6 +68,26 @@ func (h *Handler) auth(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// observe records the latency of every internal API call (Section 7 metrics).
+func observe(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		ww := &statusWriter{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(ww, r)
+		metrics.InternalAPIDuration.WithLabelValues(r.URL.Path, fmt.Sprint(ww.status)).Observe(time.Since(start).Seconds())
+	})
+}
+
+type statusWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (s *statusWriter) WriteHeader(code int) {
+	s.status = code
+	s.ResponseWriter.WriteHeader(code)
 }
 
 func writeJSON(w http.ResponseWriter, code int, v any) {
@@ -155,6 +178,28 @@ func (h *Handler) route(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, res)
+}
+
+// attemptBegin takes a carrier capacity slot before Lua dials (Section 7).
+func (h *Handler) attemptBegin(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		CallUUID  string    `json:"call_uuid"`
+		Seq       int       `json:"seq"`
+		CarrierID uuid.UUID `json:"carrier_id"`
+	}
+	if err := decode(r, &req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+	ok, reason, err := h.pipe.BeginAttempt(r.Context(), req.CarrierID)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if !ok {
+		logging.FromContext(logging.WithCallUUID(r.Context(), h.log, req.CallUUID), h.log).Info("carrier skipped before dial", "seq", req.Seq, "carrier_id", req.CarrierID, "reason", reason)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"allowed": ok, "reason": reason})
 }
 
 func (h *Handler) attempt(w http.ResponseWriter, r *http.Request) {

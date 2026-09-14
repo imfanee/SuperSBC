@@ -58,8 +58,8 @@ curl -s localhost:8080/readyz | jq
 | M0 Foundation | done |
 | M1 Core call pipeline and billing | done |
 | M2 SBC hardening | done |
-| M3 Media, capacity and metrics | in progress |
-| M4 Admin API completeness | planned |
+| M3 Media, capacity and metrics | done |
+| M4 Admin API completeness | in progress |
 | M5 Web UI | planned |
 | M6 Operations | planned |
 

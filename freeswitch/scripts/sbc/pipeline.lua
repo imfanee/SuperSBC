@@ -121,6 +121,12 @@ function pipeline.run(session)
     -- The customer can never talk past their money (Section 3 Step 5).
     session:setVariable("execute_on_answer", "sched_hangup +" .. max_secs .. " ALLOTTED_TIMEOUT")
   end
+  -- Codec policy (Section 7): the customer leg only negotiates the customer's
+  -- allowed codecs; the carrier leg gets the intersection in the dial string.
+  -- FreeSWITCH transcodes when the two legs end up with different codecs.
+  if decision.customer_codecs and decision.customer_codecs ~= "" then
+    session:setVariable("absolute_codec_string", decision.customer_codecs)
+  end
   -- Relay a ringing indication once the carrier does; nothing before.
 
   local relay_code, relay_reason = 503, "All carriers failed"
@@ -130,6 +136,13 @@ function pipeline.run(session)
     if not session:ready() then
       log:info("customer gone before attempt", { seq = i })
       break
+    end
+    -- Carrier capacity check (Section 7): skip carriers at their channel or CPS limit.
+    local bst, begin = http.post_json(api, "/internal/v1/call/attempt/begin",
+      { call_uuid = uuid, seq = i, carrier_id = c.carrier_id }, uuid)
+    if bst == 200 and type(begin) == "table" and begin.allowed == false then
+      log:info("carrier skipped", { seq = i, carrier = c.name, reason = tostring(begin.reason) })
+      goto continue
     end
     local started = now_us(api)
     local before = channel_times(api, uuid)
@@ -210,6 +223,7 @@ function pipeline.run(session)
       relay_code, relay_reason = INTERNAL_ERROR.code, INTERNAL_ERROR.reason
       break
     end
+    ::continue::
   end
 
   if answered then

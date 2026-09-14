@@ -339,3 +339,21 @@ func waitFreeSWITCH() {
 	}
 	fmt.Fprintln(os.Stderr, "warning: freeswitch did not report ready")
 }
+
+// waitCDRField polls one CDR column until it equals want (asynchronous enrichment).
+func waitCDRField(t *testing.T, callUUID, field, want string) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	var got string
+	for time.Now().Before(deadline) {
+		rows := sql(t, fmt.Sprintf("SELECT %s AS v FROM cdrs WHERE call_uuid = '%s'", field, callUUID))
+		if len(rows) == 1 {
+			got = str(rows[0]["v"])
+			if got == want {
+				return
+			}
+		}
+		time.Sleep(300 * time.Millisecond)
+	}
+	t.Errorf("cdr.%s = %q want %q", field, got, want)
+}

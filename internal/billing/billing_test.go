@@ -24,7 +24,7 @@ func TestFromVariables(t *testing.T) {
 	if h.Billsec != 7 || h.Duration != 10 || h.AnswerTime == nil || h.ProgressTime == nil {
 		t.Fatalf("timing wrong: %+v", h)
 	}
-	if h.SIPCode != 200 || h.AnsweredCarrierID == nil || h.CodecIn != "PCMA" {
+	if h.SIPCode != 200 || h.AnsweredCarrierID == nil || h.CodecIn != "PCMA" || h.CodecOut != "" {
 		t.Fatalf("fields wrong: %+v", h)
 	}
 	if h.RTPStats["rtp_audio_in_mos"] != 4.5 {
