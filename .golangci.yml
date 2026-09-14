@@ -20,6 +20,12 @@ linters:
     misspell:
       locale: UK
       ignore-rules: [center, color, initialize, initialized, normalize, normalized, serialize, authorize, authorized, authorization, unauthorized, organization, canceled, favor]
+  exclusions:
+    paths:
+      - web/
 formatters:
   enable:
     - gofmt
+  exclusions:
+    paths:
+      - web/
