@@ -31,6 +31,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `POST` | `/auth/logout` | Log out (revokes the refresh session and clears cookies) |
 | `POST` | `/auth/password` | Change own password (revokes other sessions) |
 | `POST` | `/auth/refresh` | Rotate the refresh token and issue a new access token |
+| `POST` | `/auth/reset` | Set a new password with a one-time reset token (unauthenticated) |
 | `POST` | `/auth/totp/confirm` | Confirm a TOTP code and enable 2FA |
 | `POST` | `/auth/totp/disable` | Disable 2FA (requires a valid code) |
 | `POST` | `/auth/totp/setup` | Generate a TOTP secret (not enabled until confirmed) |
@@ -106,6 +107,16 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `PUT` | `/rate-groups/{id}/rates/{rateId}` | Update a rate row |
 | `PUT` | `/rate-groups/{id}` | Update a rate group |
 
+## Reports
+
+| Method | Path | Summary |
+|---|---|---|
+| `GET` | `/reports/peaks` | Peak concurrent calls and peak CPS per customer, carrier or system<br>Query: `from`, `to`, `group_by` |
+| `GET` | `/reports/quality` | Quality report per group and day: ASR, ACD, PDD, MOS, loss, jitter, short call ratio, false answer indicator<br>Query: `from`, `to`, `group_by` |
+| `GET` | `/reports/statement` | Balance statement of an account for a period (opening, movements, closing)<br>Query: `owner_type` (required), `owner_id` (required), `from`, `to`, `lines` |
+| `GET` | `/reports/summary` | Dashboard: today's KPIs, hourly profile, top destinations, rejections, live calls, low balance customers<br>Query: `from`, `to` |
+| `GET` | `/reports/traffic` | Traffic report: attempts, ASR, ACD, NER, minutes, revenue, cost, margin, PDD grouped by any dimension; ?format=csv exports<br>Query: `from`, `to`, `group_by`, `order_by`, `limit`, `customer_id`, `carrier_id`, `format` |
+
 ## Routing
 
 | Method | Path | Summary |
@@ -147,6 +158,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `DELETE` | `/users/{id}` | Delete a user |
 | `GET` | `/users` | List users |
 | `POST` | `/users/{id}/password` | Set a user's password (admin), revoking their sessions |
+| `POST` | `/users/{id}/reset-token` | Generate a one-time password reset link for a user (valid one hour) |
 | `POST` | `/users` | Create a user |
 | `PUT` | `/users/{id}` | Update role and status of a user |
 

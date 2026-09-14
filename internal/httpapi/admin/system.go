@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -27,6 +28,71 @@ func (h *Handler) mountUsers(r chi.Router) {
 	r.With(admins).Put("/users/{id}", h.updateUser)
 	r.With(admins).Delete("/users/{id}", h.deleteUser)
 	r.With(admins).Post("/users/{id}/password", h.resetUserPassword)
+	r.With(admins).Post("/users/{id}/reset-token", h.createResetToken)
+}
+
+// createResetToken godoc
+// @Summary Generate a one-time password reset link for a user (valid one hour)
+// @Tags users
+// @Produce json
+// @Param id path string true "user id"
+// @Success 201 {object} map[string]string
+// @Router /users/{id}/reset-token [post]
+func (h *Handler) createResetToken(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	if _, err := h.Store.UserByID(r.Context(), id); err != nil {
+		failErr(w, err)
+		return
+	}
+	token, err := auth.RandomToken(32)
+	if err != nil {
+		failErr(w, err)
+		return
+	}
+	if err := h.Store.CreatePasswordReset(r.Context(), id, auth.HashToken(token), time.Now().Add(time.Hour), principal(r.Context()).Email); err != nil {
+		failErr(w, err)
+		return
+	}
+	h.audit(r, "user.reset_token", "user", id.String(), nil, nil)
+	writeJSON(w, http.StatusCreated, map[string]string{"token": token, "path": "/reset-password?token=" + token, "expires_in": "1h"})
+}
+
+type resetInput struct {
+	Token    string `json:"token" validate:"required"`
+	Password string `json:"password" validate:"required,min=10"`
+}
+
+// resetPassword godoc
+// @Summary Set a new password with a one-time reset token (unauthenticated)
+// @Tags auth
+// @Accept json
+// @Param body body resetInput true "token and password"
+// @Success 204
+// @Router /auth/reset [post]
+func (h *Handler) resetPassword(w http.ResponseWriter, r *http.Request) {
+	var in resetInput
+	if !h.decode(w, r, &in) {
+		return
+	}
+	uid, err := h.Store.ConsumePasswordReset(r.Context(), auth.HashToken(in.Token))
+	if err != nil {
+		fail(w, http.StatusBadRequest, "reset token invalid or expired")
+		return
+	}
+	hash, err := auth.HashPassword(in.Password)
+	if err != nil {
+		failErr(w, err)
+		return
+	}
+	if err := h.Store.SetPassword(r.Context(), uid, hash); err != nil {
+		failErr(w, err)
+		return
+	}
+	h.Store.Audit(r.Context(), &uid, "", "password.reset", "user", uid.String(), nil, nil, remoteIP(r))
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // version godoc

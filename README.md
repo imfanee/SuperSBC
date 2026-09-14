@@ -34,6 +34,7 @@ curl -s localhost:8080/readyz | jq
 | `make test` | Go unit tests |
 | `make test-integration` | Go tests against a real Postgres and Redis |
 | `make e2e` | sipp mock customers and carriers place calls through FreeSWITCH and assert CDRs and balances |
+| `make e2e-ui` | Playwright drives the web UI: login, customer and IP, rate deck import, route, simulator, CDRs |
 | `make lint` | golangci-lint, luacheck, em-dash check |
 | `make reconcile` | proves that balances equal the ledger and reservations equal open calls |
 | `make logs` | follow all logs |
@@ -59,9 +60,9 @@ curl -s localhost:8080/readyz | jq
 | M1 Core call pipeline and billing | done |
 | M2 SBC hardening | done |
 | M3 Media, capacity and metrics | done |
-| M4 Admin API completeness | in progress |
-| M5 Web UI | planned |
-| M6 Operations | planned |
+| M4 Admin API completeness | done |
+| M5 Web UI | done |
+| M6 Operations | in progress |
 
 ## Licence
 

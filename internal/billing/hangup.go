@@ -73,7 +73,7 @@ func FromVariables(v map[string]string, source string) (HangupInfo, bool) {
 	} else if c := atoi(v["sip_term_status"]); c > 0 {
 		h.SIPCode = c
 	}
-	if h.AnswerTime != nil && h.SIPCode == 0 {
+	if h.AnswerTime != nil && (h.SIPCode == 0 || h.SIPCode == 200) {
 		h.SIPCode = 200
 		h.SIPReason = "OK"
 	}

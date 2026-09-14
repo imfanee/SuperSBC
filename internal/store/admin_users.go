@@ -254,3 +254,16 @@ func (s *Store) SetSetting(ctx context.Context, key string, value any, by string
 func (s *Store) Notifications(ctx context.Context, limit int) ([]model.Notification, error) {
 	return many[model.Notification](ctx, s.pool, `SELECT id, kind, owner_type::text AS owner_type, owner_id, payload, delivered_at, created_at FROM notifications ORDER BY id DESC LIMIT $1`, limit)
 }
+
+// CreatePasswordReset stores a hashed one-time reset token.
+func (s *Store) CreatePasswordReset(ctx context.Context, userID uuid.UUID, tokenHash string, expires time.Time, by string) error {
+	_, err := s.pool.Exec(ctx, `INSERT INTO password_resets (user_id, token_hash, expires_at, created_by) VALUES ($1, $2, $3, $4)`, userID, tokenHash, expires, by)
+	return wrapErr(err)
+}
+
+// ConsumePasswordReset marks a token used and returns its user id.
+func (s *Store) ConsumePasswordReset(ctx context.Context, tokenHash string) (uuid.UUID, error) {
+	var id uuid.UUID
+	err := s.pool.QueryRow(ctx, `UPDATE password_resets SET used_at = now() WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now() RETURNING user_id`, tokenHash).Scan(&id)
+	return id, wrapErr(err)
+}

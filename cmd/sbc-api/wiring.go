@@ -28,6 +28,7 @@ import (
 	"github.com/opensbc/opensbc/internal/httpapi/internalapi"
 	"github.com/opensbc/opensbc/internal/logging"
 	"github.com/opensbc/opensbc/internal/metrics"
+	"github.com/opensbc/opensbc/internal/reports"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
 )
@@ -73,6 +74,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer, gateways: gw}
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
 	a.admin = admin.New(admin.Deps{Cfg: cfg, Log: log, Store: st, Redis: rdb, Pipe: pipe, Bill: bill, Tables: tb, ESL: sup, Gateways: gw, Renderer: renderer, Version: version,
+		Reports: admin.NewReports(reports.New(pool), cfg.Billing.LowBalanceThreshold),
 		Ready: func(ctx context.Context) any {
 			return health.Deps{DB: pool, Redis: rdb, ESL: sup, Profiles: []string{"external-ingress", "external-egress"}, Version: version, Node: cfg.NodeName}.Check(ctx)
 		}})

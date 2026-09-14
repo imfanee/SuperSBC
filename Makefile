@@ -4,7 +4,7 @@ COMPOSE ?= docker compose
 GO ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e reconcile fmt web-build openapi clean rollback
+.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile fmt web-build openapi clean rollback
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -42,7 +42,7 @@ test-integration: ## Integration tests against compose Postgres and Redis
 	SBC_TEST_REDIS_URL=redis://127.0.0.1:$${SBC_REDIS_PORT:-16379}/1 \
 	$(GO) test -race -count=1 -tags integration ./internal/... -run 'Integration'
 
-lint: lint-go lint-lua lint-emdash ## All linters
+lint: lint-go lint-lua lint-web lint-emdash ## All linters
 
 lint-go: ## golangci-lint
 	golangci-lint run ./...
@@ -70,6 +70,10 @@ e2e: ## End-to-end SIP tests with sipp mock customers and carriers
 	SBC_VERSION=$(VERSION) $(COMPOSE) --profile e2e up -d --build
 	$(COMPOSE) exec api /app/sbc-api seed
 	$(GO) test -count=1 -tags e2e -v -timeout 20m ./tests/e2e/...
+
+e2e-ui: ## Playwright tests against the running web UI (needs make up and make seed)
+	cd web && npx playwright install chromium >/dev/null 2>&1 || true
+	cd web && npx playwright test
 
 rollback: ## Roll back the latest database migration
 	$(COMPOSE) exec api /app/sbc-api migrate-down

@@ -1,0 +1,110 @@
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+/* Telecom operations palette: neutral slate surfaces, one indigo accent,
+   semantic colours for call states (answered emerald, failed rose, busy amber,
+   in-progress sky). 4 px grid, Inter with system fallback, 14 px base. */
+:root {
+  --background: oklch(0.985 0.002 247.8);
+  --foreground: oklch(0.21 0.03 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.03 262);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.03 262);
+  --primary: oklch(0.51 0.23 277.6); /* indigo #4F46E5 */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.955 0.005 247.8);
+  --secondary-foreground: oklch(0.28 0.03 262);
+  --muted: oklch(0.955 0.005 247.8);
+  --muted-foreground: oklch(0.55 0.02 262);
+  --accent: oklch(0.955 0.005 247.8);
+  --accent-foreground: oklch(0.28 0.03 262);
+  --destructive: oklch(0.577 0.245 27.3);
+  --border: oklch(0.905 0.01 247.8);
+  --input: oklch(0.905 0.01 247.8);
+  --ring: oklch(0.51 0.23 277.6);
+  --sidebar: oklch(0.975 0.004 247.8);
+  --sidebar-foreground: oklch(0.28 0.03 262);
+  --sidebar-border: oklch(0.905 0.01 247.8);
+  --success: oklch(0.696 0.17 162.5);
+  --danger: oklch(0.645 0.246 16.4);
+  --warning: oklch(0.769 0.188 70.1);
+  --info: oklch(0.685 0.169 237.3);
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: oklch(0.17 0.02 262);
+  --foreground: oklch(0.93 0.01 247.8);
+  --card: oklch(0.21 0.02 262);
+  --card-foreground: oklch(0.93 0.01 247.8);
+  --popover: oklch(0.21 0.02 262);
+  --popover-foreground: oklch(0.93 0.01 247.8);
+  --primary: oklch(0.62 0.2 277.6);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.27 0.02 262);
+  --secondary-foreground: oklch(0.93 0.01 247.8);
+  --muted: oklch(0.27 0.02 262);
+  --muted-foreground: oklch(0.7 0.02 262);
+  --accent: oklch(0.29 0.02 262);
+  --accent-foreground: oklch(0.93 0.01 247.8);
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(0.3 0.02 262);
+  --input: oklch(0.32 0.02 262);
+  --ring: oklch(0.62 0.2 277.6);
+  --sidebar: oklch(0.19 0.02 262);
+  --sidebar-foreground: oklch(0.9 0.01 247.8);
+  --sidebar-border: oklch(0.28 0.02 262);
+  --success: oklch(0.72 0.17 162.5);
+  --danger: oklch(0.7 0.22 16.4);
+  --warning: oklch(0.8 0.17 70.1);
+  --info: oklch(0.72 0.15 237.3);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    font-size: 14px;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

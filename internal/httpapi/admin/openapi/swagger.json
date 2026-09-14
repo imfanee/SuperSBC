@@ -483,6 +483,22 @@
                 ],
                 "type": "object"
             },
+            "admin.resetInput": {
+                "properties": {
+                    "password": {
+                        "minLength": 10,
+                        "type": "string"
+                    },
+                    "token": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "password",
+                    "token"
+                ],
+                "type": "object"
+            },
             "admin.routeCarriersInput": {
                 "properties": {
                     "carriers": {
@@ -1098,6 +1114,289 @@
                 },
                 "type": "object"
             },
+            "reports.LowBalanceRow": {
+                "properties": {
+                    "available": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "customer_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "reports.PeakRow": {
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "peak_at": {
+                        "type": "string"
+                    },
+                    "peak_concurrent": {
+                        "type": "integer"
+                    },
+                    "peak_cps": {
+                        "type": "integer"
+                    },
+                    "peak_cps_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "reports.QualityRow": {
+                "properties": {
+                    "acd": {
+                        "type": "number"
+                    },
+                    "answered": {
+                        "type": "integer"
+                    },
+                    "asr": {
+                        "type": "number"
+                    },
+                    "attempts": {
+                        "type": "integer"
+                    },
+                    "billsec": {
+                        "type": "integer"
+                    },
+                    "cost": {
+                        "type": "string"
+                    },
+                    "failed": {
+                        "type": "integer"
+                    },
+                    "false_answer": {
+                        "type": "integer"
+                    },
+                    "jitter_avg": {
+                        "type": "number"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "loss_avg": {
+                        "type": "number"
+                    },
+                    "margin": {
+                        "type": "string"
+                    },
+                    "margin_pct": {
+                        "type": "number"
+                    },
+                    "minutes": {
+                        "type": "number"
+                    },
+                    "mos_avg": {
+                        "type": "number"
+                    },
+                    "ner": {
+                        "type": "number"
+                    },
+                    "pdd_avg_ms": {
+                        "type": "number"
+                    },
+                    "pdd_p95_ms": {
+                        "type": "number"
+                    },
+                    "rejected": {
+                        "type": "integer"
+                    },
+                    "revenue": {
+                        "type": "string"
+                    },
+                    "short_calls": {
+                        "type": "integer"
+                    },
+                    "short_ratio": {
+                        "type": "number"
+                    }
+                },
+                "type": "object"
+            },
+            "reports.Row": {
+                "properties": {
+                    "acd": {
+                        "type": "number"
+                    },
+                    "answered": {
+                        "type": "integer"
+                    },
+                    "asr": {
+                        "type": "number"
+                    },
+                    "attempts": {
+                        "type": "integer"
+                    },
+                    "billsec": {
+                        "type": "integer"
+                    },
+                    "cost": {
+                        "type": "string"
+                    },
+                    "failed": {
+                        "type": "integer"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "margin": {
+                        "type": "string"
+                    },
+                    "margin_pct": {
+                        "type": "number"
+                    },
+                    "minutes": {
+                        "type": "number"
+                    },
+                    "ner": {
+                        "type": "number"
+                    },
+                    "pdd_avg_ms": {
+                        "type": "number"
+                    },
+                    "pdd_p95_ms": {
+                        "type": "number"
+                    },
+                    "rejected": {
+                        "type": "integer"
+                    },
+                    "revenue": {
+                        "type": "string"
+                    },
+                    "short_calls": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "reports.Statement": {
+                "properties": {
+                    "account_id": {
+                        "type": "string"
+                    },
+                    "adjustments": {
+                        "type": "string"
+                    },
+                    "calls": {
+                        "type": "integer"
+                    },
+                    "charges": {
+                        "type": "string"
+                    },
+                    "closing_balance": {
+                        "type": "string"
+                    },
+                    "costs": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "lines": {
+                        "items": {
+                            "$ref": "#/components/schemas/reports.StatementLine"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "opening_balance": {
+                        "type": "string"
+                    },
+                    "refunds": {
+                        "type": "string"
+                    },
+                    "topups": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "reports.StatementLine": {
+                "properties": {
+                    "amount": {
+                        "type": "string"
+                    },
+                    "balance_after": {
+                        "type": "string"
+                    },
+                    "call_uuid": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "reports.Summary": {
+                "properties": {
+                    "cps_now": {
+                        "type": "integer"
+                    },
+                    "hourly": {
+                        "items": {
+                            "$ref": "#/components/schemas/reports.Row"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "live_calls": {
+                        "type": "integer"
+                    },
+                    "low_balance": {
+                        "items": {
+                            "$ref": "#/components/schemas/reports.LowBalanceRow"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "rejections": {
+                        "items": {
+                            "$ref": "#/components/schemas/reports.Row"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "top_destinations": {
+                        "items": {
+                            "$ref": "#/components/schemas/reports.Row"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "total": {
+                        "$ref": "#/components/schemas/reports.Row"
+                    }
+                },
+                "type": "object"
+            },
             "store.CDRRow": {
                 "properties": {
                     "answer_time": {
@@ -1632,6 +1931,32 @@
                     }
                 },
                 "summary": "Rotate the refresh token and issue a new access token",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/reset": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.resetInput",
+                                "summary": "body",
+                                "description": "token and password"
+                            }
+                        }
+                    },
+                    "description": "token and password",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Set a new password with a one-time reset token (unauthenticated)",
                 "tags": [
                     "auth"
                 ]
@@ -3585,6 +3910,295 @@
                 ]
             }
         },
+        "/reports/peaks": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "start",
+                        "in": "query",
+                        "name": "from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "end",
+                        "in": "query",
+                        "name": "to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "customer|carrier|system",
+                        "in": "query",
+                        "name": "group_by",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/reports.PeakRow"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Peak concurrent calls and peak CPS per customer, carrier or system",
+                "tags": [
+                    "reports"
+                ]
+            }
+        },
+        "/reports/quality": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "start",
+                        "in": "query",
+                        "name": "from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "end",
+                        "in": "query",
+                        "name": "to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "carrier|customer|destination|total",
+                        "in": "query",
+                        "name": "group_by",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/reports.QualityRow"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Quality report per group and day: ASR, ACD, PDD, MOS, loss, jitter, short call ratio, false answer indicator",
+                "tags": [
+                    "reports"
+                ]
+            }
+        },
+        "/reports/statement": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer|carrier",
+                        "in": "query",
+                        "name": "owner_type",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "owner id",
+                        "in": "query",
+                        "name": "owner_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "start",
+                        "in": "query",
+                        "name": "from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "end",
+                        "in": "query",
+                        "name": "to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "include ledger lines",
+                        "in": "query",
+                        "name": "lines",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/reports.Statement"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Balance statement of an account for a period (opening, movements, closing)",
+                "tags": [
+                    "reports"
+                ]
+            }
+        },
+        "/reports/summary": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "start (default today 00:00 UTC)",
+                        "in": "query",
+                        "name": "from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "end",
+                        "in": "query",
+                        "name": "to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/reports.Summary"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Dashboard: today's KPIs, hourly profile, top destinations, rejections, live calls, low balance customers",
+                "tags": [
+                    "reports"
+                ]
+            }
+        },
+        "/reports/traffic": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "start",
+                        "in": "query",
+                        "name": "from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "end",
+                        "in": "query",
+                        "name": "to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "total|customer|carrier|destination|prefix:N|hour|day|month|hour_of_day|sip_code|hangup_cause|disposition|src_ip|failover_depth",
+                        "in": "query",
+                        "name": "group_by",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "attempts|key|minutes|revenue|cost|margin|asr",
+                        "in": "query",
+                        "name": "order_by",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "max rows",
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "scope to a customer",
+                        "in": "query",
+                        "name": "customer_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "scope to a carrier",
+                        "in": "query",
+                        "name": "carrier_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "csv",
+                        "in": "query",
+                        "name": "format",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/reports.Row"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Traffic report: attempts, ASR, ACD, NER, minutes, revenue, cost, margin, PDD grouped by any dimension; ?format=csv exports",
+                "tags": [
+                    "reports"
+                ]
+            }
+        },
         "/route-groups": {
             "get": {
                 "responses": {
@@ -4371,6 +4985,40 @@
                     }
                 },
                 "summary": "Set a user's password (admin), revoking their sessions",
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/users/{id}/reset-token": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "user id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Generate a one-time password reset link for a user (valid one hour)",
                 "tags": [
                     "users"
                 ]

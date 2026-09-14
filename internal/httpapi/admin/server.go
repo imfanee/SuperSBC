@@ -46,12 +46,7 @@ type Deps struct {
 	Renderer *fsconfig.Renderer
 	Version  string
 	Ready    func(context.Context) any
-	Reports  Reporter
-}
-
-// Reporter serves the report endpoints (implemented in M6).
-type Reporter interface {
-	Mount(r chi.Router)
+	Reports  *ReportsHandler
 }
 
 // Handler is the admin API.
@@ -92,6 +87,7 @@ func (h *Handler) Mount(r chi.Router) {
 		r.Post("/auth/login", h.login)
 		r.Post("/auth/refresh", h.refresh)
 		r.Post("/auth/logout", h.logout)
+		r.Post("/auth/reset", h.resetPassword)
 		r.Get("/system/version", h.version)
 
 		r.Group(func(r chi.Router) {
@@ -113,6 +109,7 @@ func (h *Handler) Mount(r chi.Router) {
 			h.mountSystem(r)
 			h.mountUsers(r)
 			if h.Reports != nil {
+				h.Reports.h = h
 				h.Reports.Mount(r)
 			}
 		})
