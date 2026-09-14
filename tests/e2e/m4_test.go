@@ -101,17 +101,17 @@ func TestM4_RateDeckImportAndTest(t *testing.T) {
 		"4477,UK Mobile O2,0.0190,0,1,1\n" +
 		"abc,Bad prefix,0.01,0,60,60\n" +
 		"49,Germany,notanumber,0,60,60\n"
-	code, prev := a.upload("/rate-groups/"+rgID+"/rates/import?dry_run=true", "rates.csv", csv)
+	code, prev := a.upload("/rate-groups/"+rgID+"/rates/import?dry_run=true", csv)
 	a.mustOK(code, prev, "dry run")
 	if prev["valid"].(float64) != 3 || prev["invalid"].(float64) != 2 || prev["imported"].(float64) != 0 {
 		t.Fatalf("preview: %v", prev)
 	}
 	// a full import refuses invalid rows unless partial=true
-	code, res := a.upload("/rate-groups/"+rgID+"/rates/import", "rates.csv", csv)
+	code, res := a.upload("/rate-groups/"+rgID+"/rates/import", csv)
 	if code != 422 {
 		t.Fatalf("import with bad rows should be 422, got %d %v", code, res)
 	}
-	code, res = a.upload("/rate-groups/"+rgID+"/rates/import?partial=true", "rates.csv", csv)
+	code, res = a.upload("/rate-groups/"+rgID+"/rates/import?partial=true", csv)
 	a.mustOK(code, res, "partial import")
 	if res["imported"].(float64) != 3 {
 		t.Fatalf("imported: %v", res)
@@ -128,7 +128,7 @@ func TestM4_RateDeckImportAndTest(t *testing.T) {
 		t.Fatalf("export: %d %v", code, exp)
 	}
 	// replace mode wipes the old rows
-	code, res = a.upload("/rate-groups/"+rgID+"/rates/import?replace=true", "rates.csv", "prefix,rate\n1,0.005\n")
+	code, res = a.upload("/rate-groups/"+rgID+"/rates/import?replace=true", "prefix,rate\n1,0.005\n")
 	a.mustOK(code, res, "replace import")
 	code, lst := a.do("GET", "/rate-groups/"+rgID+"/rates", nil)
 	a.mustOK(code, lst, "list rates")

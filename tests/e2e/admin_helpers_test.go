@@ -88,11 +88,11 @@ func (a *apiClient) do(method, path string, body any) (int, map[string]any) {
 	return resp.StatusCode, out
 }
 
-func (a *apiClient) upload(path, filename, content string) (int, map[string]any) {
+func (a *apiClient) upload(path, content string) (int, map[string]any) {
 	a.t.Helper()
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
-	fw, _ := mw.CreateFormFile("file", filename)
+	fw, _ := mw.CreateFormFile("file", "rates.csv")
 	_, _ = fw.Write([]byte(content))
 	_ = mw.Close()
 	req, _ := http.NewRequestWithContext(context.Background(), "POST", adminBase+path, &buf)
