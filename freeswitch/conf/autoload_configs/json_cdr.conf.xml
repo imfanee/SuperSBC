@@ -1,0 +1,17 @@
+<configuration name="json_cdr.conf" description="JSON CDR CURL logger">
+  <settings>
+    <!-- Billing trigger 2 of 2 (the ESL consumer is 1 of 2). First to arrive wins. -->
+    <param name="url" value="$${sbc_api_base}/internal/v1/cdr"/>
+    <param name="cred" value="sbc:$${sbc_internal_secret}"/>
+    <param name="auth-scheme" value="basic"/>
+    <param name="log-b-leg" value="false"/>
+    <param name="prefix-a-leg" value="false"/>
+    <param name="encode-values" value="false"/>
+    <param name="retries" value="3"/>
+    <param name="delay" value="5"/>
+    <param name="log-dir" value="/var/log/freeswitch/json_cdr"/>
+    <param name="err-log-dir" value="/var/log/freeswitch/json_cdr_failed"/>
+    <param name="disable-100-continue" value="true"/>
+    <param name="timeout" value="10"/>
+  </settings>
+</configuration>

@@ -1,0 +1,25 @@
+version: "2"
+run:
+  timeout: 5m
+  build-tags: [integration, e2e]
+linters:
+  default: standard
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - misspell
+    - gocritic
+    - bodyclose
+    - noctx
+    - unconvert
+    - unparam
+  settings:
+    misspell:
+      locale: UK
+      ignore-rules: [center, color, initialize, initialized, normalize, normalized, serialize, authorize, authorized, authorization, organization, canceled, favor]
+formatters:
+  enable:
+    - gofmt

@@ -1,0 +1,118 @@
+name: opensbc
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "50m", max-file: "5" }
+
+networks:
+  sbc:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+volumes:
+  pgdata:
+  fsconfig:
+  fslogs:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: opensbc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opensbc}
+      POSTGRES_DB: opensbc
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opensbc -d opensbc"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      sbc:
+        ipv4_address: 172.28.0.30
+    logging: *logging
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      sbc:
+        ipv4_address: 172.28.0.40
+    logging: *logging
+
+  api:
+    build:
+      context: .
+      args:
+        VERSION: ${SBC_VERSION:-dev}
+    image: opensbc/sbc-api:${SBC_VERSION:-dev}
+    env_file: .env
+    environment:
+      SBC_FS_CONFIG_DIR: /fsconfig
+    volumes:
+      - fsconfig:/fsconfig
+    ports:
+      - "${SBC_ADMIN_PORT:-8080}:8080"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      sbc:
+        ipv4_address: 172.28.0.20
+    logging: *logging
+
+  freeswitch:
+    image: safarov/freeswitch:1.10.12
+    env_file: .env
+    volumes:
+      - ./freeswitch/conf:/etc/freeswitch:ro
+      - ./freeswitch/scripts:/usr/share/freeswitch/scripts:ro
+      - type: volume
+        source: fsconfig
+        target: /etc/freeswitch/sip_profiles/external-egress
+        volume: { subpath: gateways }
+      - type: volume
+        source: fsconfig
+        target: /etc/freeswitch/acl.d
+        volume: { subpath: acl }
+      - fslogs:/var/log/freeswitch
+    # RTP and SIP are reachable inside the compose network without publishing.
+    # For real customers use deploy/docker-compose.host.yml (network_mode: host).
+    healthcheck:
+      test: ["CMD-SHELL", "fs_cli -H 127.0.0.1 -p \"$$SBC_ESL_PASSWORD\" -x 'sofia status' | grep -q 'external-ingress.*RUNNING'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    depends_on:
+      api: { condition: service_healthy }
+    networks:
+      sbc:
+        ipv4_address: 172.28.0.10
+    logging: *logging
+
+  web:
+    build:
+      context: ./web
+    image: opensbc/web:${SBC_VERSION:-dev}
+    ports:
+      - "${SBC_WEB_PORT:-3000}:80"
+    depends_on:
+      - api
+    networks:
+      sbc:
+        ipv4_address: 172.28.0.50
+    logging: *logging

@@ -1,0 +1,6 @@
+<configuration name="lua.conf" description="LUA configuration">
+  <settings>
+    <param name="script-directory" value="/usr/share/freeswitch/scripts/?.lua"/>
+    <param name="module-directory" value="/usr/lib/freeswitch/mod/?.so"/>
+  </settings>
+</configuration>

@@ -1,0 +1,65 @@
+<!--
+  external-ingress: the customer-facing profile. Customers are identified by
+  source IP (no registration, no digest auth). Every INVITE runs the Lua
+  pipeline in the "public" dialplan context.
+-->
+<profile name="external-ingress">
+  <aliases/>
+  <gateways/>
+  <domains>
+    <domain name="all" alias="false" parse="false"/>
+  </domains>
+  <settings>
+    <param name="debug" value="0"/>
+    <param name="sip-trace" value="no"/>
+    <param name="sip-capture" value="no"/>
+    <param name="user-agent-string" value="$${sbc_user_agent}"/>
+    <param name="context" value="public"/>
+    <param name="dialplan" value="XML"/>
+    <param name="sip-port" value="$${sbc_ingress_port}"/>
+    <param name="sip-ip" value="$${sbc_sip_ip}"/>
+    <param name="rtp-ip" value="$${sbc_rtp_ip}"/>
+    <param name="ext-sip-ip" value="$${sbc_sip_ip}"/>
+    <param name="ext-rtp-ip" value="$${sbc_rtp_ip}"/>
+    <param name="rfc2833-pt" value="101"/>
+    <param name="dtmf-duration" value="2000"/>
+    <param name="dtmf-type" value="rfc2833"/>
+    <param name="inbound-codec-prefs" value="$${sbc_ingress_codecs}"/>
+    <param name="outbound-codec-prefs" value="$${sbc_ingress_codecs}"/>
+    <param name="inbound-codec-negotiation" value="generous"/>
+    <param name="disable-transcoding" value="false"/>
+    <param name="hold-music" value="silence"/>
+    <!-- Trunk mode: no registrations, no digest auth, admission by ACL then dialplan. -->
+    <param name="auth-calls" value="false"/>
+    <param name="auth-all-packets" value="false"/>
+    <param name="apply-inbound-acl" value="customers"/>
+    <param name="disable-register" value="true"/>
+    <param name="accept-blind-reg" value="false"/>
+    <param name="accept-blind-auth" value="false"/>
+    <param name="inbound-reg-force-matching-username" value="false"/>
+    <!-- Session timers (RFC 4028), D-33 -->
+    <param name="enable-timer" value="true"/>
+    <param name="session-timeout" value="1800"/>
+    <param name="minimum-session-expires" value="120"/>
+    <!-- RTP timeouts, D-34 -->
+    <param name="rtp-timeout-sec" value="300"/>
+    <param name="rtp-hold-timeout-sec" value="1800"/>
+    <param name="rtp-timer-name" value="soft"/>
+    <param name="rtp-autoflush-during-bridge" value="true"/>
+    <param name="rtp-rewrite-timestamps" value="true"/>
+    <param name="inbound-late-negotiation" value="true"/>
+    <param name="inbound-zrtp-passthru" value="false"/>
+    <param name="nonce-ttl" value="60"/>
+    <param name="manage-shared-appearance" value="false"/>
+    <param name="enable-100rel" value="false"/>
+    <param name="NDLB-force-rport" value="true"/>
+    <param name="NDLB-received-in-nat-reg-contact" value="false"/>
+    <param name="aggressive-nat-detection" value="false"/>
+    <param name="challenge-realm" value="auto_from"/>
+    <param name="record-path" value="/tmp"/>
+    <param name="local-network-acl" value="localnet.auto"/>
+    <param name="max-proceeding" value="1000"/>
+    <param name="sip-options-respond-503-on-busy" value="true"/>
+    <param name="log-auth-failures" value="true"/>
+  </settings>
+</profile>

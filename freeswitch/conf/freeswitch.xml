@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+  OpenSBC FreeSWITCH configuration root. Pruned vanilla: only what a
+  wholesale SBC needs. Secrets and addresses come from the environment via
+  exec-set in vars.xml so the tree contains no credentials.
+-->
+<document type="freeswitch/xml">
+  <X-PRE-PROCESS cmd="include" data="vars.xml"/>
+
+  <section name="configuration" description="Various Configuration">
+    <X-PRE-PROCESS cmd="include" data="autoload_configs/*.xml"/>
+  </section>
+
+  <section name="dialplan" description="Regex/XML Dialplan">
+    <X-PRE-PROCESS cmd="include" data="dialplan/*.xml"/>
+  </section>
+
+  <section name="directory" description="User Directory">
+    <X-PRE-PROCESS cmd="include" data="directory/*.xml"/>
+  </section>
+</document>

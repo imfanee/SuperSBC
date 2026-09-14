@@ -1,0 +1,14 @@
+<configuration name="switch.conf" description="Core Configuration">
+  <settings>
+    <param name="colorize-console" value="false"/>
+    <param name="max-sessions" value="$${sbc_max_sessions}"/>
+    <param name="sessions-per-second" value="$${sbc_sessions_per_second}"/>
+    <param name="loglevel" value="$${sbc_log_level}"/>
+    <param name="rtp-start-port" value="$${sbc_rtp_start}"/>
+    <param name="rtp-end-port" value="$${sbc_rtp_end}"/>
+    <param name="dump-cores" value="no"/>
+    <param name="rtp-enable-zrtp" value="false"/>
+    <param name="core-db-name" value="/dev/shm/core.db"/>
+    <param name="switchname" value="opensbc"/>
+  </settings>
+</configuration>

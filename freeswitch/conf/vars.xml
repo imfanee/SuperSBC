@@ -1,0 +1,21 @@
+<include>
+  <!-- Values injected from the container environment (see .env.example). -->
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_esl_password=echo ${SBC_ESL_PASSWORD:-ClueCon}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_internal_secret=echo ${SBC_INTERNAL_SECRET:-change-me}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_api_base=echo ${SBC_API_INTERNAL_URL:-http://api:8081}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_node_ip=echo ${SBC_FS_NODE_IP:-auto}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_ingress_port=echo ${SBC_FS_INGRESS_PORT:-5060}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_egress_port=echo ${SBC_FS_EGRESS_PORT:-5080}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_rtp_start=echo ${SBC_FS_RTP_START:-16384}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_rtp_end=echo ${SBC_FS_RTP_END:-16484}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_max_sessions=echo ${SBC_FS_MAX_SESSIONS:-1000}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_sessions_per_second=echo ${SBC_FS_SESSIONS_PER_SECOND:-100}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_ingress_codecs=echo ${SBC_FS_INGRESS_CODECS:-PCMA,PCMU,OPUS,G722}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_egress_codecs=echo ${SBC_FS_EGRESS_CODECS:-PCMA,PCMU,OPUS,G722}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_user_agent=echo ${SBC_FS_USER_AGENT:-OpenSBC}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_log_level=echo ${SBC_FS_LOG_LEVEL:-info}"/>
+
+  <!-- When sbc_node_ip is "auto" FreeSWITCH picks the primary interface. -->
+  <X-PRE-PROCESS cmd="set" data="sbc_sip_ip=$${sbc_node_ip}"/>
+  <X-PRE-PROCESS cmd="set" data="sbc_rtp_ip=$${sbc_node_ip}"/>
+</include>

@@ -1,0 +1,58 @@
+<!--
+  external-egress: the carrier-facing profile. One gateway per carrier,
+  rendered by sbc-api into external-egress/*.xml (D-04), reloaded with
+  "sofia profile external-egress rescan".
+-->
+<profile name="external-egress">
+  <aliases/>
+  <gateways>
+    <X-PRE-PROCESS cmd="include" data="external-egress/*.xml"/>
+  </gateways>
+  <domains>
+    <domain name="all" alias="false" parse="false"/>
+  </domains>
+  <settings>
+    <param name="debug" value="0"/>
+    <param name="sip-trace" value="no"/>
+    <param name="sip-capture" value="no"/>
+    <param name="user-agent-string" value="$${sbc_user_agent}"/>
+    <param name="context" value="egress-inbound"/>
+    <param name="dialplan" value="XML"/>
+    <param name="sip-port" value="$${sbc_egress_port}"/>
+    <param name="sip-ip" value="$${sbc_sip_ip}"/>
+    <param name="rtp-ip" value="$${sbc_rtp_ip}"/>
+    <param name="ext-sip-ip" value="$${sbc_sip_ip}"/>
+    <param name="ext-rtp-ip" value="$${sbc_rtp_ip}"/>
+    <param name="rfc2833-pt" value="101"/>
+    <param name="dtmf-duration" value="2000"/>
+    <param name="dtmf-type" value="rfc2833"/>
+    <param name="inbound-codec-prefs" value="$${sbc_egress_codecs}"/>
+    <param name="outbound-codec-prefs" value="$${sbc_egress_codecs}"/>
+    <param name="inbound-codec-negotiation" value="generous"/>
+    <param name="disable-transcoding" value="false"/>
+    <param name="hold-music" value="silence"/>
+    <param name="auth-calls" value="false"/>
+    <param name="apply-inbound-acl" value="carriers"/>
+    <param name="disable-register" value="true"/>
+    <param name="accept-blind-reg" value="false"/>
+    <param name="caller-id-in-from" value="true"/>
+    <param name="extension-in-contact" value="true"/>
+    <param name="enable-timer" value="true"/>
+    <param name="session-timeout" value="1800"/>
+    <param name="minimum-session-expires" value="120"/>
+    <param name="rtp-timeout-sec" value="300"/>
+    <param name="rtp-hold-timeout-sec" value="1800"/>
+    <param name="rtp-timer-name" value="soft"/>
+    <param name="rtp-autoflush-during-bridge" value="true"/>
+    <param name="rtp-rewrite-timestamps" value="true"/>
+    <param name="inbound-late-negotiation" value="true"/>
+    <param name="nonce-ttl" value="60"/>
+    <param name="enable-100rel" value="false"/>
+    <param name="NDLB-force-rport" value="true"/>
+    <param name="aggressive-nat-detection" value="false"/>
+    <param name="challenge-realm" value="auto_from"/>
+    <param name="local-network-acl" value="localnet.auto"/>
+    <param name="max-proceeding" value="1000"/>
+    <param name="sip-options-respond-503-on-busy" value="true"/>
+  </settings>
+</profile>

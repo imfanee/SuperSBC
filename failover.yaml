@@ -1,0 +1,38 @@
+# Failure classification (Section 6). Decides whether the next carrier is tried.
+# A carrier's failover_sip_codes column overrides carrier_fault.sip_codes for that carrier.
+number_fault:
+  sip_codes: [404, 410, 484, 486, 600, 603, 604]
+  causes:
+    - USER_BUSY
+    - NO_ANSWER
+    - CALL_REJECTED
+    - UNALLOCATED_NUMBER
+    - NORMAL_CLEARING
+    - NO_USER_RESPONSE
+    - ORIGINATOR_CANCEL
+carrier_fault:
+  sip_codes: [401, 402, 403, 407, 408, 480, 488, 500, 501, 502, 503, 504, 505, 513, 580]
+  causes:
+    - RECOVERY_ON_TIMER_EXPIRE
+    - NETWORK_OUT_OF_ORDER
+    - NORMAL_TEMPORARY_FAILURE
+    - NORMAL_CIRCUIT_CONGESTION
+    - GATEWAY_DOWN
+    - PROGRESS_TIMEOUT
+    - SERVICE_UNAVAILABLE
+    - INCOMPATIBLE_DESTINATION
+    - BEARERCAPABILITY_NOTAUTH
+    - MANDATORY_IE_MISSING
+    - SWITCH_CONGESTION
+    - REQUESTED_CHAN_UNAVAIL
+    - EXCHANGE_ROUTING_ERROR
+    - DESTINATION_OUT_OF_ORDER
+    - NO_ROUTE_DESTINATION
+    - INVALID_GATEWAY
+    - ALLOTTED_TIMEOUT
+# NO_ANSWER with a real ring shorter than this many seconds is treated as a
+# carrier fault (the carrier timed out early), see failover.min_ring_seconds_for_no_answer.
+min_ring_seconds_for_no_answer: 10
+# Any 5xx not listed is a carrier fault; any other 4xx/6xx not listed is a number fault.
+default_5xx: carrier_fault
+default_other: number_fault

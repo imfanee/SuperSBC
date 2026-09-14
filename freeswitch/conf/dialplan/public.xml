@@ -1,0 +1,21 @@
+<include>
+  <!-- Every customer INVITE runs the Lua pipeline. No other extension exists. -->
+  <context name="public">
+    <extension name="sbc_inbound">
+      <condition field="destination_number" expression="^(.*)$">
+        <action application="lua" data="sbc_inbound.lua"/>
+        <action application="hangup" data="NORMAL_TEMPORARY_FAILURE"/>
+      </condition>
+    </extension>
+  </context>
+
+  <!-- Calls arriving from carriers on the egress profile are rejected: this
+       SBC is outbound only. Answering them would bypass billing. -->
+  <context name="egress-inbound">
+    <extension name="reject_inbound_from_carrier">
+      <condition field="destination_number" expression="^(.*)$">
+        <action application="respond" data="403 Inbound not permitted"/>
+      </condition>
+    </extension>
+  </context>
+</include>
