@@ -199,6 +199,7 @@ export interface Attempt {
   pdd_ms: number | null;
   classification: string;
   buy_rate_per_min?: string;
+  cost?: string;
 }
 
 export interface CDR {

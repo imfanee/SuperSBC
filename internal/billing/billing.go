@@ -203,6 +203,12 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 				cdr.TransportOut = &tr
 			}
 		}
+		// Failed attempt charging (D-62): carriers that bill a connect fee for
+		// every attempt, answered or not.
+		attemptFees := e.failedAttemptFees(ctx, tx, cdr)
+		for _, f := range attemptFees {
+			cdr.Cost = cdr.Cost.Add(f.amount)
+		}
 		out.Billsec = cdr.Billsec
 		out.BilledSeconds = cdr.SellBilledSeconds
 		out.Price = price
@@ -237,6 +243,19 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 					return err
 				}
 			} else if !errors.Is(err, store.ErrNotFound) {
+				return err
+			}
+		}
+		for _, f := range attemptFees {
+			cacc, err := store.AccountByOwnerQ(ctx, tx, "carrier", f.carrierID)
+			if errors.Is(err, store.ErrNotFound) {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			desc := fmt.Sprintf("connect fee of failed attempt %d to %s (%d, %s)", f.seq, cdr.CalledNumber, f.sipCode, f.reason)
+			if _, err := store.Post(ctx, tx, cacc.ID, &h.CallUUID, model.LedgerCost, f.amount.Neg(), desc, nil); err != nil {
 				return err
 			}
 		}
@@ -388,6 +407,48 @@ func (e *Engine) buyFX(ctx context.Context, tx pgx.Tx, buy *model.Rate, carrierI
 		return one, acc.Currency
 	}
 	return fx, acc.Currency
+}
+
+type attemptFee struct {
+	seq       int
+	carrierID uuid.UUID
+	sipCode   int
+	reason    string
+	amount    decimal.Decimal
+}
+
+// failedAttemptFees returns, for every attempt that did not answer and whose
+// carrier has charge_failed_attempts, the connect fee of the buy rate the
+// attempt was routed with (in the carrier account currency). The fee is
+// recorded on the attempt so the CDR shows where the cost came from.
+func (e *Engine) failedAttemptFees(ctx context.Context, tx pgx.Tx, cdr *model.CDR) []attemptFee {
+	var fees []attemptFee
+	charge := map[uuid.UUID]bool{}
+	for i := range cdr.Attempts {
+		at := &cdr.Attempts[i]
+		if at.Classification == "answered" || at.BuyRateID == nil {
+			continue
+		}
+		on, seen := charge[at.CarrierID]
+		if !seen {
+			c, err := store.CarrierByIDQ(ctx, tx, at.CarrierID)
+			on = err == nil && c.ChargeFailedAttempts
+			charge[at.CarrierID] = on
+		}
+		if !on {
+			continue
+		}
+		buy, err := store.RateByIDQ(ctx, tx, *at.BuyRateID)
+		if err != nil || !buy.ConnectFee.IsPositive() {
+			continue
+		}
+		fx, _ := e.buyFX(ctx, tx, buy, at.CarrierID)
+		amt := buy.ConnectFee.Mul(fx).Round(rating.Scale)
+		s := amt.StringFixed(6)
+		at.Cost = &s
+		fees = append(fees, attemptFee{seq: at.Seq, carrierID: at.CarrierID, sipCode: at.SIPCode, reason: at.HangupCause, amount: amt})
+	}
+	return fees
 }
 
 func buyRateFor(attempts []model.AttemptRecord, carrierID uuid.UUID) *uuid.UUID {

@@ -3,9 +3,12 @@
 package e2e
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 // Time-of-day routing window (D-61): a carrier outside its window is
@@ -76,4 +79,44 @@ func TestRoadmap_RoutingWindow(t *testing.T) {
 	if cs := sim["carriers"].([]any); len(cs) != 2 || cs[0].(map[string]any)["name"] != "carrier-503" {
 		t.Fatalf("carriers with open window: %v", sim["carriers"])
 	}
+}
+
+// Failed attempt charging (D-62): a carrier with charge_failed_attempts
+// costs its connect fee for every unanswered attempt.
+func TestRoadmap_FailedAttemptCharging(t *testing.T) {
+	a := newAPIClient(t)
+	a.ok(a.login("admin@example.com", adminPassword(t)))
+	c503 := findByName(t, a, "/carriers", "carrier-503")
+	code, c := a.do("GET", "/carriers/"+c503, nil)
+	a.mustOK(code, c, "carrier")
+	body := c["carrier"].(map[string]any)
+	body["charge_failed_attempts"] = true
+	code, _ = a.do("PUT", "/carriers/"+c503, body)
+	a.mustOK(code, nil, "enable charging")
+	defer func() {
+		body["charge_failed_attempts"] = false
+		a.do("PUT", "/carriers/"+c503, body)
+	}()
+	rows := sql(t, `SELECT a.balance::text AS balance FROM accounts a JOIN carriers c ON c.id = a.owner_id AND a.owner_type = 'carrier' WHERE c.name = 'carrier-503'`)
+	before := dec(t, rows[0]["balance"])
+	since := time.Now()
+	sc := scenario(t, "uac_call.xml.tmpl", map[string]string{"__TALK__": "1000"})
+	res := placeCall(t, "customer-acme", sc, "447700900123", 1)
+	expectFinal(t, res, "200 OK")
+	cdr := lastCDR(t, "172.28.0.101", "447700900123", since)
+	expectField(t, cdr, "failover_depth", "1")
+	expectMoney(t, cdr, "cost", "0.017000") // 0.015 answered on carrier-answer plus 0.002 connect fee of the failed attempt
+	at := attempts(t, cdr)
+	if len(at) != 2 || str(at[0]["cost"]) != "0.002000" || at[1]["cost"] != nil {
+		t.Fatalf("attempt costs: %v", cdr["attempts"])
+	}
+	rows = sql(t, `SELECT a.balance::text AS balance FROM accounts a JOIN carriers c ON c.id = a.owner_id AND a.owner_type = 'carrier' WHERE c.name = 'carrier-503'`)
+	if after := dec(t, rows[0]["balance"]); !after.Equal(before.Sub(decimal.RequireFromString("0.002"))) {
+		t.Errorf("carrier-503 balance: before %s after %s", before, after)
+	}
+	rows = sql(t, fmt.Sprintf(`SELECT description FROM ledger_entries WHERE call_uuid = '%s' AND type = 'cost' ORDER BY created_at`, str(cdr["call_uuid"])))
+	if len(rows) != 2 || !strings.Contains(str(rows[0]["description"])+str(rows[1]["description"]), "connect fee of failed attempt 1") {
+		t.Errorf("ledger: %v", rows)
+	}
+	reconcileOK(t)
 }

@@ -4,7 +4,6 @@ Features from the specification that are documented rather than built, with the 
 
 | Feature | Mechanism | Notes |
 |---------|-----------|-------|
-| Carrier failed attempt charging | `carriers.charge_failed_attempts` exists; billing would rate each attempt with `classification != answered` at the carrier's connect fee | Needs a `cost` ledger entry per attempt |
 | Invoices and statements as PDF | `reports.Statement` is the data; render with a Go PDF library on a monthly cron | CSV export exists today |
 | STIR/SHAKEN | A `passthrough` header rule for `Identity` already forwards the customer's signature; verification and signing need an STI-VS/AS integration | Not started |
 | High availability | Two SBC hosts behind a VIP (keepalived, VRRP); Postgres primary and streaming replica with automatic failover (Patroni or a managed service); Redis Sentinel; the Go API is stateless and can run on both hosts. FreeSWITCH call state is not replicated: in-flight calls drop on failover, reservations are released by the reconciliation worker on the surviving node within `orphan_timeout` | Documented honestly: FreeSWITCH has no shared call state without commercial extensions |

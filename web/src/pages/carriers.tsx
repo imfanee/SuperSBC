@@ -52,6 +52,7 @@ const schema = z.object({
   failover_sip_codes: z.string().regex(/^[\d,\s]*$/, "comma separated codes"),
   sip_options_ping: z.boolean(),
   ignore_early_media: z.boolean(),
+  charge_failed_attempts: z.boolean(),
   notes: z.string(),
   currency: z.string(),
   media_mode: z.enum(["anchor", "proxy", "bypass"]),
@@ -82,6 +83,7 @@ function toForm(c?: Carrier | null): FormT {
     failover_sip_codes: (c?.failover_sip_codes ?? []).join(","),
     sip_options_ping: c?.sip_options_ping ?? true,
     ignore_early_media: c?.ignore_early_media ?? false,
+    charge_failed_attempts: c?.charge_failed_attempts ?? false,
     notes: c?.notes ?? "",
     currency: "",
     media_mode: c?.media_mode ?? "anchor",
@@ -283,6 +285,16 @@ export function CarrierForm({
         />
         <label htmlFor="iem" className="text-sm">
           Ignore early media
+        </label>
+      </div>
+      <div className="flex items-center gap-2">
+        <Switch
+          checked={watch("charge_failed_attempts")}
+          onCheckedChange={(v) => setValue("charge_failed_attempts", v)}
+          id="cfa"
+        />
+        <label htmlFor="cfa" className="text-sm">
+          Charge failed attempts (the buy rate's connect fee per unanswered attempt)
         </label>
       </div>
       <Field label="Notes" className="sm:col-span-2">

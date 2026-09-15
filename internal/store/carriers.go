@@ -18,6 +18,12 @@ func (s *Store) CarrierByID(ctx context.Context, id uuid.UUID) (*model.Carrier, 
 	return one[model.Carrier](ctx, s.pool, `SELECT `+carrierCols+` FROM carriers WHERE id = $1 AND deleted_at IS NULL`, id)
 }
 
+// CarrierByIDQ is CarrierByID inside a transaction (billing must not take a
+// second pool connection while holding one, see PERFORMANCE.md).
+func CarrierByIDQ(ctx context.Context, q Querier, id uuid.UUID) (*model.Carrier, error) {
+	return one[model.Carrier](ctx, q, `SELECT `+carrierCols+` FROM carriers WHERE id = $1 AND deleted_at IS NULL`, id)
+}
+
 // CarrierByName loads one carrier by name.
 func (s *Store) CarrierByName(ctx context.Context, name string) (*model.Carrier, error) {
 	return one[model.Carrier](ctx, s.pool, `SELECT `+carrierCols+` FROM carriers WHERE name = $1 AND deleted_at IS NULL`, name)

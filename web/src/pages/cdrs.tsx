@@ -422,6 +422,7 @@ export function CDRDetail({ cdr: c }: { cdr: CDR }) {
                 {dt(a.started_at)} {a.sip_code ? `${a.sip_code} ${a.reason}` : ""} {a.hangup_cause}
                 {a.pdd_ms !== null ? `, PDD ${a.pdd_ms} ms` : ""}
                 {a.buy_rate_per_min ? `, buy ${money(a.buy_rate_per_min, 6)}/min` : ""}
+                {a.cost ? `, attempt fee ${money(a.cost, 6)}` : ""}
               </div>
             </li>
           ))}

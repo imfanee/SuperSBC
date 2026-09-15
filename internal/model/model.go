@@ -188,6 +188,9 @@ type AttemptRecord struct {
 	Classification string     `json:"classification" db:"classification"`
 	BuyRateID      *uuid.UUID `json:"buy_rate_id,omitempty" db:"buy_rate_id"`
 	BuyRatePerMin  *string    `json:"buy_rate_per_min,omitempty" db:"buy_rate_per_min"`
+	// Cost is the connect fee charged for a failed attempt when the carrier
+	// has charge_failed_attempts (D-62); unset otherwise.
+	Cost *string `json:"cost,omitempty" db:"cost"`
 }
 
 // CDR is one call detail record; every attempted call has exactly one.
