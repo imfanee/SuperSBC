@@ -53,3 +53,11 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 * Both environments share 4 vCPUs and 3.8 GiB: keep dev idle during pilot hours; do not run `tests/load/run.sh` while pilot traffic flows. Live is capped at 20 CPS / 200 channels (`.env.live`).
 * Self-signed certificate: browsers warn until you install a real certificate for a hostname.
 * No SIP TLS/SRTP yet (see ROADMAP).
+
+## Added after the pilot roll-out
+
+* `make live-firewall` now also installs the SIP rate limits and the `banned` set; `make live-ban-timer` keeps the set in sync with the SBC ban list (D-66).
+* SIP TLS listens on 5061 (customers) and 5081 (carriers, allow-listed); client certificate verification is off (`SBC_FS_TLS_VERIFY_POLICY=none`) until you have customer certificates (D-67).
+* HEP capture is off (`SBC_FS_HEP_SERVER` empty); point it at a HOMER when you want full SIP capture (D-65).
+* Invoices, STIR/SHAKEN verification and routing windows are configured per customer, carrier and route in the UI; nothing to enable on the box.
+* A second box can be added following docs/HA.md.

@@ -61,6 +61,15 @@ SBC_BAN_THRESHOLD=20
 SBC_BAN_WINDOW=5m
 SBC_BAN_DURATION=1h
 SBC_BAN_EXPORT_FILE=/state/banned_ips.txt
+# Invoices (D-63): issuer printed on the PDF
+SBC_INVOICE_OPERATOR_NAME=OpenSBC
+SBC_INVOICE_OPERATOR_ADDRESS=
+SBC_INVOICE_FOOTER=
+# STIR/SHAKEN verification (D-64)
+SBC_STIR_MAX_AGE=60s
+SBC_STIR_CA_FILE=
+SBC_STIR_ALLOW_HTTP=false
+SBC_STIR_FORWARD=true
 
 # FreeSWITCH on the host network
 SBC_FS_NODE_IP=$NODE_IP
@@ -104,7 +113,9 @@ ENV
   echo "wrote .env.live"
   echo "==> bootstrap admin: admin@example.com / $ADMIN_PW   (shown once; change it after first login)"
 fi
-mkdir -p deploy/live/tls backups/live
+mkdir -p deploy/live/tls backups/live deploy/live/state
+# sbc-api runs as uid 10001 inside the container and writes the ban export here (D-66)
+chown 10001:10001 deploy/live/state
 if [ ! -f deploy/live/tls/server.crt ]; then
   openssl req -x509 -newkey rsa:2048 -nodes -days 825 -keyout deploy/live/tls/server.key -out deploy/live/tls/server.crt \
     -subj "/CN=$NODE_IP/O=OpenSBC" -addext "subjectAltName=IP:$NODE_IP" >/dev/null 2>&1
