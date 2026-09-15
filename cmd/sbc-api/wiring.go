@@ -26,6 +26,7 @@ import (
 	"github.com/opensbc/opensbc/internal/httpapi/admin"
 	"github.com/opensbc/opensbc/internal/httpapi/health"
 	"github.com/opensbc/opensbc/internal/httpapi/internalapi"
+	"github.com/opensbc/opensbc/internal/invoice"
 	"github.com/opensbc/opensbc/internal/logging"
 	"github.com/opensbc/opensbc/internal/metrics"
 	"github.com/opensbc/opensbc/internal/reports"
@@ -75,8 +76,9 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer, gateways: gw}
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
 	a.admin = admin.New(admin.Deps{Cfg: cfg, Log: log, Store: st, Redis: rdb, Pipe: pipe, Bill: bill, Tables: tb, ESL: sup, Gateways: gw, Renderer: renderer, Version: version,
-		Reports: admin.NewReports(reports.New(pool), cfg.Billing.LowBalanceThreshold),
-		Trace:   trace.New(rdb, cfg.FSLogFile, sup),
+		Reports:  admin.NewReports(reports.New(pool), cfg.Billing.LowBalanceThreshold),
+		Trace:    trace.New(rdb, cfg.FSLogFile, sup),
+		Invoices: invoice.New(pool, log, invoice.Operator{Name: cfg.Invoice.OperatorName, Address: cfg.Invoice.OperatorAddress, Footer: cfg.Invoice.Footer}),
 		Ready: func(ctx context.Context) any {
 			return health.Deps{DB: pool, Redis: rdb, ESL: sup, Profiles: []string{"external-ingress", "external-egress"}, Version: version, Node: cfg.NodeName}.Check(ctx)
 		}})
@@ -169,6 +171,7 @@ func (a *app) startWorkers(ctx context.Context) {
 	go a.gaugeLoop(ctx)
 	go a.expireBans(ctx)
 	go reports.NewRollup(reports.New(a.db), a.log).Run(ctx, time.Minute)
+	go a.admin.Invoices.Run(ctx, time.Hour)
 }
 
 // gaugeLoop refreshes the gauge metrics every few seconds.

@@ -35,6 +35,7 @@ import { ErrorBox, KV, PageHeader } from "@/components/page";
 import { RateGroupSelect, RouteGroupSelect } from "@/components/selects";
 import { CDRTable } from "@/pages/cdrs";
 import { HeaderRulesTab } from "@/components/header-rules";
+import { InvoicesTab } from "@/components/invoices";
 import { useAuth } from "@/hooks/use-auth";
 import { dt, money } from "@/lib/utils";
 
@@ -405,6 +406,7 @@ export function CustomerDetailPage() {
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="blocks">Blocked prefixes</TabsTrigger>
           <TabsTrigger value="headers">Header rules</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
           <TabsTrigger value="trace">Trace</TabsTrigger>
         </TabsList>
@@ -512,6 +514,9 @@ export function CustomerDetailPage() {
         </TabsContent>
         <TabsContent value="headers">
           <HeaderRulesTab ownerType="customer" ownerId={id} />
+        </TabsContent>
+        <TabsContent value="invoices">
+          <InvoicesTab ownerType="customer" ownerId={id} />
         </TabsContent>
         <TabsContent value="cdrs">
           <CDRTable fixed={{ customer_id: id }} />

@@ -405,6 +405,30 @@
                 ],
                 "type": "object"
             },
+            "admin.generateInvoiceInput": {
+                "properties": {
+                    "owner_id": {
+                        "type": "string"
+                    },
+                    "owner_type": {
+                        "enum": [
+                            "customer",
+                            "carrier"
+                        ],
+                        "type": "string"
+                    },
+                    "period": {
+                        "description": "YYYY-MM",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "owner_id",
+                    "owner_type",
+                    "period"
+                ],
+                "type": "object"
+            },
             "admin.headerRuleInput": {
                 "properties": {
                     "action": {
@@ -747,6 +771,92 @@
                 ],
                 "type": "object"
             },
+            "invoice.Invoice": {
+                "properties": {
+                    "account_id": {
+                        "type": "string"
+                    },
+                    "adjustments": {
+                        "type": "string"
+                    },
+                    "billed_seconds": {
+                        "type": "integer"
+                    },
+                    "calls": {
+                        "type": "integer"
+                    },
+                    "charges": {
+                        "type": "string"
+                    },
+                    "closing": {
+                        "type": "string"
+                    },
+                    "costs": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "lines": {
+                        "items": {
+                            "$ref": "#/components/schemas/invoice.Line"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "opening": {
+                        "type": "string"
+                    },
+                    "owner_id": {
+                        "type": "string"
+                    },
+                    "owner_name": {
+                        "type": "string"
+                    },
+                    "owner_type": {
+                        "type": "string"
+                    },
+                    "period_end": {
+                        "type": "string"
+                    },
+                    "period_start": {
+                        "type": "string"
+                    },
+                    "refunds": {
+                        "type": "string"
+                    },
+                    "topups": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "invoice.Line": {
+                "properties": {
+                    "amount": {
+                        "type": "string"
+                    },
+                    "billed_seconds": {
+                        "type": "integer"
+                    },
+                    "calls": {
+                        "type": "integer"
+                    },
+                    "destination": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "model.APIKey": {
                 "properties": {
                     "created_at": {
@@ -788,6 +898,10 @@
                         "type": "string"
                     },
                     "classification": {
+                        "type": "string"
+                    },
+                    "cost": {
+                        "description": "Cost is the connect fee charged for a failed attempt when the carrier\nhas charge_failed_attempts (D-62); unset otherwise.",
                         "type": "string"
                     },
                     "ended_at": {
@@ -1266,6 +1380,10 @@
                     },
                     "weight": {
                         "type": "integer"
+                    },
+                    "window": {
+                        "description": "Window restricts the carrier to a time-of-day and day-of-week window\n(internal/timewindow syntax); empty means always.",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -1829,6 +1947,10 @@
                     },
                     "weight": {
                         "type": "integer"
+                    },
+                    "window": {
+                        "description": "Window restricts the carrier to a time-of-day and day-of-week window\n(internal/timewindow syntax); empty means always.",
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -1846,6 +1968,9 @@
                     },
                     "weight": {
                         "type": "integer"
+                    },
+                    "window": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -3815,6 +3940,150 @@
                 "summary": "Update a header rule",
                 "tags": [
                     "routing"
+                ]
+            }
+        },
+        "/invoices": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer|carrier",
+                        "in": "query",
+                        "name": "owner_type",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "owner id",
+                        "in": "query",
+                        "name": "owner_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "max rows (default 100)",
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/invoice.Invoice"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List invoices (newest first), optionally of one customer or carrier",
+                "tags": [
+                    "invoices"
+                ]
+            }
+        },
+        "/invoices/generate": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.generateInvoiceInput",
+                                "summary": "body",
+                                "description": "owner and period YYYY-MM"
+                            }
+                        }
+                    },
+                    "description": "owner and period YYYY-MM",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/invoice.Invoice"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Generate the invoice of a customer or carrier for a month (idempotent; 200 when it already exists)",
+                "tags": [
+                    "invoices"
+                ]
+            }
+        },
+        "/invoices/{id}": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "invoice id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/invoice.Invoice"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Get one invoice with its usage lines",
+                "tags": [
+                    "invoices"
+                ]
+            }
+        },
+        "/invoices/{id}.pdf": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "invoice id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "file"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Download one invoice as PDF",
+                "tags": [
+                    "invoices"
                 ]
             }
         },

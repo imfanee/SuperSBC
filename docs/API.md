@@ -88,6 +88,15 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `PUT` | `/customers/{id}/account/credit` | Set the credit limit of a customer |
 | `PUT` | `/customers/{id}` | Update a customer |
 
+## Invoices
+
+| Method | Path | Summary |
+|---|---|---|
+| `GET` | `/invoices/{id}.pdf` | Download one invoice as PDF |
+| `GET` | `/invoices/{id}` | Get one invoice with its usage lines |
+| `GET` | `/invoices` | List invoices (newest first), optionally of one customer or carrier<br>Query: `owner_type`, `owner_id`, `limit` |
+| `POST` | `/invoices/generate` | Generate the invoice of a customer or carrier for a month (idempotent; 200 when it already exists) |
+
 ## Rates
 
 | Method | Path | Summary |

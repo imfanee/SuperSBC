@@ -369,3 +369,26 @@ export interface BannedIP {
   banned_at: string;
   expires_at: string | null;
 }
+
+export interface Invoice {
+  id: string;
+  number: string;
+  account_id: string;
+  owner_type: "customer" | "carrier";
+  owner_id: string;
+  owner_name: string;
+  period_start: string;
+  period_end: string;
+  currency: string;
+  opening: string;
+  topups: string;
+  charges: string;
+  costs: string;
+  adjustments: string;
+  refunds: string;
+  closing: string;
+  calls: number;
+  billed_seconds: number;
+  lines: { destination: string; calls: number; billed_seconds: number; amount: string }[];
+  created_at: string;
+}

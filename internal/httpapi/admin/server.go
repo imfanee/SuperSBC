@@ -27,6 +27,7 @@ import (
 	"github.com/opensbc/opensbc/internal/esl"
 	"github.com/opensbc/opensbc/internal/fsconfig"
 	"github.com/opensbc/opensbc/internal/gateways"
+	"github.com/opensbc/opensbc/internal/invoice"
 	"github.com/opensbc/opensbc/internal/model"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
@@ -49,6 +50,7 @@ type Deps struct {
 	Ready    func(context.Context) any
 	Reports  *ReportsHandler
 	Trace    *trace.Store
+	Invoices *invoice.Service
 }
 
 // Handler is the admin API.
@@ -112,6 +114,7 @@ func (h *Handler) Mount(r chi.Router) {
 			h.mountUsers(r)
 			h.mountTrace(r)
 			h.mountBans(r)
+			h.mountInvoices(r)
 			if h.Reports != nil {
 				h.Reports.h = h
 				h.Reports.Mount(r)

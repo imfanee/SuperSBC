@@ -120,3 +120,37 @@ func TestRoadmap_FailedAttemptCharging(t *testing.T) {
 	}
 	reconcileOK(t)
 }
+
+// Invoices (D-63): generated once per account and month, listed per owner,
+// rendered as PDF.
+func TestRoadmap_Invoices(t *testing.T) {
+	a := newAPIClient(t)
+	a.ok(a.login("admin@example.com", adminPassword(t)))
+	acme := findByName(t, a, "/customers", "acme")
+	period := time.Now().UTC().Format("2006-01")
+	code, inv := a.do("POST", "/invoices/generate", map[string]any{"owner_type": "customer", "owner_id": acme, "period": period})
+	if code != 200 && code != 201 {
+		t.Fatalf("generate: %d %v", code, inv)
+	}
+	if !strings.HasPrefix(str(inv["number"]), "INV-"+strings.ReplaceAll(period, "-", "")+"-") || inv["currency"] != "USD" {
+		t.Fatalf("invoice: %v", inv)
+	}
+	// idempotent: same invoice again
+	code2, again := a.do("POST", "/invoices/generate", map[string]any{"owner_type": "customer", "owner_id": acme, "period": period})
+	if code2 != 200 || again["id"] != inv["id"] {
+		t.Fatalf("second generate: %d %v", code2, again)
+	}
+	code, _ = a.do("POST", "/invoices/generate", map[string]any{"owner_type": "customer", "owner_id": acme, "period": "2999-01"})
+	if code != 400 {
+		t.Fatalf("future period accepted: %d", code)
+	}
+	code, list := a.do("GET", "/invoices?owner_type=customer&owner_id="+acme, nil)
+	a.mustOK(code, list, "list")
+	if n := len(items(list)); n < 1 {
+		t.Fatalf("list: %v", list)
+	}
+	code, pdf := a.do("GET", "/invoices/"+str(inv["id"])+".pdf", nil)
+	if code != 200 || !strings.HasPrefix(str(pdf["raw"]), "%PDF-") {
+		t.Fatalf("pdf: %d %.40q", code, str(pdf["raw"]))
+	}
+}

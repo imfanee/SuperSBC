@@ -38,6 +38,7 @@ type Config struct {
 	Failover Failover
 	Auth     Auth
 	Ban      Ban
+	Invoice  Invoice
 
 	LogLevel    string
 	OpenAPIFile string // optional path overriding the embedded OpenAPI document
@@ -50,6 +51,13 @@ type Billing struct {
 	OrphanTimeout       time.Duration
 	LowBalanceThreshold string // decimal as string, "0" disables
 	Currency            string
+}
+
+// Invoice is the issuer identity printed on PDF invoices (D-63).
+type Invoice struct {
+	OperatorName    string
+	OperatorAddress string // lines separated by "|"
+	Footer          string
 }
 
 // Routing holds the routing tunables of Section 3 Steps 6 to 8.
@@ -150,6 +158,11 @@ func Load() (*Config, error) {
 			Threshold: getint("SBC_BAN_THRESHOLD", 20),
 			Window:    getduration("SBC_BAN_WINDOW", 5*time.Minute),
 			Duration:  getduration("SBC_BAN_DURATION", time.Hour),
+		},
+		Invoice: Invoice{
+			OperatorName:    getenv("SBC_INVOICE_OPERATOR_NAME", "OpenSBC"),
+			OperatorAddress: getenv("SBC_INVOICE_OPERATOR_ADDRESS", ""),
+			Footer:          getenv("SBC_INVOICE_FOOTER", ""),
 		},
 		Auth: Auth{
 			JWTSecret:              req("SBC_JWT_SECRET"),
