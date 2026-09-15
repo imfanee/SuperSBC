@@ -108,6 +108,7 @@ services:
     volumes:
       - ../../freeswitch/conf:/etc/freeswitch:ro
       - ../../freeswitch/scripts:/usr/share/freeswitch/scripts:ro
+      - ./tls:/etc/freeswitch/tls:ro
       - type: volume
         source: fsconfig
         target: /etc/freeswitch/sip_profiles/external-egress

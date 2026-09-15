@@ -24,6 +24,7 @@ import { ErrorBox, KV, PageHeader } from "@/components/page";
 import { RateGroupSelect } from "@/components/selects";
 import { AccountTab } from "@/pages/customers";
 import { CDRTable } from "@/pages/cdrs";
+import { HeaderRulesTab } from "@/components/header-rules";
 import { useAuth } from "@/hooks/use-auth";
 import { dt, money } from "@/lib/utils";
 
@@ -53,6 +54,10 @@ const schema = z.object({
   ignore_early_media: z.boolean(),
   notes: z.string(),
   currency: z.string(),
+  media_mode: z.enum(["anchor", "proxy", "bypass"]),
+  dtmf_mode: z.enum(["rfc2833", "info", "inband"]),
+  srtp_mode: z.enum(["off", "optional", "mandatory"]),
+  privacy_mode: z.enum(["anonymize", "pass", "ignore"]),
 });
 type FormT = z.infer<typeof schema>;
 
@@ -79,6 +84,10 @@ function toForm(c?: Carrier | null): FormT {
     ignore_early_media: c?.ignore_early_media ?? false,
     notes: c?.notes ?? "",
     currency: "",
+    media_mode: c?.media_mode ?? "anchor",
+    dtmf_mode: c?.dtmf_mode ?? "rfc2833",
+    srtp_mode: c?.srtp_mode ?? "off",
+    privacy_mode: c?.privacy_mode ?? "anonymize",
   };
 }
 
@@ -212,6 +221,44 @@ export function CarrierForm({
           <Input {...register("currency")} placeholder="USD" maxLength={3} />
         </Field>
       )}
+      {(
+        [
+          [
+            "media_mode",
+            "Media",
+            ["anchor", "proxy", "bypass"],
+            "bypass only when the customer allows it too",
+          ],
+          [
+            "dtmf_mode",
+            "DTMF to carrier",
+            ["rfc2833", "info", "inband"],
+            "inband: tones generated and detected in the audio",
+          ],
+          ["srtp_mode", "SRTP to carrier", ["off", "optional", "mandatory"], ""],
+          [
+            "privacy_mode",
+            "Privacy calls",
+            ["anonymize", "pass", "ignore"],
+            "anonymize: From anonymous + Privacy: id; pass: real identity + PAI + Privacy: id",
+          ],
+        ] as const
+      ).map(([key, label, opts, hint]) => (
+        <Field key={key} label={label} hint={hint}>
+          <Select value={watch(key)} onValueChange={(v) => setValue(key, v as never)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {opts.map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      ))}
       <div className="flex items-center gap-2 pt-5">
         <Switch
           checked={watch("sip_options_ping")}
@@ -414,6 +461,7 @@ export function CarrierDetailPage() {
           <TabsTrigger value="gateway">Gateway</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="headers">Header rules</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
         </TabsList>
         <TabsContent value="gateway">
@@ -463,6 +511,10 @@ export function CarrierDetailPage() {
                     ["Auth", c.auth_username || "none"],
                     ["Register", c.register ? "yes" : "no"],
                     ["Early media", c.ignore_early_media ? "ignored" : "passed through"],
+                    [
+                      "Media / DTMF / SRTP / privacy",
+                      `${c.media_mode} / ${c.dtmf_mode} / ${c.srtp_mode} / ${c.privacy_mode}`,
+                    ],
                   ]}
                 />
               </CardContent>
@@ -488,6 +540,9 @@ export function CarrierDetailPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="headers">
+          <HeaderRulesTab ownerType="carrier" ownerId={id} />
         </TabsContent>
         <TabsContent value="cdrs">
           <CDRTable fixed={{ carrier_id: id }} />

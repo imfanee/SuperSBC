@@ -88,7 +88,7 @@ const cdrRowCols = `d.call_uuid, d.customer_id, d.carrier_id, d.src_ip::text AS 
 	d.start_time, d.progress_time, d.answer_time, d.end_time, d.pdd_ms, d.ring_seconds, d.billsec, d.duration, d.sip_final_code, d.sip_final_reason, d.hangup_cause,
 	d.disposition::text AS disposition, d.reject_reason, d.sell_rate_id, d.sell_rate_per_min, d.sell_billed_seconds, d.sell_price, d.sell_destination, d.sell_currency, d.buy_currency,
 	d.buy_rate_id, d.buy_rate_per_min, d.buy_billed_seconds, d.cost, d.margin, d.negative_margin, d.reserved_amount, d.charged_amount, d.released_amount,
-	d.attempts, d.failover_depth, d.codec_in, d.codec_out, d.media_mode, COALESCE(d.rtp_stats, 'null'::jsonb) AS rtp_stats, d.sbc_node, d.billed_at, d.billed_by, d.created_at, d.updated_at,
+	d.attempts, d.failover_depth, d.codec_in, d.codec_out, d.media_mode, COALESCE(d.rtp_stats, 'null'::jsonb) AS rtp_stats, d.transport_in, d.transport_out, d.srtp_in, d.srtp_out, d.privacy, d.sbc_node, d.billed_at, d.billed_by, d.created_at, d.updated_at,
 	c.name AS customer_name, k.name AS carrier_name`
 
 const cdrRowFrom = ` FROM cdrs d LEFT JOIN customers c ON c.id = d.customer_id LEFT JOIN carriers k ON k.id = d.carrier_id`

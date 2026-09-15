@@ -28,6 +28,14 @@ docker compose --profile e2e up -d          # sipp mock carriers for tests
 
 The dev compose network is a private bridge (172.28.0.0/24): fine for the lab and for the e2e suite, wrong for real traffic because FreeSWITCH advertises its container address in SDP. The live stack (`deploy/live`, see [GO_LIVE.md](GO_LIVE.md)) runs FreeSWITCH on the host network with `SBC_FS_NODE_IP` set to the public address (`SBC_FS_EXT_IP` when behind 1:1 NAT), ESL bound to the docker bridge gateway so only containers reach it, the internal API on loopback, and `make live-firewall` opens only ssh, 8080, 8443, SIP 5060, RTP and 5080 from the carrier allow-list.
 
+### SIP TLS and SRTP
+
+`SBC_FS_TLS=true` (default) opens TLS on 5061 (customers) and 5081 (carriers). The certificate lives in `freeswitch/tls` (dev) or `deploy/live/tls` (live): `agent.pem` (private key followed by the certificate chain) and `cafile.pem`. `freeswitch/tls/gen.sh` writes a self-signed pair for the lab; for production copy a real certificate (the live `init.sh` builds both files from `server.crt`/`server.key`). Restart FreeSWITCH after replacing them. Per customer: set the address filter to `transport=tls` and tick "Require SIP TLS" to refuse UDP/TCP; set SRTP to `mandatory` to refuse plain RTP (`488 SRTP required`), `optional` to accept both. Per carrier: `transport=tls` on the gateway and SRTP `mandatory` or `optional`. Check with `fs_cli -x "sofia status profile external-ingress"` (the `TLS-URL` line) and with the CDR's transport column.
+
+### Scanner bans
+
+Addresses that produce `SBC_BAN_THRESHOLD` (20) `403 IP not authorized` rejections within `SBC_BAN_WINDOW` (5m) are banned for `SBC_BAN_DURATION` (1h): System > Banned IPs, or `GET /api/v1/system/banned-ips`, `POST` with `{"ip","reason","minutes"}` (0 = permanent), `DELETE /system/banned-ips/{ip}`. A ban is a `deny` node in the customers ACL, so FreeSWITCH answers `403 Forbidden` at once and `sbc_bans_total` counts them. Banning a legitimate customer is impossible while its address is authorised (the allow node wins because the `403` never happens); if a customer changes address before you add it, unban after adding the address.
+
 ## 3. Add a customer
 
 UI: Customers, New customer. API (`API=http://127.0.0.1:18080/api/v1` on dev, `API=https://<host>:8443/api/v1` with `curl -k` on live):
@@ -163,9 +171,9 @@ Capacity: `SBC_FS_MAX_SESSIONS` and `SBC_FS_SESSIONS_PER_SECOND` count both legs
 | Input validation | go-playground/validator on every body, zod on every form, prefixes digits only, amounts decimal strings, CIDR parsing by Postgres |
 | Injection | every SQL statement parameterised (pgx), no string interpolation of user input; `group_by` and `sort` come from allow-lists |
 | Secrets | none in the repository; `.env` is gitignored; carrier SIP passwords are never returned by the API; API keys and reset tokens are stored hashed and shown once |
-| Transport | terminate TLS in front of nginx (not included); set `SBC_AUTH_COOKIE_SECURE=true` behind HTTPS; SIP TLS/SRTP per profile is on the roadmap |
+| Transport | live nginx terminates TLS on 8443 (`SBC_AUTH_COOKIE_SECURE=true`); SIP TLS on 5061/5081 and SRTP per customer and carrier (section 2) |
 | Headers | CSP (`default-src 'self'`, no inline scripts), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Cache-Control: no-store` on the API |
 | Logging | every admin action in `audit_log` with actor and source address; no passwords or tokens in logs |
 | Availability | fail closed on API or Redis outage (503 SBC internal error, never free calls); per customer CPS and channel limits; global caps; FreeSWITCH session rate limit |
 | Data | soft delete keeps CDR and ledger history; backups with pg_dump; `make reconcile` proves ledger integrity |
-| Known gaps | no account lockout notification, no email delivery, no SIP TLS by default, admin session fixation relies on cookie rotation only, no WAF; see ROADMAP |
+| Known gaps | no account lockout notification, no email delivery, TLS client certificates are not verified (D-53), admin session fixation relies on cookie rotation only, no WAF; see ROADMAP |

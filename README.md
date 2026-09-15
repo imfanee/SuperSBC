@@ -2,7 +2,7 @@
 
 A deliberately simple, production-minded Session Border Controller with prepaid wholesale billing.
 
-* **FreeSWITCH** does SIP, RTP anchoring, transcoding and topology hiding.
+* **FreeSWITCH** does SIP (UDP, TCP, TLS), RTP and SRTP anchoring or bypass, transcoding, DTMF interworking and topology hiding.
 * **Lua** (inside FreeSWITCH) runs the per-call state machine and asks the control plane what to do.
 * **Go** (`sbc-api`) authorises by source IP, rates, reserves money, routes with ordered failover, bills on hangup, and serves the admin REST API.
 * **PostgreSQL** is the system of record, **Redis** the hot cache.
@@ -28,7 +28,7 @@ curl -s localhost:8080/readyz | jq
 * Admin API: http://127.0.0.1:18080/api/v1 (OpenAPI at `/api/docs`)
 * Monitoring: `docker compose --profile monitoring up -d` then Grafana at http://127.0.0.1:13001 (admin / admin)
 * Web UI: http://127.0.0.1:13000 (login `admin@example.com` / the `SBC_BOOTSTRAP_ADMIN_PASSWORD` you set)
-* SIP ingress: `172.28.0.10:5060` inside the compose network (see docs/OPERATIONS.md for exposing it to real customers)
+* SIP ingress: `172.28.0.10:5060` (TLS 5061) inside the compose network (see docs/OPERATIONS.md for exposing it to real customers)
 
 ## Everything with one command
 
@@ -74,6 +74,7 @@ curl -s localhost:8080/readyz | jq
 | M4 Admin API completeness | done |
 | M5 Web UI | done |
 | M6 Operations | done |
+| Section 7 SBC features (TLS/SRTP, header rules, privacy, 100rel, media bypass, DTMF, scanner bans) | done |
 
 ## Licence
 

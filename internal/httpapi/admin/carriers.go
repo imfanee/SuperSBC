@@ -21,6 +21,8 @@ func (h *Handler) mountCarriers(r chi.Router) {
 	r.Get("/carriers/{id}/account/ledger", h.carrierLedger)
 	r.Get("/carriers/{id}/status", h.carrierStatus)
 	r.Get("/carriers/status", h.allCarrierStatus)
+	r.Get("/carriers/{id}/header-rules", h.listHeaderRules("carrier"))
+	r.With(operators).Post("/carriers/{id}/header-rules", h.createHeaderRule("carrier"))
 }
 
 type carrierInput struct {
@@ -46,6 +48,10 @@ type carrierInput struct {
 	IgnoreEarlyMedia     bool     `json:"ignore_early_media"`
 	Notes                string   `json:"notes"`
 	Currency             string   `json:"currency" validate:"omitempty,len=3"`
+	MediaMode            string   `json:"media_mode" validate:"omitempty,oneof=anchor proxy bypass"`
+	DTMFMode             string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
+	SRTPMode             string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
+	PrivacyMode          string   `json:"privacy_mode" validate:"omitempty,oneof=anonymize pass ignore"`
 }
 
 func (in carrierInput) toModel(w http.ResponseWriter) (*model.Carrier, bool) {
@@ -77,7 +83,8 @@ func (in carrierInput) toModel(w http.ResponseWriter) (*model.Carrier, bool) {
 	return &model.Carrier{Name: in.Name, Status: status, RateGroupID: rg, GatewayHost: in.GatewayHost, GatewayPort: port, Transport: tr,
 		DNIPrefix: in.DNIPrefix, ANIPrefix: in.ANIPrefix, StripDigits: in.StripDigits, AuthUsername: strPtr(in.AuthUsername), AuthPassword: in.AuthPassword,
 		FromDomain: strPtr(in.FromDomain), Register: in.Register, AllowedCodecs: codecs, MaxConcurrentCalls: in.MaxConcurrentCalls, MaxCPS: in.MaxCPS,
-		FailoverSIPCodes: in.FailoverSIPCodes, SIPOptionsPing: ping, ChargeFailedAttempts: in.ChargeFailedAttempts, IgnoreEarlyMedia: in.IgnoreEarlyMedia, Notes: in.Notes}, true
+		FailoverSIPCodes: in.FailoverSIPCodes, SIPOptionsPing: ping, ChargeFailedAttempts: in.ChargeFailedAttempts, IgnoreEarlyMedia: in.IgnoreEarlyMedia, Notes: in.Notes,
+		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, PrivacyMode: in.PrivacyMode}, true
 }
 
 // listCarriers godoc

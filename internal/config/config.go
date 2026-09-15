@@ -37,6 +37,7 @@ type Config struct {
 	Routing  Routing
 	Failover Failover
 	Auth     Auth
+	Ban      Ban
 
 	LogLevel    string
 	OpenAPIFile string // optional path overriding the embedded OpenAPI document
@@ -71,6 +72,13 @@ type Failover struct {
 	BreakerASRMinSamples       int
 	BreakerDegradedSeconds     int
 	GatewayPingIntervalSeconds int
+}
+
+// Ban holds the scanner protection tunables (Section 7).
+type Ban struct {
+	Threshold int           // unauthorised INVITEs from one address within Window that trigger a ban (0 disables)
+	Window    time.Duration // sliding window
+	Duration  time.Duration // how long an automatic ban lasts
 }
 
 // Auth holds the admin authentication tunables of Section 8.
@@ -137,6 +145,11 @@ func Load() (*Config, error) {
 			BreakerASRMinSamples:       getint("SBC_FAILOVER_BREAKER_ASR_MIN_SAMPLES", 50),
 			BreakerDegradedSeconds:     getint("SBC_FAILOVER_BREAKER_DEGRADED_SECONDS", 60),
 			GatewayPingIntervalSeconds: getint("SBC_FAILOVER_GATEWAY_PING_INTERVAL_SECONDS", 10),
+		},
+		Ban: Ban{
+			Threshold: getint("SBC_BAN_THRESHOLD", 20),
+			Window:    getduration("SBC_BAN_WINDOW", 5*time.Minute),
+			Duration:  getduration("SBC_BAN_DURATION", time.Hour),
 		},
 		Auth: Auth{
 			JWTSecret:              req("SBC_JWT_SECRET"),

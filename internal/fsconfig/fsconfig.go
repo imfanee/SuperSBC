@@ -124,7 +124,11 @@ func (r *Renderer) RenderACLs(ctx context.Context) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	if err := writeAtomic(filepath.Join(dir, "customers.xml"), CustomersACL(ips, r.aclMode)); err != nil {
+	banned, err := r.st.BannedIPs(ctx)
+	if err != nil {
+		return err
+	}
+	if err := writeAtomic(filepath.Join(dir, "customers.xml"), CustomersACL(ips, banned, r.aclMode)); err != nil {
 		return err
 	}
 	if err := writeAtomic(filepath.Join(dir, "carriers.xml"), CarriersACL(carriers)); err != nil {
@@ -135,7 +139,7 @@ func (r *Renderer) RenderACLs(ctx context.Context) error {
 			r.log.Warn("reloadacl failed", "error", err)
 		}
 	}
-	r.log.Info("acls rendered", "customer_ips", len(ips), "mode", r.aclMode)
+	r.log.Info("acls rendered", "customer_ips", len(ips), "banned", len(banned), "mode", r.aclMode)
 	return nil
 }
 
@@ -195,7 +199,7 @@ func GatewayXML(c model.Carrier, nodeIP string) string {
 // CustomersACL renders the customers network list. In "strict" mode unknown
 // addresses are dropped by Sofia before the dialplan; in "dialplan" mode the
 // list allows everything so the Lua pipeline can answer 403 IP not authorized.
-func CustomersACL(ips []model.CustomerIP, mode string) string {
+func CustomersACL(ips []model.CustomerIP, banned []model.BannedIP, mode string) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "<!-- rendered by sbc-api at %s; mode=%s; do not edit -->\n", time.Now().UTC().Format(time.RFC3339), mode)
 	if mode == "strict" {
@@ -214,6 +218,19 @@ func CustomersACL(ips []model.CustomerIP, mode string) string {
 	sort.Strings(cidrs)
 	for _, c := range cidrs {
 		fmt.Fprintf(&b, "  <node type=\"allow\" cidr=%q/>\n", c)
+	}
+	// Banned addresses come last: FreeSWITCH evaluates every node and the last
+	// match wins, so a ban overrides an allowed range (scanner protection).
+	for _, x := range banned {
+		cidr := x.IP
+		if !strings.Contains(cidr, "/") {
+			if strings.Contains(cidr, ":") {
+				cidr += "/128"
+			} else {
+				cidr += "/32"
+			}
+		}
+		fmt.Fprintf(&b, "  <node type=\"deny\" cidr=%q/>\n", cidr)
 	}
 	b.WriteString("</list>\n")
 	return b.String()

@@ -352,6 +352,10 @@ export function CDRDetail({ cdr: c }: { cdr: CDR }) {
             ["Hangup", `${c.hangup_cause ?? ""} (${c.sip_final_code ?? ""} ${c.sip_final_reason ?? ""})`],
             ["Reject reason", c.reject_reason ?? ""],
             ["Media", `${c.codec_in ?? "?"} to ${c.codec_out ?? "?"} (${c.media_mode ?? "n/a"})`],
+            [
+              "Transport",
+              `${c.transport_in ?? "?"}${c.srtp_in ? "+SRTP" : ""} to ${c.transport_out ?? "?"}${c.srtp_out ? "+SRTP" : ""}${c.privacy ? ", privacy" : ""}`,
+            ],
             ["Node", c.sbc_node ?? ""],
           ]}
         />

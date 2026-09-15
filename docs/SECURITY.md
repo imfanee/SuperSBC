@@ -65,7 +65,7 @@ OWASP ASVS 4.0 level 1 walkthrough of OpenSBC as built. "Yes" means implemented 
 | Requirement | Status | Where |
 |-------------|--------|-------|
 | TLS for the admin UI | No (out of scope for compose): put nginx or a load balancer with TLS in front and set `SBC_AUTH_COOKIE_SECURE=true` | OPERATIONS.md |
-| SIP TLS and SRTP | Roadmap | ROADMAP.md |
+| SIP TLS and SRTP | Yes: TLS 1.2/1.3 on 5061 and 5081, `require_tls` and `srtp_mode` per customer, `transport=tls` and `srtp_mode` per carrier; client certificates are not verified (D-53) | `fsconfig`, `policy.go`, `TestM5_TLS`, `TestM5_SRTP` |
 
 ## V13 API
 
@@ -80,7 +80,7 @@ OWASP ASVS 4.0 level 1 walkthrough of OpenSBC as built. "Yes" means implemented 
 | Threat | Mitigation |
 |--------|------------|
 | Toll fraud from a compromised customer PBX | prepaid reservation per call, `max_call_seconds` from the balance, per customer CPS and channel limits, blocked prefixes (global and per customer), low balance notifications |
-| SIP scanners | `SBC_ACL_MODE=strict` rejects unknown addresses in Sofia; rejections are counted per IP in `rejected_auth` CDRs and metrics; dynamic blocklisting is on the roadmap |
+| SIP scanners | `SBC_ACL_MODE=strict` rejects unknown addresses in Sofia; in `permissive` mode the API counts `403 IP not authorized` per source and bans the address for an hour after 20 in five minutes (ACL deny node, `TestM5_ScannerBan`); manual bans in System > Banned IPs |
 | Carrier spoofing inbound calls | the egress profile rejects every inbound INVITE (`403 Inbound not permitted`) |
-| Header leakage | customer X-headers, PAI and RPID are stripped on egress; our own User-Agent; From carries the SBC address |
+| Header leakage | customer X-headers, PAI and RPID are stripped on egress unless a header rule passes a named header through (identity headers never); our own User-Agent; From carries the SBC address; `Privacy: id` calls are anonymised per carrier policy (D-54) |
 | Money loss on outages | fail closed: API down, Redis down or slow means `503 SBC internal error`, never an unbilled call; orphan reservations are released by the reconciler |

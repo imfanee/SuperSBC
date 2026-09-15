@@ -18,6 +18,14 @@
   <X-PRE-PROCESS cmd="exec-set" data="sbc_egress_codecs=echo ${SBC_FS_EGRESS_CODECS:-PCMA,PCMU,OPUS,G722}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_user_agent=echo ${SBC_FS_USER_AGENT:-OpenSBC}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_log_level=echo ${SBC_FS_LOG_LEVEL:-info}"/>
+  <!-- SIP TLS (Section 7): certificates in /etc/freeswitch/tls (agent.pem = key + certificate, cafile.pem) -->
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_tls=echo ${SBC_FS_TLS:-false}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_ingress_tls_port=echo ${SBC_FS_INGRESS_TLS_PORT:-5061}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_egress_tls_port=echo ${SBC_FS_EGRESS_TLS_PORT:-5081}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_tls_verify_policy=echo ${SBC_FS_TLS_VERIFY_POLICY:-none}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_tls_version=echo ${SBC_FS_TLS_VERSION:-tlsv1.2,tlsv1.3}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_ingress_100rel=echo ${SBC_FS_INGRESS_100REL:-false}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_egress_100rel=echo ${SBC_FS_EGRESS_100REL:-false}"/>
 
   <!-- When sbc_node_ip is "auto" FreeSWITCH picks the primary interface.
        sbc_ext_ip is what goes into Contact and SDP (the public address when

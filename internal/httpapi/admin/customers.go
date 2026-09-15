@@ -29,6 +29,10 @@ func (h *Handler) mountCustomers(r chi.Router) {
 	r.Get("/customers/{id}/blocked-prefixes", h.listCustomerBlocks)
 	r.With(operators).Post("/customers/{id}/blocked-prefixes", h.addCustomerBlock)
 	r.With(operators).Delete("/customers/{id}/blocked-prefixes/{blockId}", h.deleteBlock)
+	r.Get("/customers/{id}/header-rules", h.listHeaderRules("customer"))
+	r.With(operators).Post("/customers/{id}/header-rules", h.createHeaderRule("customer"))
+	r.With(operators).Put("/header-rules/{ruleId}", h.updateHeaderRule)
+	r.With(operators).Delete("/header-rules/{ruleId}", h.deleteHeaderRule)
 	r.Get("/blocked-prefixes", h.listGlobalBlocks)
 	r.With(operators).Post("/blocked-prefixes", h.addGlobalBlock)
 	r.With(operators).Delete("/blocked-prefixes/{blockId}", h.deleteBlock)
@@ -50,6 +54,10 @@ type customerInput struct {
 	BlockedPrefixesEnabled *bool    `json:"blocked_prefixes_enabled"`
 	Notes                  string   `json:"notes"`
 	Currency               string   `json:"currency" validate:"omitempty,len=3"`
+	MediaMode              string   `json:"media_mode" validate:"omitempty,oneof=anchor proxy bypass"`
+	DTMFMode               string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
+	SRTPMode               string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
+	RequireTLS             bool     `json:"require_tls"`
 }
 
 func (in customerInput) toModel(w http.ResponseWriter) (*model.Customer, bool) {
@@ -77,7 +85,8 @@ func (in customerInput) toModel(w http.ResponseWriter) (*model.Customer, bool) {
 	}
 	return &model.Customer{Name: in.Name, Status: status, RateGroupID: rg, RouteGroupID: rt, MaxConcurrentCalls: in.MaxConcurrentCalls, MaxCPS: in.MaxCPS,
 		AllowedCodecs: codecs, TechPrefix: strPtr(in.TechPrefix), DefaultCountryCode: strPtr(in.DefaultCountryCode), IntlPrefix: in.IntlPrefix,
-		TrustPAI: in.TrustPAI, BlockedPrefixesEnabled: blocks, Notes: in.Notes}, true
+		TrustPAI: in.TrustPAI, BlockedPrefixesEnabled: blocks, Notes: in.Notes,
+		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, RequireTLS: in.RequireTLS}, true
 }
 
 // listCustomers godoc

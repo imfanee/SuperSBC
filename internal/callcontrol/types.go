@@ -23,6 +23,18 @@ type SetupRequest struct {
 	// Codecs offered by the customer (from FreeSWITCH), informational.
 	OfferedCodecs string `json:"offered_codecs"`
 	Node          string `json:"node"`
+	// SRTPOffered is true when the customer's SDP carried crypto attributes.
+	SRTPOffered bool `json:"srtp_offered"`
+	// Privacy is true when the INVITE asked for caller privacy (Privacy header or anonymous From).
+	Privacy bool `json:"privacy"`
+	// PAINumber is the user part of P-Asserted-Identity when present.
+	PAINumber string `json:"pai_number"`
+}
+
+// App is a dialplan application Lua executes on the a-leg before dialling.
+type App struct {
+	App  string `json:"app"`
+	Data string `json:"data"`
 }
 
 // Reject describes the SIP response Lua must send.
@@ -62,6 +74,9 @@ type CarrierChoice struct {
 	Codecs           string           `json:"codecs"`
 	IgnoreEarlyMedia bool             `json:"ignore_early_media"`
 	Degraded         bool             `json:"degraded"`
+	MediaMode        string           `json:"media_mode"` // anchor | proxy | bypass for this pair
+	// Passthrough lists a-leg headers Lua copies onto this carrier's INVITE (sip_h_<name>).
+	Passthrough []string `json:"passthrough_headers"`
 }
 
 // SkippedCarrier explains why a route carrier was not dialled.
@@ -96,6 +111,8 @@ type SetupResponse struct {
 	MediaHoldTimeoutMs int              `json:"media_hold_timeout_ms"`
 	// Vars are channel variables Lua sets on the a-leg so they land in the CDR.
 	Vars map[string]string `json:"vars"`
+	// Apps are dialplan applications Lua runs on the a-leg before dialling (DTMF detection).
+	Apps []App `json:"apps"`
 }
 
 // AttemptRequest is what Lua posts after each bridge attempt.

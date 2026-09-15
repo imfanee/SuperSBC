@@ -48,7 +48,17 @@
     <param name="rtp-rewrite-timestamps" value="true"/>
     <param name="inbound-late-negotiation" value="true"/>
     <param name="nonce-ttl" value="60"/>
-    <param name="enable-100rel" value="false"/>
+    <!-- 100rel / PRACK (Section 7), toggled per profile from the environment -->
+    <param name="enable-100rel" value="$${sbc_egress_100rel}"/>
+    <!-- SIP TLS (Section 7). SRTP is decided per call with rtp_secure_media. -->
+    <param name="tls" value="$${sbc_tls}"/>
+    <param name="tls-only" value="false"/>
+    <param name="tls-bind-params" value="transport=tls"/>
+    <param name="tls-sip-port" value="$${sbc_egress_tls_port}"/>
+    <param name="tls-cert-dir" value="/etc/freeswitch/tls"/>
+    <param name="tls-version" value="$${sbc_tls_version}"/>
+    <param name="tls-verify-policy" value="$${sbc_tls_verify_policy}"/>
+    <param name="tls-verify-date" value="true"/>
     <param name="NDLB-force-rport" value="true"/>
     <param name="aggressive-nat-detection" value="false"/>
     <param name="challenge-realm" value="auto_from"/>

@@ -40,7 +40,8 @@ func (s *Store) ListCarriers(ctx context.Context, search, status string, p Page)
 	items, err := many[CarrierRow](ctx, s.pool, `
 		SELECT c.id, c.name, c.status::text AS status, c.rate_group_id, c.gateway_host, c.gateway_port, c.transport::text AS transport,
 		  c.dni_prefix, c.ani_prefix, c.strip_digits, c.auth_username, NULL::text AS auth_password, c.from_domain, c.register, c.allowed_codecs,
-		  c.max_concurrent_calls, c.max_cps, c.failover_sip_codes, c.sip_options_ping, c.charge_failed_attempts, c.ignore_early_media, c.notes, c.created_at, c.updated_at,
+		  c.max_concurrent_calls, c.max_cps, c.failover_sip_codes, c.sip_options_ping, c.charge_failed_attempts, c.ignore_early_media,
+		  c.media_mode::text AS media_mode, c.dtmf_mode::text AS dtmf_mode, c.srtp_mode::text AS srtp_mode, c.privacy_mode::text AS privacy_mode, c.notes, c.created_at, c.updated_at,
 		  a.balance::text AS balance, a.currency, g.name AS rate_group_name
 		FROM carriers c LEFT JOIN accounts a ON a.owner_type = 'carrier' AND a.owner_id = c.id LEFT JOIN rate_groups g ON g.id = c.rate_group_id`+
 		where(conds)+order+fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args)), args...)
@@ -55,12 +56,13 @@ func (s *Store) CreateCarrier(ctx context.Context, c *model.Carrier, currency st
 	out, err := one[model.Carrier](ctx, s.pool, `
 		INSERT INTO carriers (name, status, rate_group_id, gateway_host, gateway_port, transport, dni_prefix, ani_prefix, strip_digits,
 		  auth_username, auth_password, from_domain, register, allowed_codecs, max_concurrent_calls, max_cps, failover_sip_codes,
-		  sip_options_ping, charge_failed_attempts, ignore_early_media, notes)
-		VALUES ($1, $2::carrier_status, $3, $4, $5, $6::transport_kind, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+		  sip_options_ping, charge_failed_attempts, ignore_early_media, notes, media_mode, dtmf_mode, srtp_mode, privacy_mode)
+		VALUES ($1, $2::carrier_status, $3, $4, $5, $6::transport_kind, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,
+		  COALESCE(NULLIF($22, ''), 'anchor')::media_mode_kind, COALESCE(NULLIF($23, ''), 'rfc2833')::dtmf_kind, COALESCE(NULLIF($24, ''), 'off')::srtp_kind, COALESCE(NULLIF($25, ''), 'anonymize')::privacy_kind)
 		RETURNING `+carrierCols,
 		c.Name, c.Status, c.RateGroupID, c.GatewayHost, c.GatewayPort, c.Transport, c.DNIPrefix, c.ANIPrefix, c.StripDigits,
 		c.AuthUsername, c.AuthPassword, c.FromDomain, c.Register, c.AllowedCodecs, c.MaxConcurrentCalls, c.MaxCPS, c.FailoverSIPCodes,
-		c.SIPOptionsPing, c.ChargeFailedAttempts, c.IgnoreEarlyMedia, c.Notes)
+		c.SIPOptionsPing, c.ChargeFailedAttempts, c.IgnoreEarlyMedia, c.Notes, c.MediaMode, c.DTMFMode, c.SRTPMode, c.PrivacyMode)
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +78,12 @@ func (s *Store) UpdateCarrier(ctx context.Context, c *model.Carrier) (*model.Car
 		UPDATE carriers SET name = $2, status = $3::carrier_status, rate_group_id = $4, gateway_host = $5, gateway_port = $6, transport = $7::transport_kind,
 		  dni_prefix = $8, ani_prefix = $9, strip_digits = $10, auth_username = $11, auth_password = COALESCE($12, auth_password), from_domain = $13, register = $14,
 		  allowed_codecs = $15, max_concurrent_calls = $16, max_cps = $17, failover_sip_codes = $18, sip_options_ping = $19, charge_failed_attempts = $20,
-		  ignore_early_media = $21, notes = $22
+		  ignore_early_media = $21, notes = $22, media_mode = COALESCE(NULLIF($23, ''), 'anchor')::media_mode_kind, dtmf_mode = COALESCE(NULLIF($24, ''), 'rfc2833')::dtmf_kind,
+		  srtp_mode = COALESCE(NULLIF($25, ''), 'off')::srtp_kind, privacy_mode = COALESCE(NULLIF($26, ''), 'anonymize')::privacy_kind
 		WHERE id = $1 AND deleted_at IS NULL RETURNING `+carrierCols,
 		c.ID, c.Name, c.Status, c.RateGroupID, c.GatewayHost, c.GatewayPort, c.Transport, c.DNIPrefix, c.ANIPrefix, c.StripDigits,
 		c.AuthUsername, c.AuthPassword, c.FromDomain, c.Register, c.AllowedCodecs, c.MaxConcurrentCalls, c.MaxCPS, c.FailoverSIPCodes,
-		c.SIPOptionsPing, c.ChargeFailedAttempts, c.IgnoreEarlyMedia, c.Notes)
+		c.SIPOptionsPing, c.ChargeFailedAttempts, c.IgnoreEarlyMedia, c.Notes, c.MediaMode, c.DTMFMode, c.SRTPMode, c.PrivacyMode)
 }
 
 // DeleteCarrier soft-deletes a carrier and detaches it from routes.

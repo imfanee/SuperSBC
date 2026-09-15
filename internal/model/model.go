@@ -22,6 +22,10 @@ type Customer struct {
 	TechPrefix             *string    `json:"tech_prefix" db:"tech_prefix"`
 	DefaultCountryCode     *string    `json:"default_country_code" db:"default_country_code"`
 	IntlPrefix             string     `json:"intl_prefix" db:"intl_prefix"`
+	MediaMode              string     `json:"media_mode" db:"media_mode"`
+	DTMFMode               string     `json:"dtmf_mode" db:"dtmf_mode"`
+	SRTPMode               string     `json:"srtp_mode" db:"srtp_mode"`
+	RequireTLS             bool       `json:"require_tls" db:"require_tls"`
 	TrustPAI               bool       `json:"trust_pai" db:"trust_pai"`
 	BlockedPrefixesEnabled bool       `json:"blocked_prefixes_enabled" db:"blocked_prefixes_enabled"`
 	Notes                  string     `json:"notes" db:"notes"`
@@ -62,6 +66,10 @@ type Carrier struct {
 	SIPOptionsPing       bool       `json:"sip_options_ping" db:"sip_options_ping"`
 	ChargeFailedAttempts bool       `json:"charge_failed_attempts" db:"charge_failed_attempts"`
 	IgnoreEarlyMedia     bool       `json:"ignore_early_media" db:"ignore_early_media"`
+	MediaMode            string     `json:"media_mode" db:"media_mode"`
+	DTMFMode             string     `json:"dtmf_mode" db:"dtmf_mode"`
+	SRTPMode             string     `json:"srtp_mode" db:"srtp_mode"`
+	PrivacyMode          string     `json:"privacy_mode" db:"privacy_mode"`
 	Notes                string     `json:"notes" db:"notes"`
 	CreatedAt            time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt            time.Time  `json:"updated_at" db:"updated_at"`
@@ -227,6 +235,11 @@ type CDR struct {
 	CodecOut          *string          `json:"codec_out" db:"codec_out"`
 	MediaMode         *string          `json:"media_mode" db:"media_mode"`
 	RTPStats          map[string]any   `json:"rtp_stats" db:"rtp_stats"`
+	TransportIn       *string          `json:"transport_in" db:"transport_in"`
+	TransportOut      *string          `json:"transport_out" db:"transport_out"`
+	SRTPIn            bool             `json:"srtp_in" db:"srtp_in"`
+	SRTPOut           bool             `json:"srtp_out" db:"srtp_out"`
+	Privacy           bool             `json:"privacy" db:"privacy"`
 	SBCNode           *string          `json:"sbc_node" db:"sbc_node"`
 	BilledAt          *time.Time       `json:"billed_at" db:"billed_at"`
 	BilledBy          *string          `json:"billed_by" db:"billed_by"`

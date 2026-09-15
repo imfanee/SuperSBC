@@ -100,6 +100,7 @@ services:
     volumes:
       - ./freeswitch/conf:/etc/freeswitch:ro
       - ./freeswitch/scripts:/usr/share/freeswitch/scripts:ro
+      - ./freeswitch/tls:/etc/freeswitch/tls:ro
       - type: volume
         source: fsconfig
         target: /etc/freeswitch/sip_profiles/external-egress
@@ -139,7 +140,8 @@ services:
   # ---- e2e: mock carriers (sipp UAS) and mock customers (sipp UAC) ----
   # Started with: docker compose --profile e2e up -d
   carrier-answer:
-    image: ctaloi/sipp
+    build: ./tests/e2e/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e]
     command: ["-sf", "/scenarios/uas_answer.xml", "-i", "172.28.0.61", "-p", "5060", "-mi", "172.28.0.61", "-mp", "6000", "-nostdin", "-trace_err", "-error_file", "/dev/null", "-trace_msg", "-message_file", "/out/carrier-answer.msg"]
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
@@ -147,7 +149,7 @@ services:
       sbc: { ipv4_address: 172.28.0.61 }
     restart: unless-stopped
   carrier-503:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e]
     command: ["-sf", "/scenarios/uas_503.xml", "-i", "172.28.0.62", "-p", "5060", "-nostdin", "-trace_err", "-error_file", "/dev/null"]
     volumes: ["./tests/e2e/scenarios:/scenarios:ro"]
@@ -155,7 +157,7 @@ services:
       sbc: { ipv4_address: 172.28.0.62 }
     restart: unless-stopped
   carrier-404:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e]
     command: ["-sf", "/scenarios/uas_404.xml", "-i", "172.28.0.63", "-p", "5060", "-nostdin", "-trace_err", "-error_file", "/dev/null"]
     volumes: ["./tests/e2e/scenarios:/scenarios:ro"]
@@ -165,56 +167,77 @@ services:
 
   # Mock customers are one-shot: docker compose --profile e2e-clients run --rm customer-acme <sipp args>
   customer-acme:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.101 }
   customer-beta:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.102 }
   customer-gamma:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.103 }
   customer-delta:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.104 }
   customer-epsilon:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.105 }
   customer-euro:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.106 }
   customer-loadtest:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.110 }
+  customer-zeta:
+    image: opensbc/sipp:3.7
+    profiles: [e2e-clients]
+    working_dir: /out
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
+    networks:
+      sbc: { ipv4_address: 172.28.0.107 }
+  customer-eta:
+    image: opensbc/sipp:3.7
+    profiles: [e2e-clients]
+    working_dir: /out
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
+    networks:
+      sbc: { ipv4_address: 172.28.0.108 }
+  customer-theta:
+    image: opensbc/sipp:3.7
+    profiles: [e2e-clients]
+    working_dir: /out
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
+    networks:
+      sbc: { ipv4_address: 172.28.0.109 }
   customer-unknown:
-    image: ctaloi/sipp
+    image: opensbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]

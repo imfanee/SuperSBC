@@ -52,6 +52,26 @@
                 },
                 "type": "object"
             },
+            "admin.banInput": {
+                "properties": {
+                    "ip": {
+                        "type": "string"
+                    },
+                    "minutes": {
+                        "description": "0 = permanent",
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "reason": {
+                        "maxLength": 200,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "ip"
+                ],
+                "type": "object"
+            },
             "admin.blockInput": {
                 "properties": {
                     "prefix": {
@@ -113,6 +133,14 @@
                         "maxLength": 16,
                         "type": "string"
                     },
+                    "dtmf_mode": {
+                        "enum": [
+                            "rfc2833",
+                            "info",
+                            "inband"
+                        ],
+                        "type": "string"
+                    },
                     "failover_sip_codes": {
                         "items": {
                             "type": "integer"
@@ -142,12 +170,28 @@
                         "minimum": 0,
                         "type": "integer"
                     },
+                    "media_mode": {
+                        "enum": [
+                            "anchor",
+                            "proxy",
+                            "bypass"
+                        ],
+                        "type": "string"
+                    },
                     "name": {
                         "maxLength": 64,
                         "minLength": 1,
                         "type": "string"
                     },
                     "notes": {
+                        "type": "string"
+                    },
+                    "privacy_mode": {
+                        "enum": [
+                            "anonymize",
+                            "pass",
+                            "ignore"
+                        ],
                         "type": "string"
                     },
                     "rate_group_id": {
@@ -158,6 +202,14 @@
                     },
                     "sip_options_ping": {
                         "type": "boolean"
+                    },
+                    "srtp_mode": {
+                        "enum": [
+                            "off",
+                            "optional",
+                            "mandatory"
+                        ],
+                        "type": "string"
                     },
                     "status": {
                         "enum": [
@@ -244,6 +296,14 @@
                         "maxLength": 4,
                         "type": "string"
                     },
+                    "dtmf_mode": {
+                        "enum": [
+                            "rfc2833",
+                            "info",
+                            "inband"
+                        ],
+                        "type": "string"
+                    },
                     "intl_prefix": {
                         "maxLength": 4,
                         "type": "string"
@@ -256,6 +316,14 @@
                         "minimum": 0,
                         "type": "integer"
                     },
+                    "media_mode": {
+                        "enum": [
+                            "anchor",
+                            "proxy",
+                            "bypass"
+                        ],
+                        "type": "string"
+                    },
                     "name": {
                         "maxLength": 100,
                         "minLength": 1,
@@ -267,7 +335,18 @@
                     "rate_group_id": {
                         "type": "string"
                     },
+                    "require_tls": {
+                        "type": "boolean"
+                    },
                     "route_group_id": {
+                        "type": "string"
+                    },
+                    "srtp_mode": {
+                        "enum": [
+                            "off",
+                            "optional",
+                            "mandatory"
+                        ],
                         "type": "string"
                     },
                     "status": {
@@ -323,6 +402,45 @@
                     "base",
                     "quote",
                     "rate"
+                ],
+                "type": "object"
+            },
+            "admin.headerRuleInput": {
+                "properties": {
+                    "action": {
+                        "enum": [
+                            "add",
+                            "passthrough",
+                            "remove"
+                        ],
+                        "type": "string"
+                    },
+                    "direction": {
+                        "enum": [
+                            "egress",
+                            "response"
+                        ],
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "header": {
+                        "maxLength": 64,
+                        "type": "string"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "value": {
+                        "maxLength": 1000,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "action",
+                    "direction",
+                    "header"
                 ],
                 "type": "object"
             },
@@ -699,6 +817,29 @@
                 },
                 "type": "object"
             },
+            "model.BannedIP": {
+                "properties": {
+                    "banned_at": {
+                        "type": "string"
+                    },
+                    "expires_at": {
+                        "type": "string"
+                    },
+                    "hits": {
+                        "type": "integer"
+                    },
+                    "ip": {
+                        "type": "string"
+                    },
+                    "manual": {
+                        "type": "boolean"
+                    },
+                    "reason": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "model.BlockedPrefix": {
                 "properties": {
                     "created_at": {
@@ -749,6 +890,9 @@
                     "dni_prefix": {
                         "type": "string"
                     },
+                    "dtmf_mode": {
+                        "type": "string"
+                    },
                     "failover_sip_codes": {
                         "items": {
                             "type": "integer"
@@ -777,10 +921,16 @@
                     "max_cps": {
                         "type": "integer"
                     },
+                    "media_mode": {
+                        "type": "string"
+                    },
                     "name": {
                         "type": "string"
                     },
                     "notes": {
+                        "type": "string"
+                    },
+                    "privacy_mode": {
                         "type": "string"
                     },
                     "rate_group_id": {
@@ -791,6 +941,9 @@
                     },
                     "sip_options_ping": {
                         "type": "boolean"
+                    },
+                    "srtp_mode": {
+                        "type": "string"
                     },
                     "status": {
                         "type": "string"
@@ -825,6 +978,9 @@
                     "default_country_code": {
                         "type": "string"
                     },
+                    "dtmf_mode": {
+                        "type": "string"
+                    },
                     "id": {
                         "type": "string"
                     },
@@ -837,6 +993,9 @@
                     "max_cps": {
                         "type": "integer"
                     },
+                    "media_mode": {
+                        "type": "string"
+                    },
                     "name": {
                         "type": "string"
                     },
@@ -846,7 +1005,13 @@
                     "rate_group_id": {
                         "type": "string"
                     },
+                    "require_tls": {
+                        "type": "boolean"
+                    },
                     "route_group_id": {
+                        "type": "string"
+                    },
+                    "srtp_mode": {
                         "type": "string"
                     },
                     "status": {
@@ -909,6 +1074,46 @@
                     },
                     "rate": {
                         "type": "number"
+                    }
+                },
+                "type": "object"
+            },
+            "model.HeaderRule": {
+                "properties": {
+                    "action": {
+                        "description": "add | passthrough | remove",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "direction": {
+                        "description": "egress | response",
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "header": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "owner_id": {
+                        "type": "string"
+                    },
+                    "owner_type": {
+                        "type": "string"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -1520,6 +1725,9 @@
                     "pdd_ms": {
                         "type": "integer"
                     },
+                    "privacy": {
+                        "type": "boolean"
+                    },
                     "progress_time": {
                         "type": "string"
                     },
@@ -1575,7 +1783,19 @@
                     "src_port": {
                         "type": "integer"
                     },
+                    "srtp_in": {
+                        "type": "boolean"
+                    },
+                    "srtp_out": {
+                        "type": "boolean"
+                    },
                     "start_time": {
+                        "type": "string"
+                    },
+                    "transport_in": {
+                        "type": "string"
+                    },
+                    "transport_out": {
                         "type": "string"
                     },
                     "updated_at": {
@@ -3293,6 +3513,82 @@
                 ]
             }
         },
+        "/customers/{id}/header-rules": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "owner id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.HeaderRule"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Header manipulation rules of a customer or carrier",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "description": "owner id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.headerRuleInput",
+                                "summary": "body",
+                                "description": "rule"
+                            }
+                        }
+                    },
+                    "description": "rule",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.HeaderRule"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Add a header rule (egress: INVITE to the carrier; response: responses to the customer). Values may use {caller} {called} {customer} {carrier} {call_uuid} {node_ip}",
+                "tags": [
+                    "routing"
+                ]
+            }
+        },
         "/customers/{id}/ips": {
             "get": {
                 "parameters": [
@@ -3453,6 +3749,72 @@
                 "summary": "Add an exchange rate (1 base = rate quote)",
                 "tags": [
                     "rates"
+                ]
+            }
+        },
+        "/header-rules/{ruleId}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "rule id",
+                        "in": "path",
+                        "name": "ruleId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete a header rule",
+                "tags": [
+                    "routing"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "rule id",
+                        "in": "path",
+                        "name": "ruleId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.headerRuleInput",
+                                "summary": "body",
+                                "description": "rule"
+                            }
+                        }
+                    },
+                    "description": "rule",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.HeaderRule"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update a header rule",
+                "tags": [
+                    "routing"
                 ]
             }
         },
@@ -4728,6 +5090,84 @@
                 "summary": "Routing simulator: the whole setup decision for a customer and number without dialling",
                 "tags": [
                     "routing"
+                ]
+            }
+        },
+        "/system/banned-ips": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/model.BannedIP"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Active source address bans (automatic scanner bans and manual ones)",
+                "tags": [
+                    "system"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.banInput",
+                                "summary": "body",
+                                "description": "address"
+                            }
+                        }
+                    },
+                    "description": "address",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.BannedIP"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Ban a source address (FreeSWITCH ACL deny, reloaded immediately)",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/banned-ips/{ip}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "address",
+                        "in": "path",
+                        "name": "ip",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Lift a ban",
+                "tags": [
+                    "system"
                 ]
             }
         },

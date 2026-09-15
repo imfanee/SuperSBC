@@ -28,6 +28,43 @@ local function set_vars(session, vars)
   end
 end
 
+-- Privacy (Section 7): a Privacy header asking to hide identity, or an anonymous From.
+local function privacy_requested(session)
+  local priv = (session:getVariable("sip_Privacy") or session:getVariable("sip_i_privacy")
+    or session:getVariable("sip_h_Privacy") or ""):lower()
+  if priv:find("id", 1, true) or priv:find("user", 1, true) or priv:find("header", 1, true) then
+    return true
+  end
+  local from = (session:getVariable("sip_from_user") or ""):lower()
+  return from == "anonymous"
+end
+
+-- SRTP offered: crypto attributes or a secure profile in the received SDP
+-- (the rtp_has_crypto variable only appears after negotiation).
+local function srtp_offered(session)
+  local sdp = session:getVariable("switch_r_sdp") or ""
+  if sdp:find("a=crypto:", 1, true) or sdp:find("RTP/SAVP", 1, true) then
+    return true
+  end
+  return (session:getVariable("rtp_has_crypto") or "") ~= ""
+end
+
+-- User part of P-Asserted-Identity when the customer sent one.
+local function pai_user(session)
+  local pai = session:getVariable("sip_P-Asserted-Identity") or session:getVariable("sip_h_P-Asserted-Identity") or ""
+  local user = pai:match("sip:([^@>;]+)") or pai:match("tel:([^>;]+)")
+  return user or ""
+end
+
+-- Executes the dialplan applications the API asked for on the a-leg.
+local function run_apps(session, apps)
+  for _, a in ipairs(apps or {}) do
+    if a.app and a.app ~= "" then
+      session:execute(a.app, a.data or "")
+    end
+  end
+end
+
 -- Sends a final response with the exact reason phrase and hangs up.
 local function reject(session, log, code, reason, step)
   if session:ready() then
@@ -86,6 +123,10 @@ function pipeline.run(session)
     sip_call_id = session:getVariable("sip_call_id") or "",
     offered_codecs = session:getVariable("ep_codec_string") or "",
     node = session:getVariable("switchname") or freeswitch.getGlobalVariable("hostname") or "",
+    -- Section 7 [M5]: SRTP offered, privacy requested, network asserted identity
+    srtp_offered = srtp_offered(session),
+    privacy = privacy_requested(session),
+    pai_number = pai_user(session),
   }
   log:info("invite", { src = req.src_ip .. ":" .. req.src_port, caller = req.caller, called = req.called })
 
@@ -97,6 +138,7 @@ function pipeline.run(session)
     return reject(session, log, INTERNAL_ERROR.code, INTERNAL_ERROR.reason, "setup")
   end
   set_vars(session, decision.vars)
+  run_apps(session, decision.apps)
 
   if decision.action ~= "dial" then
     local r = decision.reject or INTERNAL_ERROR
@@ -150,9 +192,22 @@ function pipeline.run(session)
     session:setVariable("sbc_carrier_id", c.carrier_id)
     session:setVariable("sbc_carrier_name", c.name)
     session:setVariable("sbc_attempt_seq", tostring(i))
-    log:info("attempt", { seq = i, carrier = c.name, dial = c.dial_number })
+    -- Media mode for this customer and carrier pair (Section 7): anchor (default),
+    -- proxy (signalling anchored, media relayed untouched) or bypass (media direct).
+    session:setVariable("bypass_media", c.media_mode == "bypass" and "true" or "false")
+    session:setVariable("proxy_media", c.media_mode == "proxy" and "true" or "false")
+    -- Header passthrough rules: copy the named a-leg headers onto this INVITE.
+    local dial_string = c.dial_string
+    for _, name in ipairs(c.passthrough_headers or {}) do
+      local v = session:getVariable("sip_h_" .. name)
+      if v and v ~= "" then
+        v = v:gsub(",", "\\,"):gsub("}", "")
+        dial_string = dial_string:gsub("^{", "{sip_h_" .. name .. "=" .. v .. ",", 1)
+      end
+    end
+    log:info("attempt", { seq = i, carrier = c.name, dial = c.dial_number, media = c.media_mode or "anchor" })
 
-    session:execute("bridge", c.dial_string)
+    session:execute("bridge", dial_string)
 
     local ended = now_us(api)
     local disposition = session:getVariable("originate_disposition") or ""

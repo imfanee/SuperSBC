@@ -149,6 +149,13 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 			}
 			cdr.MediaMode = &mm
 		}
+		if h.MediaMode != "" {
+			mm := h.MediaMode
+			cdr.MediaMode = &mm
+		}
+		if h.SRTP {
+			cdr.SRTPIn = true
+		}
 		cdr.Disposition = Disposition(h.AnswerTime != nil, cause, h.SIPCode)
 		cdr.SBCNode = &node
 		cdr.BilledAt = &now
@@ -189,6 +196,12 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 		} else if h.AnsweredCarrierID != nil {
 			cid := *h.AnsweredCarrierID
 			cdr.CarrierID = &cid
+		}
+		if cdr.CarrierID != nil {
+			if c, err := e.st.CarrierByID(ctx, *cdr.CarrierID); err == nil {
+				tr := c.Transport
+				cdr.TransportOut = &tr
+			}
 		}
 		out.Billsec = cdr.Billsec
 		out.BilledSeconds = cdr.SellBilledSeconds
@@ -285,7 +298,7 @@ func (e *Engine) Bill(ctx context.Context, h HangupInfo) (*Outcome, error) {
 // RecordBLeg stores what the carrier leg negotiated (codec, RTP statistics)
 // on the a-leg CDR, keyed by the X-SBC-Call header we sent. It runs
 // independently of Bill: whichever comes second completes media_mode.
-func (e *Engine) RecordBLeg(ctx context.Context, aLegUUID uuid.UUID, codec string, stats map[string]any) error {
+func (e *Engine) RecordBLeg(ctx context.Context, aLegUUID uuid.UUID, codec string, stats map[string]any, srtp bool) error {
 	var statsJSON any
 	if stats != nil {
 		b, _ := json.Marshal(stats)
@@ -294,9 +307,10 @@ func (e *Engine) RecordBLeg(ctx context.Context, aLegUUID uuid.UUID, codec strin
 	_, err := e.st.Pool().Exec(ctx, `
 		UPDATE cdrs SET
 		  codec_out = NULLIF($2, ''),
-		  media_mode = CASE WHEN codec_in IS NULL OR $2 = '' THEN media_mode WHEN upper(codec_in) = upper($2) THEN 'relay' ELSE 'transcode' END,
-		  rtp_stats = CASE WHEN $3::jsonb IS NULL THEN rtp_stats ELSE COALESCE(rtp_stats, '{}'::jsonb) || jsonb_build_object('carrier', $3::jsonb) END
-		WHERE call_uuid = $1`, aLegUUID, codec, statsJSON)
+		  media_mode = CASE WHEN media_mode IN ('bypass', 'proxy') THEN media_mode WHEN codec_in IS NULL OR $2 = '' THEN media_mode WHEN upper(codec_in) = upper($2) THEN 'relay' ELSE 'transcode' END,
+		  rtp_stats = CASE WHEN $3::jsonb IS NULL THEN rtp_stats ELSE COALESCE(rtp_stats, '{}'::jsonb) || jsonb_build_object('carrier', $3::jsonb) END,
+		  srtp_out = srtp_out OR $4
+		WHERE call_uuid = $1`, aLegUUID, codec, statsJSON, srtp)
 	return err
 }
 

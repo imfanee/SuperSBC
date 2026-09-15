@@ -20,7 +20,7 @@ flowchart LR
         C1[Customer PBX / switch<br/>identified by source IP]
     end
     subgraph OpenSBC host
-        FS[FreeSWITCH<br/>profile external-ingress :5060<br/>profile external-egress :5080]
+        FS[FreeSWITCH<br/>profile external-ingress :5060 tls 5061<br/>profile external-egress :5080 tls 5081]
         LUA[sbc_inbound.lua<br/>mod_lua]
         API[sbc-api (Go)<br/>internal API :8081<br/>admin API :8080]
         PG[(PostgreSQL)]

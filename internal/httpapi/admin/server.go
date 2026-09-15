@@ -111,6 +111,7 @@ func (h *Handler) Mount(r chi.Router) {
 			h.mountSystem(r)
 			h.mountUsers(r)
 			h.mountTrace(r)
+			h.mountBans(r)
 			if h.Reports != nil {
 				h.Reports.h = h
 				h.Reports.Mount(r)

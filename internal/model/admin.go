@@ -96,3 +96,28 @@ type Notification struct {
 	DeliveredAt *time.Time     `json:"delivered_at" db:"delivered_at"`
 	CreatedAt   time.Time      `json:"created_at" db:"created_at"`
 }
+
+// HeaderRule is one header manipulation rule (Section 7).
+type HeaderRule struct {
+	ID        uuid.UUID `json:"id" db:"id"`
+	OwnerType string    `json:"owner_type" db:"owner_type"`
+	OwnerID   uuid.UUID `json:"owner_id" db:"owner_id"`
+	Direction string    `json:"direction" db:"direction"` // egress | response
+	Action    string    `json:"action" db:"action"`       // add | passthrough | remove
+	Header    string    `json:"header" db:"header"`
+	Value     string    `json:"value" db:"value"`
+	Priority  int       `json:"priority" db:"priority"`
+	Enabled   bool      `json:"enabled" db:"enabled"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// BannedIP is a dynamically or manually blocked source address.
+type BannedIP struct {
+	IP        string     `json:"ip" db:"ip"`
+	Reason    string     `json:"reason" db:"reason"`
+	Hits      int        `json:"hits" db:"hits"`
+	Manual    bool       `json:"manual" db:"manual"`
+	BannedAt  time.Time  `json:"banned_at" db:"banned_at"`
+	ExpiresAt *time.Time `json:"expires_at" db:"expires_at"`
+}

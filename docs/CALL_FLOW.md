@@ -32,6 +32,7 @@ and posts them to `POST /internal/v1/call/setup` with header `X-SBC-Secret`.
 | Step | Function | Rejection |
 |------|----------|-----------|
 | 1 authenticate | `Authorize`: Redis `ip:` cache, then `customer_ips WHERE ip_cidr >>= $1` (most specific CIDR wins, port and transport filters) | `403 IP not authorized`, `403 Customer suspended` |
+| 1 policy | `require_tls` and `srtp_mode` of the customer against the INVITE transport and SDP (D-52) | `403 TLS required`, `488 SRTP required` |
 | 1 admission | `cache.Admission.Admit`: `INCR cc:customer:<id>` and `INCR cps:customer:<id>:<second>`; global caps if configured | `480 Concurrent call limit`, `503 CPS limit` |
 | 2 normalise | `numbering.Normalize` (D-26) | `484 Address Incomplete` |
 | 3 sell rate | `tables.MatchRate` (trie, longest prefix) | `404 No rate for destination` |
@@ -58,7 +59,9 @@ The response for a dialable call:
 }
 ```
 
-Lua copies `vars` onto the a-leg so they appear in every CDR source.
+Lua copies `vars` onto the a-leg so they appear in every CDR source. Section 7 policies ride the same response: `vars` also carries `rtp_secure_media` and the a-leg DTMF variables, `apps` lists dialplan applications to run before the bridge (`start_dtmf` for inband customers), each carrier has `media_mode` (Lua sets `bypass_media` or `proxy_media` per attempt) and `passthrough` headers copied from the a-leg, and the dial string already contains the carrier's DTMF, SRTP, privacy (`origination_privacy`, `sip_h_Privacy`, `sip_h_P-Asserted-Identity`) and header rule variables (`sip_h_...`). Response header rules arrive as `sip_rh_...` variables in `vars`.
+
+Before any of this, an INVITE from a banned address (D-58) is answered `403 Forbidden` by Sofia's ACL and never reaches the dialplan.
 
 ## Step 8: the bridge loop (Lua)
 

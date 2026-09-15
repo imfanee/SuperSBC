@@ -129,5 +129,7 @@ const (
 	ChanCDRCompleted     = "cdr.completed"
 	ChanCallStarted      = "call.started"
 	ChanBlocklistChanged = "blocklist:changed"
+	ChanBansChanged      = "bans:changed"
+	ChanHeadersChanged   = "headers:changed"
 	ChanFXChanged        = "fx:changed"
 )

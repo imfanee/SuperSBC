@@ -31,6 +31,7 @@ type Tables struct {
 	routes map[uuid.UUID]*entry[model.Route]
 	blocks *blockEntry
 	fx     *fxEntry
+	rules  *rulesEntry
 
 	// MaxAge forces a reload of a table older than this.
 	MaxAge time.Duration
@@ -44,6 +45,11 @@ type entry[T any] struct {
 type blockEntry struct {
 	global   *prefix.Trie[model.BlockedPrefix]
 	customer map[uuid.UUID]*prefix.Trie[model.BlockedPrefix]
+	loadedAt time.Time
+}
+
+type rulesEntry struct {
+	byOwner  map[string][]model.HeaderRule // "customer/<id>"
 	loadedAt time.Time
 }
 
@@ -176,6 +182,39 @@ func (t *Tables) Blocked(ctx context.Context, customerID uuid.UUID, number strin
 	return nil, nil
 }
 
+// HeaderRules returns the enabled rules of one owner.
+func (t *Tables) HeaderRules(ctx context.Context, ownerType string, id uuid.UUID) ([]model.HeaderRule, error) {
+	t.mu.RLock()
+	r := t.rules
+	t.mu.RUnlock()
+	if r == nil || time.Since(r.loadedAt) >= t.MaxAge {
+		rows, err := t.st.AllHeaderRules(ctx)
+		if err != nil {
+			if r == nil {
+				return nil, err
+			}
+		} else {
+			nr := &rulesEntry{byOwner: map[string][]model.HeaderRule{}, loadedAt: time.Now()}
+			for _, x := range rows {
+				k := x.OwnerType + "/" + x.OwnerID.String()
+				nr.byOwner[k] = append(nr.byOwner[k], x)
+			}
+			t.mu.Lock()
+			t.rules = nr
+			t.mu.Unlock()
+			r = nr
+		}
+	}
+	return r.byOwner[ownerType+"/"+id.String()], nil
+}
+
+// InvalidateHeaderRules drops the rules cache.
+func (t *Tables) InvalidateHeaderRules() {
+	t.mu.Lock()
+	t.rules = nil
+	t.mu.Unlock()
+}
+
 // InvalidateBlocks drops the block list tables.
 func (t *Tables) InvalidateBlocks() {
 	t.mu.Lock()
@@ -249,7 +288,7 @@ func (t *Tables) InvalidateRoutes(id uuid.UUID) {
 
 // Listen subscribes to the invalidation channels until ctx ends.
 func (t *Tables) Listen(ctx context.Context, rdb *redis.Client) {
-	sub := rdb.Subscribe(ctx, cache.ChanRateDeckChanged, cache.ChanRoutesChanged, cache.ChanCarriersChanged, cache.ChanBlocklistChanged, cache.ChanFXChanged)
+	sub := rdb.Subscribe(ctx, cache.ChanRateDeckChanged, cache.ChanRoutesChanged, cache.ChanCarriersChanged, cache.ChanBlocklistChanged, cache.ChanFXChanged, cache.ChanHeadersChanged)
 	defer func() { _ = sub.Close() }()
 	ch := sub.Channel()
 	for {
@@ -272,6 +311,8 @@ func (t *Tables) Listen(ctx context.Context, rdb *redis.Client) {
 				t.InvalidateBlocks()
 			case cache.ChanFXChanged:
 				t.InvalidateFX()
+			case cache.ChanHeadersChanged:
+				t.InvalidateHeaderRules()
 			}
 			t.log.Debug("table invalidated", "channel", m.Channel, "id", m.Payload)
 		}

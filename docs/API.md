@@ -123,9 +123,11 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | Method | Path | Summary |
 |---|---|---|
 | `DELETE` | `/blocked-prefixes/{blockId}` | Remove a blocked prefix |
+| `DELETE` | `/header-rules/{ruleId}` | Delete a header rule |
 | `DELETE` | `/route-groups/{id}` | Delete an unused route group |
 | `DELETE` | `/routes/{id}` | Delete a route |
 | `GET` | `/blocked-prefixes` | Global blacklist of prefixes |
+| `GET` | `/customers/{id}/header-rules` | Header manipulation rules of a customer or carrier |
 | `GET` | `/route-groups/{id}/routes` | Routes of a group with their ordered carriers<br>Query: `search` |
 | `GET` | `/route-groups/{id}` | Get a route group |
 | `GET` | `/route-groups` | List route groups |
@@ -133,8 +135,10 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `GET` | `/routes/{id}` | Get a route with its carriers |
 | `GET` | `/routing/simulate` | Routing simulator: the whole setup decision for a customer and number without dialling<br>Query: `customer_id` (required), `number` (required), `caller` |
 | `POST` | `/blocked-prefixes` | Block a prefix for every customer |
+| `POST` | `/customers/{id}/header-rules` | Add a header rule (egress: INVITE to the carrier; response: responses to the customer). Values may use {caller} {called} {customer} {carrier} {call_uuid} {node_ip} |
 | `POST` | `/route-groups/{id}/routes` | Create a route (optionally with its carriers) |
 | `POST` | `/route-groups` | Create a route group |
+| `PUT` | `/header-rules/{ruleId}` | Update a header rule |
 | `PUT` | `/route-groups/{id}` | Update a route group (name, description, LCR mode) |
 | `PUT` | `/routes/{id}/carriers` | Replace the ordered carrier list of a route (reorder endpoint) |
 | `PUT` | `/routes/{id}` | Update a route (and replace its carriers when given) |
@@ -143,8 +147,10 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 
 | Method | Path | Summary |
 |---|---|---|
+| `DELETE` | `/system/banned-ips/{ip}` | Lift a ban |
 | `DELETE` | `/system/siptrace` | Disable SIP tracing |
 | `GET` | `/audit-log` | Audit log<br>Query: `entity_type`, `entity_id`, `actor` |
+| `GET` | `/system/banned-ips` | Active source address bans (automatic scanner bans and manual ones) |
 | `GET` | `/system/failover-rules` | The failure classification table (read only) |
 | `GET` | `/system/gateways` | Sofia gateway states from the OPTIONS ping poller |
 | `GET` | `/system/notifications` | Recent notifications (low balance etc.) |
@@ -153,6 +159,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `GET` | `/system/siptrace` | SIP trace toggle state |
 | `GET` | `/system/status` | Readiness of every dependency plus configuration summary |
 | `GET` | `/system/version` | Build version (unauthenticated) |
+| `POST` | `/system/banned-ips` | Ban a source address (FreeSWITCH ACL deny, reloaded immediately) |
 | `POST` | `/system/siptrace` | Enable Sofia SIP tracing for N minutes (global or one profile); messages land in the FreeSWITCH log |
 | `PUT` | `/system/settings` | Upsert settings rows |
 

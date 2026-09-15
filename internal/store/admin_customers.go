@@ -48,7 +48,8 @@ func (s *Store) ListCustomers(ctx context.Context, f CustomerFilter, p Page) (*L
 	args = append(args, p.PerPage, p.Offset())
 	items, err := many[CustomerRow](ctx, s.pool, `
 		SELECT c.id, c.name, c.status::text AS status, c.rate_group_id, c.route_group_id, c.max_concurrent_calls, c.max_cps,
-		       c.allowed_codecs, c.tech_prefix, c.default_country_code, c.intl_prefix, c.trust_pai, c.blocked_prefixes_enabled, c.notes, c.created_at, c.updated_at,
+		       c.allowed_codecs, c.tech_prefix, c.default_country_code, c.intl_prefix, c.trust_pai, c.blocked_prefixes_enabled,
+		       c.media_mode::text AS media_mode, c.dtmf_mode::text AS dtmf_mode, c.srtp_mode::text AS srtp_mode, c.require_tls, c.notes, c.created_at, c.updated_at,
 		       a.balance::text AS balance, a.allowed_credit::text AS allowed_credit, a.reserved::text AS reserved, account_available(a)::text AS available, a.currency,
 		       (SELECT count(*) FROM customer_ips i WHERE i.customer_id = c.id)::int AS ip_count
 		FROM customers c LEFT JOIN accounts a ON a.owner_type = 'customer' AND a.owner_id = c.id`+where(conds)+order+
@@ -62,10 +63,13 @@ func (s *Store) ListCustomers(ctx context.Context, f CustomerFilter, p Page) (*L
 // CreateCustomer inserts a customer and its account.
 func (s *Store) CreateCustomer(ctx context.Context, c *model.Customer, currency string) (*model.Customer, error) {
 	out, err := one[model.Customer](ctx, s.pool, `
-		INSERT INTO customers (name, status, rate_group_id, route_group_id, max_concurrent_calls, max_cps, allowed_codecs, tech_prefix, default_country_code, intl_prefix, trust_pai, blocked_prefixes_enabled, notes)
-		VALUES ($1, $2::customer_status, $3, $4, $5, $6, $7, $8, $9, COALESCE(NULLIF($10, ''), '00'), $11, $12, $13)
+		INSERT INTO customers (name, status, rate_group_id, route_group_id, max_concurrent_calls, max_cps, allowed_codecs, tech_prefix, default_country_code, intl_prefix, trust_pai, blocked_prefixes_enabled, notes,
+		  media_mode, dtmf_mode, srtp_mode, require_tls)
+		VALUES ($1, $2::customer_status, $3, $4, $5, $6, $7, $8, $9, COALESCE(NULLIF($10, ''), '00'), $11, $12, $13,
+		  COALESCE(NULLIF($14, ''), 'anchor')::media_mode_kind, COALESCE(NULLIF($15, ''), 'rfc2833')::dtmf_kind, COALESCE(NULLIF($16, ''), 'optional')::srtp_kind, $17)
 		RETURNING `+customerCols,
-		c.Name, c.Status, c.RateGroupID, c.RouteGroupID, c.MaxConcurrentCalls, c.MaxCPS, c.AllowedCodecs, c.TechPrefix, c.DefaultCountryCode, c.IntlPrefix, c.TrustPAI, c.BlockedPrefixesEnabled, c.Notes)
+		c.Name, c.Status, c.RateGroupID, c.RouteGroupID, c.MaxConcurrentCalls, c.MaxCPS, c.AllowedCodecs, c.TechPrefix, c.DefaultCountryCode, c.IntlPrefix, c.TrustPAI, c.BlockedPrefixesEnabled, c.Notes,
+		c.MediaMode, c.DTMFMode, c.SRTPMode, c.RequireTLS)
 	if err != nil {
 		return nil, err
 	}
@@ -79,9 +83,11 @@ func (s *Store) CreateCustomer(ctx context.Context, c *model.Customer, currency 
 func (s *Store) UpdateCustomer(ctx context.Context, c *model.Customer) (*model.Customer, error) {
 	return one[model.Customer](ctx, s.pool, `
 		UPDATE customers SET name = $2, status = $3::customer_status, rate_group_id = $4, route_group_id = $5, max_concurrent_calls = $6, max_cps = $7,
-		  allowed_codecs = $8, tech_prefix = $9, default_country_code = $10, intl_prefix = COALESCE(NULLIF($11, ''), '00'), trust_pai = $12, blocked_prefixes_enabled = $13, notes = $14
+		  allowed_codecs = $8, tech_prefix = $9, default_country_code = $10, intl_prefix = COALESCE(NULLIF($11, ''), '00'), trust_pai = $12, blocked_prefixes_enabled = $13, notes = $14,
+		  media_mode = COALESCE(NULLIF($15, ''), 'anchor')::media_mode_kind, dtmf_mode = COALESCE(NULLIF($16, ''), 'rfc2833')::dtmf_kind, srtp_mode = COALESCE(NULLIF($17, ''), 'optional')::srtp_kind, require_tls = $18
 		WHERE id = $1 AND deleted_at IS NULL RETURNING `+customerCols,
-		c.ID, c.Name, c.Status, c.RateGroupID, c.RouteGroupID, c.MaxConcurrentCalls, c.MaxCPS, c.AllowedCodecs, c.TechPrefix, c.DefaultCountryCode, c.IntlPrefix, c.TrustPAI, c.BlockedPrefixesEnabled, c.Notes)
+		c.ID, c.Name, c.Status, c.RateGroupID, c.RouteGroupID, c.MaxConcurrentCalls, c.MaxCPS, c.AllowedCodecs, c.TechPrefix, c.DefaultCountryCode, c.IntlPrefix, c.TrustPAI, c.BlockedPrefixesEnabled, c.Notes,
+		c.MediaMode, c.DTMFMode, c.SRTPMode, c.RequireTLS)
 }
 
 // DeleteCustomer soft-deletes a customer and removes its addresses so the

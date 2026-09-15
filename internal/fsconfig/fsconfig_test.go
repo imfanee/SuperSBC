@@ -29,11 +29,11 @@ func TestGatewayXML(t *testing.T) {
 
 func TestACLs(t *testing.T) {
 	ips := []model.CustomerIP{{IPCIDR: "203.0.113.5/32"}, {IPCIDR: "198.51.100.0/24"}, {IPCIDR: "203.0.113.5/32"}}
-	strict := CustomersACL(ips, "strict")
-	if !strings.Contains(strict, `default="deny"`) || strings.Count(strict, "<node") != 2 {
+	strict := CustomersACL(ips, []model.BannedIP{{IP: "198.51.100.7"}}, "strict")
+	if !strings.Contains(strict, `default="deny"`) || strings.Count(strict, "<node") != 3 || !strings.Contains(strict, `type="deny" cidr="198.51.100.7/32"`) {
 		t.Errorf("strict acl wrong:\n%s", strict)
 	}
-	lax := CustomersACL(ips, "dialplan")
+	lax := CustomersACL(ips, nil, "dialplan")
 	if !strings.Contains(lax, `default="allow"`) {
 		t.Errorf("dialplan acl wrong:\n%s", lax)
 	}

@@ -31,6 +31,8 @@ type HangupInfo struct {
 	RTPStats          map[string]any
 	RejectReason      string
 	Source            string // "esl", "json_cdr", "reconcile"
+	SRTP              bool   // SRTP negotiated on the customer leg
+	MediaMode         string // "bypass" or "proxy" when FreeSWITCH did not anchor media
 }
 
 // FromVariables builds HangupInfo from a flat map of FreeSWITCH channel
@@ -83,6 +85,13 @@ func FromVariables(v map[string]string, source string) (HangupInfo, bool) {
 	// read_codec is what this leg receives; the carrier side codec comes from
 	// the b-leg hangup (Engine.RecordBLeg), never from the a-leg's write_codec.
 	h.CodecIn = v["read_codec"]
+	h.SRTP = v["rtp_secure_media_confirmed_audio"] == "true"
+	switch {
+	case v["bypass_media"] == "true":
+		h.MediaMode = "bypass"
+	case v["proxy_media"] == "true":
+		h.MediaMode = "proxy"
+	}
 	h.RejectReason = v["sbc_reject_reason"]
 	stats := map[string]any{}
 	for k, val := range v {

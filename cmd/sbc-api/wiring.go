@@ -155,7 +155,7 @@ func (a *app) onBLegHangup(ev esl.Event) {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if err := a.bill.RecordBLeg(ctx, id, codec, stats); err != nil {
+		if err := a.bill.RecordBLeg(ctx, id, codec, stats, ev.Get("variable_rtp_secure_media_confirmed_audio") == "true"); err != nil {
 			a.log.Warn("record b-leg failed", "call_uuid", id, "error", err)
 		}
 	}()
@@ -167,6 +167,7 @@ func (a *app) startWorkers(ctx context.Context) {
 	go a.gateways.Run(ctx)
 	go billing.NewReconciler(a.bill, a.esl).Run(ctx, time.Minute)
 	go a.gaugeLoop(ctx)
+	go a.expireBans(ctx)
 	go reports.NewRollup(reports.New(a.db), a.log).Run(ctx, time.Minute)
 }
 

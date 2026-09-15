@@ -56,6 +56,9 @@ var (
 	CPS = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "sbc", Name: "cps", Help: "Call setups in the last second, by scope (system, customer:<name>).",
 	}, []string{"scope"})
+	Bans = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "sbc", Name: "bans_total", Help: "Source addresses banned by the scanner protection (auto) or by an operator (manual).",
+	}, []string{"kind"})
 	MediaMode = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "sbc", Name: "media_mode_total", Help: "Answered calls by media mode (relay or transcode).",
 	}, []string{"mode"})

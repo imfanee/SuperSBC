@@ -30,6 +30,9 @@ var customerIP = map[string]string{
 	"customer-gamma":   "172.28.0.103",
 	"customer-delta":   "172.28.0.104",
 	"customer-epsilon": "172.28.0.105",
+	"customer-zeta":    "172.28.0.107",
+	"customer-eta":     "172.28.0.108",
+	"customer-theta":   "172.28.0.109",
 	"customer-unknown": "172.28.0.199",
 }
 
@@ -144,7 +147,7 @@ func lastCDR(t *testing.T, srcIP, called string, since time.Time) map[string]any
 		rows := sql(t, fmt.Sprintf(`SELECT call_uuid, disposition, sip_final_code, sip_final_reason, billsec, duration, sell_billed_seconds,
 			sell_price::text AS sell_price, cost::text AS cost, reserved_amount::text AS reserved_amount, charged_amount::text AS charged_amount,
 			released_amount::text AS released_amount, hangup_cause, attempts, failover_depth, pdd_ms, carrier_id, called_number, called_number_raw,
-			src_ip::text AS src_ip, billed_at, reject_reason, media_mode, codec_in
+			src_ip::text AS src_ip, billed_at, reject_reason, media_mode, codec_in, caller_number, transport_in, transport_out, srtp_in, srtp_out, privacy
 			FROM cdrs WHERE src_ip = '%s' AND called_number_raw = '%s' AND start_time >= '%s' AND billed_at IS NOT NULL
 			ORDER BY start_time DESC LIMIT 1`, srcIP, called, since.UTC().Format(time.RFC3339)))
 		if len(rows) == 1 {
@@ -313,14 +316,37 @@ func placeCallArgs(t *testing.T, customer, scenarioPath, called string, calls in
 			t.Fatalf("run sipp: %v\n%s", err, out.String())
 		}
 	}
+	r := readCallResult(t, logName, customer, called)
+	r.ExitCode = res.ExitCode
+	return r
+}
+
+// readCallResult parses a sipp message log into finals.
+func readCallResult(t *testing.T, logName, customer, called string) callResult {
+	t.Helper()
+	res := callResult{}
 	b, _ := os.ReadFile(filepath.Join(repoRoot(t), "tests", "e2e", "out", logName))
 	res.Messages = string(b)
 	re := regexp.MustCompile(`(?m)^SIP/2\.0 ([2-6]\d\d [^\r\n]*)`)
 	for _, m := range re.FindAllStringSubmatch(res.Messages, -1) {
 		res.FinalLines = append(res.FinalLines, strings.TrimSpace(m[1]))
 	}
-	t.Logf("sipp %s -> %s exit=%d finals=%v", customer, called, res.ExitCode, res.FinalLines)
+	t.Logf("sipp %s -> %s finals=%v", customer, called, res.FinalLines)
 	return res
+}
+
+// copyTLSFiles makes the dev certificate available to the sipp containers.
+func copyTLSFiles(t *testing.T) {
+	t.Helper()
+	for _, f := range []string{"cert.pem", "key.pem"} {
+		b, err := os.ReadFile(filepath.Join(repoRoot(t), "freeswitch", "tls", f))
+		if err != nil {
+			t.Fatalf("freeswitch/tls/%s missing (run freeswitch/tls/gen.sh 172.28.0.10): %v", f, err)
+		}
+		if err := os.WriteFile(filepath.Join(repoRoot(t), "tests", "e2e", "out", f), b, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 // waitFreeSWITCH blocks until "fs_cli -x status" reports the core ready.

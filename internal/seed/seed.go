@@ -29,12 +29,16 @@ type carrierDef struct {
 	rates      []rateRow
 	codecs     []string
 	maxCC      int
+	media      string
+	privacy    string
 }
 
 type customerDef struct {
 	name, ip, balance string
 	credit            string
 	maxCC, maxCPS     int
+	media, srtp       string
+	requireTLS        bool
 }
 
 // Demo data. Carrier hosts are the sipp UAS containers of docker compose.
@@ -51,22 +55,27 @@ var (
 	carriers = []carrierDef{
 		{"carrier-answer", "172.28.0.61", 5060, []rateRow{
 			{"1", "USA", "0.005000", "0", 6, 6}, {"44", "UK Fixed", "0.006000", "0", 60, 60}, {"447", "UK Mobile", "0.015000", "0", 60, 60},
-			{"33", "France", "0.010000", "0", 60, 60}, {"49", "Germany", "0.009000", "0", 1, 1}, {"93", "Afghanistan", "0.300000", "0", 60, 60}}, nil, 0},
+			{"33", "France", "0.010000", "0", 60, 60}, {"49", "Germany", "0.009000", "0", 1, 1}, {"93", "Afghanistan", "0.300000", "0", 60, 60}}, nil, 0, "", ""},
 		{"carrier-503", "172.28.0.62", 5060, []rateRow{
-			{"44", "UK Fixed", "0.005500", "0", 60, 60}, {"447", "UK Mobile", "0.014000", "0", 60, 60}}, nil, 0},
+			{"44", "UK Fixed", "0.005500", "0", 60, 60}, {"447", "UK Mobile", "0.014000", "0", 60, 60}}, nil, 0, "", ""},
 		{"carrier-503b", "172.28.0.62", 5060, []rateRow{
-			{"44", "UK Fixed", "0.005800", "0", 60, 60}, {"447", "UK Mobile", "0.014500", "0", 60, 60}}, nil, 0},
+			{"44", "UK Fixed", "0.005800", "0", 60, 60}, {"447", "UK Mobile", "0.014500", "0", 60, 60}}, nil, 0, "", ""},
 		{"carrier-404", "172.28.0.63", 5060, []rateRow{
-			{"44", "UK Fixed", "0.005000", "0", 60, 60}, {"447", "UK Mobile", "0.013000", "0", 60, 60}}, nil, 0},
+			{"44", "UK Fixed", "0.005000", "0", 60, 60}, {"447", "UK Mobile", "0.013000", "0", 60, 60}}, nil, 0, "", ""},
 		// Nothing listens here: OPTIONS ping marks the gateway DOWN and routing skips it.
 		{"carrier-down", "172.28.0.250", 5060, []rateRow{
-			{"44", "UK Fixed", "0.004000", "0", 60, 60}, {"447", "UK Mobile", "0.012000", "0", 60, 60}}, nil, 0},
+			{"44", "UK Fixed", "0.004000", "0", 60, 60}, {"447", "UK Mobile", "0.012000", "0", 60, 60}}, nil, 0, "", ""},
 		// Same UAS as carrier-answer but PCMU only: forces transcoding from a PCMA customer.
 		{"carrier-pcmu", "172.28.0.61", 5060, []rateRow{
-			{"44", "UK Fixed", "0.007000", "0", 60, 60}}, []string{"PCMU"}, 0},
+			{"44", "UK Fixed", "0.007000", "0", 60, 60}}, []string{"PCMU"}, 0, "", ""},
 		// Same UAS, one channel: the second concurrent call must fail over.
 		{"carrier-cap1", "172.28.0.61", 5060, []rateRow{
-			{"44", "UK Fixed", "0.005000", "0", 60, 60}}, nil, 1},
+			{"44", "UK Fixed", "0.005000", "0", 60, 60}}, nil, 1, "", ""},
+		// Media bypass and privacy passthrough variants of the answering carrier (Section 7 [M5]).
+		{"carrier-bypass", "172.28.0.61", 5060, []rateRow{
+			{"44", "UK Fixed", "0.006000", "0", 60, 60}}, nil, 0, "bypass", ""},
+		{"carrier-privacy-pass", "172.28.0.61", 5060, []rateRow{
+			{"44", "UK Fixed", "0.006000", "0", 60, 60}}, nil, 0, "", "pass"},
 	}
 	// prefix -> ordered carriers
 	routes = []struct {
@@ -83,16 +92,22 @@ var (
 		{"4476", "UK Mobile gateway down", []string{"carrier-down", "carrier-answer"}},
 		{"4421", "UK London transcode", []string{"carrier-pcmu"}},
 		{"4422", "UK London capacity", []string{"carrier-cap1", "carrier-answer"}},
+		{"4423", "UK London bypass", []string{"carrier-bypass"}},
+		{"4424", "UK London privacy pass", []string{"carrier-privacy-pass"}},
 		{"33", "France (no carriers)", []string{}},
 	}
 	customers = []customerDef{
-		{"acme", "172.28.0.101/32", "10.000000", "0", 0, 0},
-		{"beta", "172.28.0.102/32", "0.000000", "0", 0, 0},
-		{"gamma", "172.28.0.103/32", "0.080000", "0", 0, 0},
-		{"delta-limited", "172.28.0.104/32", "100.000000", "0", 1, 0},
-		{"epsilon-cps", "172.28.0.105/32", "100.000000", "0", 0, 1},
+		{"acme", "172.28.0.101/32", "10.000000", "0", 0, 0, "", "", false},
+		{"beta", "172.28.0.102/32", "0.000000", "0", 0, 0, "", "", false},
+		{"gamma", "172.28.0.103/32", "0.080000", "0", 0, 0, "", "", false},
+		{"delta-limited", "172.28.0.104/32", "100.000000", "0", 1, 0, "", "", false},
+		{"epsilon-cps", "172.28.0.105/32", "100.000000", "0", 0, 1, "", "", false},
 		// Load test source (tests/load/run.sh): deep pockets, no limits.
-		{"loadtest", "172.28.0.110/32", "10000.000000", "0", 0, 0},
+		{"loadtest", "172.28.0.110/32", "10000.000000", "0", 0, 0, "", "", false},
+		// Section 7 [M5] policies
+		{"zeta-tls", "172.28.0.107/32", "100.000000", "0", 0, 0, "", "", true},
+		{"eta-srtp", "172.28.0.108/32", "100.000000", "0", 0, 0, "", "mandatory", false},
+		{"theta-bypass", "172.28.0.109/32", "100.000000", "0", 0, 0, "bypass", "", false},
 	}
 )
 
@@ -127,6 +142,7 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 		car, err := st.UpsertCarrier(ctx, &model.Carrier{
 			Name: c.name, Status: "active", RateGroupID: &rgID, GatewayHost: c.host, GatewayPort: c.port, Transport: "udp",
 			AllowedCodecs: codecs, MaxConcurrentCalls: c.maxCC, SIPOptionsPing: c.name == "carrier-down",
+			MediaMode: c.media, PrivacyMode: c.privacy,
 			Notes: "Demo carrier backed by a sipp UAS container (OPTIONS ping off: sipp UAS does not answer OPTIONS)",
 		})
 		if err != nil {
@@ -161,6 +177,7 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 			Name: c.name, Status: "active", RateGroupID: &sellID, RouteGroupID: &routeID,
 			MaxConcurrentCalls: c.maxCC, MaxCPS: c.maxCPS, AllowedCodecs: []string{"PCMA", "PCMU", "OPUS", "G722"},
 			IntlPrefix: "00", BlockedPrefixesEnabled: true, Notes: "Demo customer",
+			MediaMode: c.media, SRTPMode: c.srtp, RequireTLS: c.requireTLS,
 		})
 		if err != nil {
 			return err

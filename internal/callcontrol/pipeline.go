@@ -303,6 +303,11 @@ type RouteResult struct {
 // descending then random; degraded carriers go last; DOWN gateways and
 // carriers without a buy rate are skipped.
 func (p *Pipeline) Route(ctx context.Context, cust *model.Customer, called, caller string, sell *model.Rate, callUUID string) (*RouteResult, error) {
+	return p.RouteWith(ctx, cust, called, caller, sell, callUUID, false)
+}
+
+// RouteWith is Route with the privacy flag of the call.
+func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, caller string, sell *model.Rate, callUUID string, privacy bool) (*RouteResult, error) {
 	if cust.RouteGroupID == nil {
 		return &RouteResult{}, nil
 	}
@@ -373,8 +378,20 @@ func (p *Pipeline) Route(ctx context.Context, cust *model.Customer, called, call
 			DialNumber: dial, CallerID: ani, BuyRateID: &rid, BuyRatePerMin: &rate, BuyDestination: buy.Destination,
 			NegativeMargin: negative, FailoverSIPCodes: c.FailoverSIPCodes, Codecs: codecString(cust.AllowedCodecs, c.AllowedCodecs),
 			IgnoreEarlyMedia: c.IgnoreEarlyMedia, Degraded: p.health.Degraded(c.ID),
+			MediaMode: MediaModeFor(cust.MediaMode, c.MediaMode),
 		}
-		ch.DialString = p.dialString(ch, callUUID)
+		var extra []string
+		if privacy {
+			ch.CallerID, extra = PrivacyVars(c.PrivacyMode, ani, p.cfg.FSNodeIP)
+		}
+		extra = append(extra, dtmfVars(c.DTMFMode)...)
+		extra = append(extra, "rtp_secure_media="+srtpVar(c.SRTPMode))
+		custRules, _ := p.tables.HeaderRules(ctx, "customer", cust.ID)
+		carRules, _ := p.tables.HeaderRules(ctx, "carrier", c.ID)
+		plan := ApplyHeaderRules(custRules, carRules, HeaderContext{Caller: caller, Called: called, Customer: cust.Name, Carrier: c.Name, CallUUID: callUUID, NodeIP: p.cfg.FSNodeIP})
+		extra = append(extra, plan.EgressVars...)
+		ch.Passthrough = plan.Passthrough
+		ch.DialString = p.dialString(ch, callUUID, extra)
 		cands = append(cands, cand{choice: ch, rc: rc, buy: buy})
 	}
 	// Order: priority, then weighted random within a priority, degraded last;
@@ -451,7 +468,7 @@ func codecString(customer, carrier []string) string {
 // dialString builds the FreeSWITCH originate string for one carrier
 // (Section 3 Step 8). Variables that belong to the a-leg (continue_on_fail,
 // hangup_after_bridge) are set by Lua, not here.
-func (p *Pipeline) dialString(c CarrierChoice, callUUID string) string {
+func (p *Pipeline) dialString(c CarrierChoice, callUUID string, extra []string) string {
 	vars := []string{
 		"sip_h_X-SBC-Call=" + callUUID,
 		"origination_caller_id_number=" + c.CallerID,
@@ -469,6 +486,7 @@ func (p *Pipeline) dialString(c CarrierChoice, callUUID string) string {
 		"sbc_carrier_id=" + c.CarrierID.String(),
 		"sbc_attempt_seq=" + fmt.Sprint(c.Seq),
 	}
+	vars = append(vars, extra...)
 	return "{" + strings.Join(vars, ",") + "}sofia/gateway/" + c.Gateway + "/" + c.DialNumber
 }
 
@@ -530,13 +548,40 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		resp.CustomerCodecs = strings.Join(auth.Customer.AllowedCodecs, ",")
 	}
 	if auth.Reject != nil {
+		if auth.Reject.Reason == "IP not authorized" {
+			p.countScanner(ctx, req.SrcIP)
+		}
 		return reject("authorize", *auth.Reject, model.DispositionRejectedAuth), nil
 	}
 	cust := auth.Customer
+	transport := strings.ToLower(req.Transport)
+	if transport == "" {
+		transport = "udp"
+	}
+	cdr.TransportIn = &transport
+	cdr.SRTPIn = req.SRTPOffered
+	cdr.Privacy = req.Privacy
 	// From here on a concurrency slot is held; release it on every rejection.
 	rejectAdmitted := func(step string, r Reject, disposition string) *SetupResponse {
 		p.LeaveAdmission(ctx, cust.ID)
 		return reject(step, r, disposition)
+	}
+
+	// Customer transport and media policies (Section 7 [M5]).
+	if cust.RequireTLS && transport != "tls" {
+		return rejectAdmitted("policy", Reject{403, "TLS required"}, model.DispositionRejectedAuth), nil
+	}
+	if cust.SRTPMode == "mandatory" && !req.SRTPOffered {
+		return rejectAdmitted("policy", Reject{488, "SRTP required"}, model.DispositionRejectedAuth), nil
+	}
+	resp.Vars["rtp_secure_media"] = srtpVar(cust.SRTPMode)
+	dtmfV, dtmfApps := ALegDTMF(cust.DTMFMode)
+	for k, v := range dtmfV {
+		resp.Vars[k] = v
+	}
+	resp.Apps = dtmfApps
+	if req.Privacy {
+		resp.Vars["sbc_privacy"] = "true"
 	}
 
 	// Step 2
@@ -546,6 +591,9 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		return rejectAdmitted("normalize", Reject{484, "Address Incomplete"}, model.DispositionRejectedRoute), nil
 	}
 	caller := numbering.NormalizeCaller(req.Caller, opts)
+	if cust.TrustPAI && req.PAINumber != "" {
+		caller = numbering.NormalizeCaller(req.PAINumber, opts)
+	}
 	cdr.CalledNumber = called
 	cdr.CallerNumber = caller
 	resp.Called = called
@@ -628,11 +676,18 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	}
 
 	// Steps 6 and 7
-	route, err := p.Route(ctx, cust, called, caller, sell, req.CallUUID)
+	route, err := p.RouteWith(ctx, cust, called, caller, sell, req.CallUUID, req.Privacy)
 	if err != nil {
 		return nil, err
 	}
 	resp.Skipped = route.Skipped
+	// Response header rules (customer side) apply to what the customer receives.
+	if custRules, err := p.tables.HeaderRules(ctx, "customer", cust.ID); err == nil {
+		plan := ApplyHeaderRules(custRules, nil, HeaderContext{Caller: caller, Called: called, Customer: cust.Name, CallUUID: req.CallUUID, NodeIP: p.cfg.FSNodeIP})
+		for k, v := range plan.ResponseVars {
+			resp.Vars[k] = v
+		}
+	}
 	if route.Route == nil || len(route.Carriers) == 0 {
 		return rejectReserved("route", Reject{503, "No route"}, model.DispositionRejectedRoute), nil
 	}
@@ -649,6 +704,34 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	log.Info("call setup", "customer", cust.Name, "called", called, "sell_rate", sell.RatePerMin.StringFixed(6),
 		"reserved", rr.ReservedAmount.StringFixed(6), "max_call_seconds", rr.MaxCallSeconds, "carriers", len(route.Carriers))
 	return resp, nil
+}
+
+// countScanner counts unauthorised INVITEs per source address and bans the
+// address when the threshold is crossed (Section 7, scanner protection).
+func (p *Pipeline) countScanner(ctx context.Context, ip string) {
+	if p.cfg.Ban.Threshold <= 0 || p.rdb == nil || ip == "" {
+		return
+	}
+	key := "scan:" + ip
+	n, err := p.rdb.Incr(ctx, key).Result()
+	if err != nil {
+		return
+	}
+	if n == 1 {
+		_ = p.rdb.Expire(ctx, key, p.cfg.Ban.Window).Err()
+	}
+	if n < int64(p.cfg.Ban.Threshold) {
+		return
+	}
+	exp := time.Now().Add(p.cfg.Ban.Duration)
+	if _, err := p.st.Ban(ctx, ip, fmt.Sprintf("%d unauthorised INVITEs in %s", n, p.cfg.Ban.Window), int(n), false, &exp); err != nil {
+		p.log.Warn("ban failed", "ip", ip, "error", err)
+		return
+	}
+	_ = p.rdb.Del(ctx, key).Err()
+	p.log.Warn("source address banned", "ip", ip, "hits", n, "until", exp)
+	metrics.Bans.WithLabelValues("auto").Inc()
+	cache.Publish(ctx, p.rdb, cache.ChanBansChanged, ip)
 }
 
 // ReleaseReservation gives the money back for a call that will not be

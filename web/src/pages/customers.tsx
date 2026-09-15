@@ -34,6 +34,7 @@ import { Field } from "@/components/form";
 import { ErrorBox, KV, PageHeader } from "@/components/page";
 import { RateGroupSelect, RouteGroupSelect } from "@/components/selects";
 import { CDRTable } from "@/pages/cdrs";
+import { HeaderRulesTab } from "@/components/header-rules";
 import { useAuth } from "@/hooks/use-auth";
 import { dt, money } from "@/lib/utils";
 
@@ -52,6 +53,10 @@ const customerSchema = z.object({
   blocked_prefixes_enabled: z.boolean(),
   notes: z.string(),
   currency: z.string().length(3).optional().or(z.literal("")),
+  media_mode: z.enum(["anchor", "proxy", "bypass"]),
+  dtmf_mode: z.enum(["rfc2833", "info", "inband"]),
+  srtp_mode: z.enum(["off", "optional", "mandatory"]),
+  require_tls: z.boolean(),
 });
 type CustomerForm = z.infer<typeof customerSchema>;
 
@@ -71,6 +76,10 @@ function toForm(c?: Customer | null): CustomerForm {
     blocked_prefixes_enabled: c?.blocked_prefixes_enabled ?? true,
     notes: c?.notes ?? "",
     currency: "",
+    media_mode: c?.media_mode ?? "anchor",
+    dtmf_mode: c?.dtmf_mode ?? "rfc2833",
+    srtp_mode: c?.srtp_mode ?? "optional",
+    require_tls: c?.require_tls ?? false,
   };
 }
 
@@ -206,7 +215,7 @@ export function CustomerForm({
       <div className="flex items-center gap-2 pt-5">
         <Switch checked={watch("trust_pai")} onCheckedChange={(v) => setValue("trust_pai", v)} id="pai" />
         <label htmlFor="pai" className="text-sm">
-          Trust P-Asserted-Identity (roadmap)
+          Trust P-Asserted-Identity as the caller number
         </label>
       </div>
       <Field label="Notes" className="sm:col-span-2">
@@ -395,6 +404,7 @@ export function CustomerDetailPage() {
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="blocks">Blocked prefixes</TabsTrigger>
+          <TabsTrigger value="headers">Header rules</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
           <TabsTrigger value="trace">Trace</TabsTrigger>
         </TabsList>
@@ -460,6 +470,10 @@ export function CustomerDetailPage() {
                     ["Default country code", c.default_country_code || "none"],
                     ["International prefix", c.intl_prefix],
                     ["Block lists", c.blocked_prefixes_enabled ? "applied" : "bypassed"],
+                    [
+                      "Media / DTMF / SRTP",
+                      `${c.media_mode} / ${c.dtmf_mode} / ${c.srtp_mode}${c.require_tls ? ", TLS required" : ""}`,
+                    ],
                     ["Authorised IPs", d.ips.length],
                   ]}
                 />
@@ -495,6 +509,9 @@ export function CustomerDetailPage() {
         </TabsContent>
         <TabsContent value="blocks">
           <BlocksTab customerId={id} />
+        </TabsContent>
+        <TabsContent value="headers">
+          <HeaderRulesTab ownerType="customer" ownerId={id} />
         </TabsContent>
         <TabsContent value="cdrs">
           <CDRTable fixed={{ customer_id: id }} />

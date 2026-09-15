@@ -127,6 +127,7 @@ func (h *Handler) systemStatus(w http.ResponseWriter, r *http.Request) {
 			"global_max_cps": h.Cfg.Routing.GlobalMaxCPS, "global_max_channels": h.Cfg.Routing.GlobalMaxChannels, "media_timeout_sec": h.Cfg.Routing.MediaTimeoutSec,
 			"acl_mode": h.Cfg.ACLMode, "breaker_consecutive_faults": h.Cfg.Failover.BreakerConsecutiveFaults, "breaker_asr_threshold_percent": h.Cfg.Failover.BreakerASRThresholdPercent,
 			"breaker_degraded_seconds": h.Cfg.Failover.BreakerDegradedSeconds, "gateway_ping_interval_seconds": h.Cfg.Failover.GatewayPingIntervalSeconds,
+			"ban_threshold": h.Cfg.Ban.Threshold, "ban_window": h.Cfg.Ban.Window.String(), "ban_duration": h.Cfg.Ban.Duration.String(),
 		},
 	})
 }

@@ -4,7 +4,7 @@ import { Plus, Trash2, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 import { del, get, post, put } from "@/api/client";
-import type { APIKey, AuditEntry, BlockedPrefix, FXRate, Listing, User } from "@/api/types";
+import type { APIKey, AuditEntry, BannedIP, BlockedPrefix, FXRate, Listing, User } from "@/api/types";
 import { Badge, stateVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,6 +87,12 @@ export function SystemPage() {
   const [prefix, setPrefix] = useState("");
   const [reason, setReason] = useState("");
   const [fxIn, setFxIn] = useState({ base: "USD", quote: "EUR", rate: "" });
+  const bans = useQuery({
+    queryKey: ["bans"],
+    queryFn: () => get<BannedIP[]>("/system/banned-ips"),
+    refetchInterval: 15_000,
+  });
+  const [banIn, setBanIn] = useState({ ip: "", reason: "", minutes: "60" });
   const [settingKey, setSettingKey] = useState("");
   const [settingVal, setSettingVal] = useState("");
   const s = status.data;
@@ -100,6 +106,7 @@ export function SystemPage() {
           <TabsTrigger value="config">Configuration</TabsTrigger>
           <TabsTrigger value="failover">Failover rules</TabsTrigger>
           <TabsTrigger value="blocklist">Global blacklist</TabsTrigger>
+          <TabsTrigger value="bans">Banned IPs</TabsTrigger>
           <TabsTrigger value="fx">Exchange rates</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -292,6 +299,102 @@ export function SystemPage() {
                   <li className="py-2 text-muted-foreground">Nothing blocked globally.</li>
                 )}
               </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="bans">
+          <Card>
+            <CardHeader>
+              <CardTitle>Banned source addresses (scanner protection)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Addresses that sent too many unauthorised INVITEs are banned automatically (threshold, window
+                and duration in the configuration tab); bans are FreeSWITCH ACL deny nodes reloaded
+                immediately. Manual bans can be permanent (0 minutes).
+              </p>
+              {can("write") && (
+                <div className="flex flex-wrap items-end gap-2">
+                  <Field label="Address">
+                    <Input
+                      value={banIn.ip}
+                      onChange={(e) => setBanIn({ ...banIn, ip: e.target.value })}
+                      className="w-44 font-mono"
+                    />
+                  </Field>
+                  <Field label="Reason">
+                    <Input
+                      value={banIn.reason}
+                      onChange={(e) => setBanIn({ ...banIn, reason: e.target.value })}
+                      className="w-56"
+                    />
+                  </Field>
+                  <Field label="Minutes (0 = permanent)">
+                    <Input
+                      value={banIn.minutes}
+                      onChange={(e) => setBanIn({ ...banIn, minutes: e.target.value })}
+                      className="w-28"
+                    />
+                  </Field>
+                  <Button
+                    disabled={!banIn.ip}
+                    onClick={() =>
+                      post("/system/banned-ips", {
+                        ip: banIn.ip,
+                        reason: banIn.reason,
+                        minutes: Number(banIn.minutes) || 0,
+                      })
+                        .then(() => (setBanIn({ ip: "", reason: "", minutes: "60" }), bans.refetch()))
+                        .catch((e) => toast.error(e.message))
+                    }
+                  >
+                    <Plus /> Ban
+                  </Button>
+                </div>
+              )}
+              <table className="w-full text-sm">
+                <thead className="text-xs text-muted-foreground">
+                  <tr>
+                    <th className="py-1 text-left">Address</th>
+                    <th className="py-1 text-left">Reason</th>
+                    <th className="py-1 text-right">Hits</th>
+                    <th className="py-1 text-left">Since</th>
+                    <th className="py-1 text-left">Expires</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {(bans.data ?? []).map((b) => (
+                    <tr key={b.ip} className="border-t">
+                      <td className="py-1 font-mono">{b.ip}</td>
+                      <td className="py-1">
+                        {b.manual && <Badge variant="secondary">manual</Badge>} {b.reason}
+                      </td>
+                      <td className="py-1 text-right tabular">{b.hits}</td>
+                      <td className="py-1">{dt(b.banned_at)}</td>
+                      <td className="py-1">{b.expires_at ? dt(b.expires_at) : "never"}</td>
+                      <td className="py-1 text-right">
+                        {can("write") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => del(`/system/banned-ips/${b.ip}`).then(() => bans.refetch())}
+                          >
+                            Unban
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {bans.data?.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-3 text-center text-muted-foreground">
+                        Nothing banned.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </CardContent>
           </Card>
         </TabsContent>

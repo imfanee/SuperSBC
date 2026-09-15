@@ -28,6 +28,10 @@ export interface Customer {
   intl_prefix: string;
   trust_pai: boolean;
   blocked_prefixes_enabled: boolean;
+  media_mode: "anchor" | "proxy" | "bypass";
+  dtmf_mode: "rfc2833" | "info" | "inband";
+  srtp_mode: "off" | "optional" | "mandatory";
+  require_tls: boolean;
   notes: string;
   created_at: string;
   updated_at: string;
@@ -94,6 +98,10 @@ export interface Carrier {
   sip_options_ping: boolean;
   charge_failed_attempts: boolean;
   ignore_early_media: boolean;
+  media_mode: "anchor" | "proxy" | "bypass";
+  dtmf_mode: "rfc2833" | "info" | "inband";
+  srtp_mode: "off" | "optional" | "mandatory";
+  privacy_mode: "anonymize" | "pass" | "ignore";
   notes: string;
   created_at: string;
 }
@@ -236,6 +244,11 @@ export interface CDR {
   codec_out: string | null;
   media_mode: string | null;
   rtp_stats: Record<string, unknown> | null;
+  transport_in: string | null;
+  transport_out: string | null;
+  srtp_in: boolean;
+  srtp_out: boolean;
+  privacy: boolean;
   sbc_node: string | null;
 }
 
@@ -332,4 +345,25 @@ export interface Simulation {
     margin_per_min: string | null;
     dial_string: string;
   }>;
+}
+
+export interface HeaderRule {
+  id: string;
+  owner_type: "customer" | "carrier";
+  owner_id: string;
+  direction: "egress" | "response";
+  action: "add" | "passthrough" | "remove";
+  header: string;
+  value: string;
+  priority: number;
+  enabled: boolean;
+}
+
+export interface BannedIP {
+  ip: string;
+  reason: string;
+  hits: number;
+  manual: boolean;
+  banned_at: string;
+  expires_at: string | null;
 }
