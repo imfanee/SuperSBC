@@ -19,8 +19,8 @@
     <param name="sip-port" value="$${sbc_ingress_port}"/>
     <param name="sip-ip" value="$${sbc_sip_ip}"/>
     <param name="rtp-ip" value="$${sbc_rtp_ip}"/>
-    <param name="ext-sip-ip" value="$${sbc_sip_ip}"/>
-    <param name="ext-rtp-ip" value="$${sbc_rtp_ip}"/>
+    <param name="ext-sip-ip" value="$${sbc_ext_ip}"/>
+    <param name="ext-rtp-ip" value="$${sbc_ext_ip}"/>
     <param name="rfc2833-pt" value="101"/>
     <param name="dtmf-duration" value="2000"/>
     <param name="dtmf-type" value="rfc2833"/>

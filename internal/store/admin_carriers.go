@@ -86,7 +86,7 @@ func (s *Store) UpdateCarrier(ctx context.Context, c *model.Carrier) (*model.Car
 // DeleteCarrier soft-deletes a carrier and detaches it from routes.
 func (s *Store) DeleteCarrier(ctx context.Context, id uuid.UUID) error {
 	return s.WithTx(ctx, func(tx Tx) error {
-		tag, err := tx.Exec(ctx, `UPDATE carriers SET deleted_at = now(), status = 'disabled', name = name || '~deleted~' || to_char(now(), 'YYYYMMDDHH24MISS') WHERE id = $1 AND deleted_at IS NULL`, id)
+		tag, err := tx.Exec(ctx, `UPDATE carriers SET deleted_at = now(), status = 'disabled', name = name || '-deleted-' || to_char(now(), 'YYYYMMDDHH24MISS') WHERE id = $1 AND deleted_at IS NULL`, id)
 		if err != nil {
 			return wrapErr(err)
 		}

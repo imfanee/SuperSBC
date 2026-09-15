@@ -12,11 +12,27 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
-const adminBase = "http://127.0.0.1:8080/api/v1"
+var adminBase = "http://127.0.0.1:" + envValue("SBC_ADMIN_PORT", "18080") + "/api/v1"
+
+// envValue reads one variable from the repository .env file.
+func envValue(key, def string) string {
+	wd, _ := os.Getwd()
+	b, err := os.ReadFile(filepath.Clean(filepath.Join(wd, "..", "..", ".env")))
+	if err != nil {
+		return def
+	}
+	for _, line := range strings.Split(string(b), "\n") {
+		if strings.HasPrefix(line, key+"=") {
+			return strings.TrimPrefix(line, key+"=")
+		}
+	}
+	return def
+}
 
 // apiClient is a cookie-session client for the admin API.
 type apiClient struct {
@@ -34,16 +50,7 @@ func newAPIClient(t *testing.T) *apiClient {
 
 func adminPassword(t *testing.T) string {
 	t.Helper()
-	b, err := os.ReadFile(repoRoot(t) + "/.env")
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, line := range strings.Split(string(b), "\n") {
-		if strings.HasPrefix(line, "SBC_BOOTSTRAP_ADMIN_PASSWORD=") {
-			return strings.TrimPrefix(line, "SBC_BOOTSTRAP_ADMIN_PASSWORD=")
-		}
-	}
-	return ""
+	return envValue("SBC_BOOTSTRAP_ADMIN_PASSWORD", "")
 }
 
 func (a *apiClient) login(email, password string) (int, map[string]any) {

@@ -71,5 +71,7 @@ Every choice the specification left open, and the reason it was made. Numbered s
 * **D-49 Hourly roll-ups feed the dashboard only.** `cdr_hourly_stats` is recomputed every minute for the current and previous hour and for any hour whose CDRs changed; the dashboard's hourly profile reads it. All other reports query `cdrs` directly so any filter combination works; the roll-up is the fast path, not a second source of truth.
 * **D-50 SIP trace scope.** Sofia traces a whole profile, not one address; the UI enables tracing on the ingress profile for N minutes (auto-off) and filters the captured messages by address when displaying them. The trace is captured in `freeswitch.log` because the logfile profile maps the `console` level.
 
+* **D-51 Two stacks, one box.** Dev and live are separate compose projects with separate `.env` files, volumes and bridge subnets (172.28 and 172.29). Live FreeSWITCH uses `network_mode: host` (SIP and RTP need the real address), ESL listens on the live bridge gateway 172.29.0.1 so only containers reach it, the internal API is published on 127.0.0.1:8081 for FreeSWITCH, and nginx terminates TLS on 8443 with 8080 redirecting (secure cookies require HTTPS). Dev ports are bound to loopback so nothing from the dev stack is reachable from the internet. The host firewall is nftables in its own table so Docker's rules stay untouched.
+
 * **D-41 No em-dash character anywhere.** Enforced by `make lint` (`grep` over the tree).
 * **D-42 Conventional commits**, one per milestone, plus intermediate commits when a milestone is large.

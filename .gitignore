@@ -1,9 +1,11 @@
-.env
+backups/
 bin/
-web/node_modules/
-web/dist/
+coverage.out
+deploy/live/tls/
+.env
+.env.live
 *.log
 tests/e2e/out/*
 !tests/e2e/out/.gitkeep
-coverage.out
-backups/
+web/dist/
+web/node_modules/

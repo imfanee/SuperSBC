@@ -1,6 +1,6 @@
 # Operations
 
-Day-two runbook for OpenSBC. Everything here uses the compose stack; the same commands apply to a production host with the `deploy/docker-compose.host.yml` override.
+Day-two runbook for OpenSBC. The commands use the dev stack (`docker compose`, `make ...`); for the live stack substitute `make live-...` targets or `docker compose -p opensbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml` (see [GO_LIVE.md](GO_LIVE.md)).
 
 ## 1. Start, stop, upgrade
 
@@ -26,30 +26,23 @@ docker compose --profile e2e up -d          # sipp mock carriers for tests
 
 ## 2. Exposing SIP to real customers
 
-The default compose network is a private bridge (172.28.0.0/24): fine for the lab and for the e2e suite, wrong for real traffic because FreeSWITCH advertises its container address in SDP. For production run FreeSWITCH on the host network:
-
-```bash
-# .env: SBC_FS_NODE_IP=<public or DMZ ip of this host>
-docker compose -f docker-compose.yml -f deploy/docker-compose.host.yml up -d
-```
-
-`deploy/docker-compose.host.yml` switches the `freeswitch` service to `network_mode: host`, points the API at `SBC_ESL_HOST=127.0.0.1` and `SBC_API_INTERNAL_URL=http://<host ip>:8081`. Open UDP/TCP 5060 (customers), 5080 (carriers) and UDP 16384 to 32768 (RTP) on the firewall. Keep 8021 (ESL), 8081 (internal API) and 5432/6379 closed to the outside; they are bound to loopback or the docker network.
+The dev compose network is a private bridge (172.28.0.0/24): fine for the lab and for the e2e suite, wrong for real traffic because FreeSWITCH advertises its container address in SDP. The live stack (`deploy/live`, see [GO_LIVE.md](GO_LIVE.md)) runs FreeSWITCH on the host network with `SBC_FS_NODE_IP` set to the public address (`SBC_FS_EXT_IP` when behind 1:1 NAT), ESL bound to the docker bridge gateway so only containers reach it, the internal API on loopback, and `make live-firewall` opens only ssh, 8080, 8443, SIP 5060, RTP and 5080 from the carrier allow-list.
 
 ## 3. Add a customer
 
-UI: Customers, New customer. API:
+UI: Customers, New customer. API (`API=http://127.0.0.1:18080/api/v1` on dev, `API=https://<host>:8443/api/v1` with `curl -k` on live):
 
 ```bash
 # log in and keep the cookies
-curl -c cj -H 'Content-Type: application/json' -d '{"email":"admin@example.com","password":"..."}' localhost:8080/api/v1/auth/login
+curl -c cj -H 'Content-Type: application/json' -d '{"email":"admin@example.com","password":"..."}' $API/auth/login
 CSRF=$(grep sbc_csrf cj | awk '{print $7}')
 H=(-b cj -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json')
 
 # customer with selling deck and route group
-curl "${H[@]}" -d '{"name":"newco","rate_group_id":"<retail deck id>","route_group_id":"<route group id>","max_concurrent_calls":30,"max_cps":5}' localhost:8080/api/v1/customers
+curl "${H[@]}" -d '{"name":"newco","rate_group_id":"<retail deck id>","route_group_id":"<route group id>","max_concurrent_calls":30,"max_cps":5}' $API/customers
 # authorise its address (single IP or CIDR) and put money on the account
-curl "${H[@]}" -d '{"ip_cidr":"203.0.113.10/32"}' localhost:8080/api/v1/customers/<id>/ips
-curl "${H[@]}" -d '{"amount":"100.00","description":"first payment"}' localhost:8080/api/v1/customers/<id>/account/topup
+curl "${H[@]}" -d '{"ip_cidr":"203.0.113.10/32"}' $API/customers/<id>/ips
+curl "${H[@]}" -d '{"amount":"100.00","description":"first payment"}' $API/customers/<id>/account/topup
 ```
 
 What happens underneath: the IP cache is flushed on every API node (Redis `customer_ips:changed`), the FreeSWITCH ACL is re-rendered and `reloadacl` runs. In `SBC_ACL_MODE=dialplan` (default) unknown addresses still reach the Lua pipeline and get `403 IP not authorized`; in `strict` mode Sofia answers a bare `403 Forbidden` before the dialplan.
@@ -64,7 +57,7 @@ The API renders `/etc/freeswitch/sip_profiles/external-egress/<name>.xml` on the
 
 ```bash
 docker compose exec freeswitch fs_cli -p "$SBC_ESL_PASSWORD" -x 'sofia status'          # gateway listed, state NOREG/REGED (UP) or DOWN
-curl -b cj localhost:8080/api/v1/carriers/<id>/status                                     # ping state, breaker, live channels
+curl -b cj $API/carriers/<id>/status                                     # ping state, breaker, live channels
 ```
 
 With `sip_options_ping=true` (default) a gateway that fails OPTIONS is marked DOWN by FreeSWITCH within about a minute and routing skips it; when it answers again it returns to UP automatically.
@@ -76,10 +69,10 @@ Then add the carrier to routes: Route groups, open the route, Add carrier, drag 
 UI: Rate groups, New rate group, then Import CSV: pick the file, Validate (a dry run that reports invalid rows with line numbers), then Import. Tick "Replace the whole deck" to swap a deck atomically. API:
 
 ```bash
-curl "${H[@]:0:3}" -F file=@rates.csv 'localhost:8080/api/v1/rate-groups/<id>/rates/import?dry_run=true'   # preview
-curl "${H[@]:0:3}" -F file=@rates.csv 'localhost:8080/api/v1/rate-groups/<id>/rates/import?replace=true'   # import
-curl -b cj 'localhost:8080/api/v1/rate-groups/<id>/rates/test?number=447700900123'                          # longest prefix check
-curl -b cj 'localhost:8080/api/v1/rate-groups/<id>/rates/export' > deck.csv
+curl "${H[@]:0:3}" -F file=@rates.csv '$API/rate-groups/<id>/rates/import?dry_run=true'   # preview
+curl "${H[@]:0:3}" -F file=@rates.csv '$API/rate-groups/<id>/rates/import?replace=true'   # import
+curl -b cj '$API/rate-groups/<id>/rates/test?number=447700900123'                          # longest prefix check
+curl -b cj '$API/rate-groups/<id>/rates/export' > deck.csv
 ```
 
 CSV columns: `prefix,destination,rate_per_min,connect_fee,initial_increment,subsequent_increment,min_duration,effective_from,effective_to,enabled`. Only `prefix` and `rate_per_min` (or `rate`) are required; unknown columns are ignored. Rates with a future `effective_from` are loaded now and used from that moment (the trie is rebuilt every five minutes and on every change).

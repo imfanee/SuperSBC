@@ -1,7 +1,8 @@
 <configuration name="event_socket.conf" description="Socket Client">
   <settings>
     <param name="nat-map" value="false"/>
-    <param name="listen-ip" value="0.0.0.0"/>
+    <!-- 0.0.0.0 inside the compose bridge; the docker bridge gateway address on a host-network deployment -->
+    <param name="listen-ip" value="$${sbc_esl_listen_ip}"/>
     <param name="listen-port" value="8021"/>
     <param name="password" value="$${sbc_esl_password}"/>
     <!-- Only the docker network may connect; the port is never published. -->

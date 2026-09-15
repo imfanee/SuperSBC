@@ -10,6 +10,10 @@ A deliberately simple, production-minded Session Border Controller with prepaid 
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and [docs/DECISIONS.md](docs/DECISIONS.md) for every assumption.
 
+## Two environments on one box
+
+This repository runs a **dev** stack (private docker network, loopback ports, sipp mock carriers) and a **live** stack (FreeSWITCH on the host network, SIP 5060, web on 8080/8443). See [docs/GO_LIVE.md](docs/GO_LIVE.md).
+
 ## Quick start
 
 Requirements: Docker 26+ with Compose v2, GNU make, and for development Go 1.26, Node 22, `golangci-lint`, `luacheck`.
@@ -21,9 +25,9 @@ make seed                   # demo customers, carriers, rate decks and routes
 curl -s localhost:8080/readyz | jq
 ```
 
-* Admin API: http://localhost:8080/api/v1 (OpenAPI at `/api/docs`)
-* Monitoring: `docker compose --profile monitoring up -d` then Grafana at http://localhost:3001 (admin / admin)
-* Web UI: http://localhost:3000 (login `admin@example.com` / the `SBC_BOOTSTRAP_ADMIN_PASSWORD` you set)
+* Admin API: http://127.0.0.1:18080/api/v1 (OpenAPI at `/api/docs`)
+* Monitoring: `docker compose --profile monitoring up -d` then Grafana at http://127.0.0.1:13001 (admin / admin)
+* Web UI: http://127.0.0.1:13000 (login `admin@example.com` / the `SBC_BOOTSTRAP_ADMIN_PASSWORD` you set)
 * SIP ingress: `172.28.0.10:5060` inside the compose network (see docs/OPERATIONS.md for exposing it to real customers)
 
 ## Everything with one command
@@ -40,6 +44,7 @@ curl -s localhost:8080/readyz | jq
 | `make reconcile` | proves that balances equal the ledger and reservations equal open calls |
 | `make replay-cdrs` | re-posts CDRs spooled by mod_json_cdr while the API was down |
 | `make openapi` | regenerates the OpenAPI document and docs/API.md |
+| `make live-init` / `live-up` / `live-ps` / `live-logs` / `live-backup` / `live-firewall` | the live stack (docs/GO_LIVE.md) |
 | `make logs` | follow all logs |
 | `make down` / `make clean` | stop, or stop and delete data |
 
@@ -56,6 +61,7 @@ curl -s localhost:8080/readyz | jq
 | [docs/ROADMAP.md](docs/ROADMAP.md) | features not yet built and the FreeSWITCH mechanism for each |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | load test results (25 CPS sustained on a 4 vCPU VM) and the defects the test found |
 | [docs/SECURITY.md](docs/SECURITY.md) | OWASP ASVS level 1 walkthrough |
+| [docs/GO_LIVE.md](docs/GO_LIVE.md) | dev and live environments on one box, pilot onboarding, firewall |
 
 ## Milestones
 

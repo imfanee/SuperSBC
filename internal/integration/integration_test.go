@@ -371,3 +371,20 @@ func TestIntegrationCarrierCapacity(t *testing.T) {
 		t.Fatalf("route should skip the full carrier: %+v", r)
 	}
 }
+
+// Soft deletes must satisfy the name check constraints (a "~" suffix once broke carrier deletion).
+func TestIntegrationSoftDeleteNames(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	c, _ := e.st.CarrierByName(ctx, "carrier-404")
+	if err := e.st.DeleteCarrier(ctx, c.ID); err != nil {
+		t.Fatalf("delete carrier: %v", err)
+	}
+	if _, err := e.st.CarrierByName(ctx, "carrier-404"); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("carrier still visible: %v", err)
+	}
+	cu, _ := e.st.CustomerByName(ctx, "beta")
+	if err := e.st.DeleteCustomer(ctx, cu.ID); err != nil {
+		t.Fatalf("delete customer: %v", err)
+	}
+}
