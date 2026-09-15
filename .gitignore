@@ -10,3 +10,5 @@ tests/e2e/out/*
 web/dist/
 web/node_modules/
 freeswitch/tls/*.pem
+deploy/live/state/*
+!deploy/live/state/.gitkeep

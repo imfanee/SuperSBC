@@ -3,6 +3,7 @@ package fsconfig
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -40,5 +41,19 @@ func TestACLs(t *testing.T) {
 	car := CarriersACL([]model.Carrier{{GatewayHost: "10.1.1.1"}, {GatewayHost: "sip.example.com"}})
 	if strings.Count(car, "<node") != 1 || !strings.Contains(car, "10.1.1.1/32") {
 		t.Errorf("carrier acl wrong:\n%s", car)
+	}
+}
+
+func TestBanExport(t *testing.T) {
+	now := time.Date(2026, 9, 15, 12, 0, 0, 0, time.UTC)
+	in10 := now.Add(10 * time.Minute)
+	past := now.Add(-time.Minute)
+	out := BanExport([]model.BannedIP{
+		{IP: "203.0.113.5", ExpiresAt: &in10},
+		{IP: "203.0.113.6"},
+		{IP: "203.0.113.7", ExpiresAt: &past},
+	}, now)
+	if !strings.Contains(out, "203.0.113.5 601\n") || !strings.Contains(out, "203.0.113.6 0\n") || strings.Contains(out, "203.0.113.7") {
+		t.Fatalf("export:\n%s", out)
 	}
 }

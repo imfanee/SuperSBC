@@ -80,6 +80,7 @@ services:
     volumes:
       - fsconfig:/fsconfig
       - fslogs:/var/log/freeswitch:ro
+      - ./state:/state
     ports:
       # Internal call control API: FreeSWITCH on the host network reaches it via loopback.
       - "127.0.0.1:${SBC_INTERNAL_PORT:-8081}:8081"

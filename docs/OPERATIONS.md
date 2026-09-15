@@ -36,6 +36,10 @@ The dev compose network is a private bridge (172.28.0.0/24): fine for the lab an
 
 Addresses that produce `SBC_BAN_THRESHOLD` (20) `403 IP not authorized` rejections within `SBC_BAN_WINDOW` (5m) are banned for `SBC_BAN_DURATION` (1h): System > Banned IPs, or `GET /api/v1/system/banned-ips`, `POST` with `{"ip","reason","minutes"}` (0 = permanent), `DELETE /system/banned-ips/{ip}`. A ban is a `deny` node in the customers ACL, so FreeSWITCH answers `403 Forbidden` at once and `sbc_bans_total` counts them. Banning a legitimate customer is impossible while its address is authorised (the allow node wins because the `403` never happens); if a customer changes address before you add it, unban after adding the address.
 
+### Packet level flood protection (live)
+
+`make live-firewall` installs per source rate limits on SIP (200 UDP packets per second, 30 new TCP connections per second) and a `banned` set. `make live-ban-timer` installs a systemd timer that mirrors the SBC ban list into that set every 30 seconds (`make live-ban-sync` does it once), so a banned scanner is dropped by the kernel instead of being parsed by FreeSWITCH. Check with `nft list set inet sbc banned` and the counters in `nft list chain inet sbc input`.
+
 ## 3. Add a customer
 
 UI: Customers, New customer. API (`API=http://127.0.0.1:18080/api/v1` on dev, `API=https://<host>:8443/api/v1` with `curl -k` on live):

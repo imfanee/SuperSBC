@@ -1,0 +1,10 @@
+[Unit]
+Description=OpenSBC: mirror the SBC ban list into nftables every 30 seconds
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=30s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

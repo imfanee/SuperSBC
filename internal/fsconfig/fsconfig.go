@@ -25,6 +25,8 @@ import (
 type Renderer struct {
 	dir     string
 	aclMode string // "dialplan" (default) or "strict"
+	// banFile mirrors the ban list for the host firewall (D-66); empty disables.
+	banFile string
 	nodeIP  string
 	st      *store.Store
 	esl     *esl.Supervisor
@@ -139,8 +141,35 @@ func (r *Renderer) RenderACLs(ctx context.Context) error {
 			r.log.Warn("reloadacl failed", "error", err)
 		}
 	}
+	if r.banFile != "" {
+		if err := writeAtomic(r.banFile, BanExport(banned, time.Now())); err != nil {
+			r.log.Warn("ban export failed", "file", r.banFile, "error", err)
+		}
+	}
 	r.log.Info("acls rendered", "customer_ips", len(ips), "banned", len(banned), "mode", r.aclMode)
 	return nil
+}
+
+// SetBanExportFile enables the ban list export (D-66).
+func (r *Renderer) SetBanExportFile(path string) { r.banFile = path }
+
+// BanExport renders the ban list for deploy/live/ban-sync.sh: one line per
+// address, "ip seconds_left" (0 = permanent), expired entries omitted.
+func BanExport(banned []model.BannedIP, now time.Time) string {
+	var b strings.Builder
+	b.WriteString("# OpenSBC banned addresses; generated " + now.UTC().Format(time.RFC3339) + "\n")
+	for _, ip := range banned {
+		secs := 0
+		if ip.ExpiresAt != nil {
+			left := ip.ExpiresAt.Sub(now)
+			if left <= 0 {
+				continue
+			}
+			secs = int(left.Seconds()) + 1
+		}
+		fmt.Fprintf(&b, "%s %d\n", ip.IP, secs)
+	}
+	return b.String()
 }
 
 // GatewayXML renders one carrier as a Sofia gateway.

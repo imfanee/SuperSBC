@@ -93,9 +93,10 @@ type Failover struct {
 
 // Ban holds the scanner protection tunables (Section 7).
 type Ban struct {
-	Threshold int           // unauthorised INVITEs from one address within Window that trigger a ban (0 disables)
-	Window    time.Duration // sliding window
-	Duration  time.Duration // how long an automatic ban lasts
+	Threshold  int           // unauthorised INVITEs from one address within Window that trigger a ban (0 disables)
+	Window     time.Duration // sliding window
+	Duration   time.Duration // how long an automatic ban lasts
+	ExportFile string        // ban list mirrored to this file for the host firewall (D-66); empty disables
 }
 
 // Auth holds the admin authentication tunables of Section 8.
@@ -164,9 +165,10 @@ func Load() (*Config, error) {
 			GatewayPingIntervalSeconds: getint("SBC_FAILOVER_GATEWAY_PING_INTERVAL_SECONDS", 10),
 		},
 		Ban: Ban{
-			Threshold: getint("SBC_BAN_THRESHOLD", 20),
-			Window:    getduration("SBC_BAN_WINDOW", 5*time.Minute),
-			Duration:  getduration("SBC_BAN_DURATION", time.Hour),
+			Threshold:  getint("SBC_BAN_THRESHOLD", 20),
+			Window:     getduration("SBC_BAN_WINDOW", 5*time.Minute),
+			Duration:   getduration("SBC_BAN_DURATION", time.Hour),
+			ExportFile: getenv("SBC_BAN_EXPORT_FILE", ""),
 		},
 		STIR: STIR{
 			MaxAge:    getduration("SBC_STIR_MAX_AGE", 60*time.Second),
