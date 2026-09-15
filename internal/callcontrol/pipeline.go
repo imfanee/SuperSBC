@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -23,6 +24,7 @@ import (
 	"github.com/opensbc/opensbc/internal/model"
 	"github.com/opensbc/opensbc/internal/numbering"
 	"github.com/opensbc/opensbc/internal/rating"
+	"github.com/opensbc/opensbc/internal/stir"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
 	"github.com/opensbc/opensbc/internal/timewindow"
@@ -51,6 +53,7 @@ type Pipeline struct {
 	tables *tables.Tables
 	rules  *failover.Rules
 	health CarrierHealth
+	stir   *stir.Verifier
 	now    func() time.Time
 
 	breaker *Breaker
@@ -73,6 +76,9 @@ func (p *Pipeline) SetBreaker(b *Breaker) { p.breaker = b }
 
 // Breaker exposes the circuit breaker (may be nil).
 func (p *Pipeline) Breaker() *Breaker { return p.breaker }
+
+// SetSTIR installs the STIR/SHAKEN verifier (D-64); nil disables verification.
+func (p *Pipeline) SetSTIR(v *stir.Verifier) { p.stir = v }
 
 // SetHealth installs the carrier health source.
 func (p *Pipeline) SetHealth(h CarrierHealth) { p.health = h }
@@ -304,11 +310,18 @@ type RouteResult struct {
 // descending then random; degraded carriers go last; DOWN gateways and
 // carriers without a buy rate are skipped.
 func (p *Pipeline) Route(ctx context.Context, cust *model.Customer, called, caller string, sell *model.Rate, callUUID string) (*RouteResult, error) {
-	return p.RouteWith(ctx, cust, called, caller, sell, callUUID, false)
+	return p.RouteWith(ctx, cust, called, caller, sell, callUUID, RouteOpts{})
 }
 
-// RouteWith is Route with the privacy flag of the call.
-func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, caller string, sell *model.Rate, callUUID string, privacy bool) (*RouteResult, error) {
+// RouteOpts are per call flags that shape the carrier legs.
+type RouteOpts struct {
+	Privacy         bool // the caller asked for privacy (D-54)
+	ForwardIdentity bool // pass the verified STIR Identity header to the carrier (D-64)
+}
+
+// RouteWith is Route with the per call options.
+func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, caller string, sell *model.Rate, callUUID string, ro RouteOpts) (*RouteResult, error) {
+	privacy := ro.Privacy
 	if cust.RouteGroupID == nil {
 		return &RouteResult{}, nil
 	}
@@ -397,6 +410,9 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 		plan := ApplyHeaderRules(custRules, carRules, HeaderContext{Caller: caller, Called: called, Customer: cust.Name, Carrier: c.Name, CallUUID: callUUID, NodeIP: p.cfg.FSNodeIP})
 		extra = append(extra, plan.EgressVars...)
 		ch.Passthrough = plan.Passthrough
+		if ro.ForwardIdentity && !slices.Contains(ch.Passthrough, "Identity") {
+			ch.Passthrough = append(ch.Passthrough, "Identity")
+		}
 		ch.DialString = p.dialString(ch, callUUID, extra)
 		cands = append(cands, cand{choice: ch, rc: rc, buy: buy})
 	}
@@ -605,6 +621,28 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	resp.Called = called
 	resp.Caller = caller
 
+	// STIR/SHAKEN (D-64): verify the Identity header when the customer asks for it.
+	forwardIdentity := false
+	if p.stir != nil && cust.STIRMode != "" && cust.STIRMode != "ignore" {
+		res := p.stir.Verify(ctx, req.Identity, caller, called)
+		status := res.Status
+		cdr.STIRStatus = &status
+		if res.Attest != "" {
+			attest := res.Attest
+			cdr.STIRAttest = &attest
+		}
+		resp.Vars["sbc_stir_status"] = status
+		if res.Status != stir.StatusVerified {
+			log.Info("stir verification", "status", res.Status, "attest", res.Attest, "error", res.Error, "mode", cust.STIRMode)
+		}
+		metrics.STIR.WithLabelValues(res.Status).Inc()
+		if cust.STIRMode == "require" && res.Status != stir.StatusVerified {
+			code, reason := res.RejectCode()
+			return rejectAdmitted("stir", Reject{code, reason}, model.DispositionRejectedAuth), nil
+		}
+		forwardIdentity = res.Status == stir.StatusVerified && p.cfg.STIR.Forward
+	}
+
 	// Step 2b: block lists (Section 7, routing and policy). D-44.
 	if cust.BlockedPrefixesEnabled {
 		if blk, err := p.tables.Blocked(ctx, cust.ID, called); err == nil && blk != nil {
@@ -682,7 +720,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	}
 
 	// Steps 6 and 7
-	route, err := p.RouteWith(ctx, cust, called, caller, sell, req.CallUUID, req.Privacy)
+	route, err := p.RouteWith(ctx, cust, called, caller, sell, req.CallUUID, RouteOpts{Privacy: req.Privacy, ForwardIdentity: forwardIdentity})
 	if err != nil {
 		return nil, err
 	}

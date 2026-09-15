@@ -3,12 +3,17 @@
 package e2e
 
 import (
+	"context"
 	"fmt"
+	"net"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/shopspring/decimal"
+
+	"github.com/opensbc/opensbc/internal/stir"
 )
 
 // Time-of-day routing window (D-61): a carrier outside its window is
@@ -153,4 +158,58 @@ func TestRoadmap_Invoices(t *testing.T) {
 	if code != 200 || !strings.HasPrefix(str(pdf["raw"]), "%PDF-") {
 		t.Fatalf("pdf: %d %.40q", code, str(pdf["raw"]))
 	}
+}
+
+// STIR/SHAKEN (D-64): iota-stir requires a verified Identity header. The
+// test signs PASSporTs with a throwaway ES256 key and serves the certificate
+// from the host (172.28.0.1) where the API fetches it.
+func TestRoadmap_STIR(t *testing.T) {
+	key, certPEM, err := stir.NewTestCert(time.Now().Add(-time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "172.28.0.1:0")
+	if err != nil {
+		t.Skipf("cannot listen on the docker bridge address: %v", err)
+	}
+	srv := &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write(certPEM) }), ReadHeaderTimeout: time.Second}
+	go func() { _ = srv.Serve(ln) }()
+	defer func() { _ = srv.Close() }()
+	x5u := "http://" + ln.Addr().String() + "/sti.pem"
+	sign := func(orig, dest string, iat time.Time) string {
+		s, err := stir.Sign(key, x5u, "A", orig, dest, "e2e", iat)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return s
+	}
+	// (a) no Identity: 428 Use Identity Header
+	since := time.Now()
+	sc := scenario(t, "uac_expect_fail.xml.tmpl", map[string]string{"__CODE__": "428"})
+	res := placeCall(t, "customer-iota", sc, "442071234567", 1)
+	expectFinal(t, res, "428 Use Identity Header")
+	cdr := lastCDR(t, "172.28.0.111", "442071234567", since)
+	expectField(t, cdr, "disposition", "rejected_auth")
+	expectField(t, cdr, "stir_status", "none")
+	// (b) stale token: 438
+	since = time.Now()
+	sc = scenario(t, "uac_call_stir.xml.tmpl", map[string]string{"__TALK__": "500", "__IDENTITY__": sign("15550001111", "442071234567", time.Now().Add(-10*time.Minute))})
+	res = placeCall(t, "customer-iota", sc, "442071234567", 1)
+	expectFinal(t, res, "438 Invalid Identity Header")
+	cdr = lastCDR(t, "172.28.0.111", "442071234567", since)
+	expectField(t, cdr, "stir_status", "stale")
+	// (c) valid token: answered, attest recorded, Identity forwarded to the carrier
+	since = time.Now()
+	sc = scenario(t, "uac_call_stir.xml.tmpl", map[string]string{"__TALK__": "1000", "__IDENTITY__": sign("15550001111", "442071234567", time.Now())})
+	res = placeCall(t, "customer-iota", sc, "442071234567", 1)
+	expectFinal(t, res, "200 OK")
+	cdr = lastCDR(t, "172.28.0.111", "442071234567", since)
+	expectField(t, cdr, "disposition", "answered")
+	expectField(t, cdr, "stir_status", "verified")
+	expectField(t, cdr, "stir_attest", "A")
+	inv := inviteReceivedByCarrier(t, str(cdr["call_uuid"]))
+	if !strings.Contains(inv, "Identity: eyJ") {
+		t.Errorf("carrier INVITE should carry the verified Identity header:\n%s", inv)
+	}
+	reconcileOK(t)
 }

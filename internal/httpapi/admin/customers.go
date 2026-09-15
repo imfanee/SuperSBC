@@ -58,6 +58,7 @@ type customerInput struct {
 	DTMFMode               string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
 	SRTPMode               string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
 	RequireTLS             bool     `json:"require_tls"`
+	STIRMode               string   `json:"stir_mode" validate:"omitempty,oneof=ignore verify require"`
 }
 
 func (in customerInput) toModel(w http.ResponseWriter) (*model.Customer, bool) {
@@ -86,7 +87,7 @@ func (in customerInput) toModel(w http.ResponseWriter) (*model.Customer, bool) {
 	return &model.Customer{Name: in.Name, Status: status, RateGroupID: rg, RouteGroupID: rt, MaxConcurrentCalls: in.MaxConcurrentCalls, MaxCPS: in.MaxCPS,
 		AllowedCodecs: codecs, TechPrefix: strPtr(in.TechPrefix), DefaultCountryCode: strPtr(in.DefaultCountryCode), IntlPrefix: in.IntlPrefix,
 		TrustPAI: in.TrustPAI, BlockedPrefixesEnabled: blocks, Notes: in.Notes,
-		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, RequireTLS: in.RequireTLS}, true
+		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, RequireTLS: in.RequireTLS, STIRMode: in.STIRMode}, true
 }
 
 // listCustomers godoc

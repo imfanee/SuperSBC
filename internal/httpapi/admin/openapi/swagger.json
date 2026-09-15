@@ -357,6 +357,14 @@
                         ],
                         "type": "string"
                     },
+                    "stir_mode": {
+                        "enum": [
+                            "ignore",
+                            "verify",
+                            "require"
+                        ],
+                        "type": "string"
+                    },
                     "tech_prefix": {
                         "type": "string"
                     },
@@ -1129,6 +1137,10 @@
                         "type": "string"
                     },
                     "status": {
+                        "type": "string"
+                    },
+                    "stir_mode": {
+                        "description": "STIRMode: ignore (default), verify (record the result) or require (reject unverified calls). D-64.",
                         "type": "string"
                     },
                     "tech_prefix": {
@@ -1908,6 +1920,12 @@
                         "type": "boolean"
                     },
                     "start_time": {
+                        "type": "string"
+                    },
+                    "stir_attest": {
+                        "type": "string"
+                    },
+                    "stir_status": {
                         "type": "string"
                     },
                     "transport_in": {

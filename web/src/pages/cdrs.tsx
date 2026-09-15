@@ -356,6 +356,12 @@ export function CDRDetail({ cdr: c }: { cdr: CDR }) {
               "Transport",
               `${c.transport_in ?? "?"}${c.srtp_in ? "+SRTP" : ""} to ${c.transport_out ?? "?"}${c.srtp_out ? "+SRTP" : ""}${c.privacy ? ", privacy" : ""}`,
             ],
+            [
+              "STIR/SHAKEN",
+              c.stir_status
+                ? `${c.stir_status}${c.stir_attest ? ", attestation " + c.stir_attest : ""}`
+                : "not checked",
+            ],
             ["Node", c.sbc_node ?? ""],
           ]}
         />

@@ -9,6 +9,7 @@ package e2e
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -115,6 +116,9 @@ func scenario(t *testing.T, tmpl string, repl map[string]string) string {
 	name := strings.TrimSuffix(tmpl, ".xml.tmpl")
 	for k, v := range repl {
 		s = strings.ReplaceAll(s, k, v)
+		if len(v) > 40 { // long values (tokens) are hashed into the file name
+			v = fmt.Sprintf("%x", sha256.Sum256([]byte(v)))[:12]
+		}
 		name += "_" + v
 	}
 	name = regexp.MustCompile(`[^a-zA-Z0-9_]+`).ReplaceAllString(name, "_") + ".xml"
@@ -147,7 +151,7 @@ func lastCDR(t *testing.T, srcIP, called string, since time.Time) map[string]any
 		rows := sql(t, fmt.Sprintf(`SELECT call_uuid, disposition, sip_final_code, sip_final_reason, billsec, duration, sell_billed_seconds,
 			sell_price::text AS sell_price, cost::text AS cost, reserved_amount::text AS reserved_amount, charged_amount::text AS charged_amount,
 			released_amount::text AS released_amount, hangup_cause, attempts, failover_depth, pdd_ms, carrier_id, called_number, called_number_raw,
-			src_ip::text AS src_ip, billed_at, reject_reason, media_mode, codec_in, caller_number, transport_in, transport_out, srtp_in, srtp_out, privacy
+			src_ip::text AS src_ip, billed_at, reject_reason, media_mode, codec_in, caller_number, transport_in, transport_out, srtp_in, srtp_out, privacy, stir_status, stir_attest
 			FROM cdrs WHERE src_ip = '%s' AND called_number_raw = '%s' AND start_time >= '%s' AND billed_at IS NOT NULL
 			ORDER BY start_time DESC LIMIT 1`, srcIP, called, since.UTC().Format(time.RFC3339)))
 		if len(rows) == 1 {

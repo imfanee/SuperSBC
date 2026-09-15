@@ -39,6 +39,7 @@ type Config struct {
 	Auth     Auth
 	Ban      Ban
 	Invoice  Invoice
+	STIR     STIR
 
 	LogLevel    string
 	OpenAPIFile string // optional path overriding the embedded OpenAPI document
@@ -51,6 +52,14 @@ type Billing struct {
 	OrphanTimeout       time.Duration
 	LowBalanceThreshold string // decimal as string, "0" disables
 	Currency            string
+}
+
+// STIR tunes STIR/SHAKEN verification (D-64).
+type STIR struct {
+	MaxAge    time.Duration // freshness window of the PASSporT iat
+	CAFile    string        // PEM bundle of trusted STI-CA roots; empty skips chain validation
+	AllowHTTP bool          // accept http:// x5u URLs (lab only)
+	Forward   bool          // pass a verified Identity header on to the carrier
 }
 
 // Invoice is the issuer identity printed on PDF invoices (D-63).
@@ -158,6 +167,12 @@ func Load() (*Config, error) {
 			Threshold: getint("SBC_BAN_THRESHOLD", 20),
 			Window:    getduration("SBC_BAN_WINDOW", 5*time.Minute),
 			Duration:  getduration("SBC_BAN_DURATION", time.Hour),
+		},
+		STIR: STIR{
+			MaxAge:    getduration("SBC_STIR_MAX_AGE", 60*time.Second),
+			CAFile:    getenv("SBC_STIR_CA_FILE", ""),
+			AllowHTTP: getbool("SBC_STIR_ALLOW_HTTP", false),
+			Forward:   getbool("SBC_STIR_FORWARD", true),
 		},
 		Invoice: Invoice{
 			OperatorName:    getenv("SBC_INVOICE_OPERATOR_NAME", "OpenSBC"),

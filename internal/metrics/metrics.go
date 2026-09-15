@@ -56,6 +56,8 @@ var (
 	CPS = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "sbc", Name: "cps", Help: "Call setups in the last second, by scope (system, customer:<name>).",
 	}, []string{"scope"})
+	// STIR counts STIR/SHAKEN verification outcomes by status (D-64).
+	STIR = promauto.NewCounterVec(prometheus.CounterOpts{Namespace: "sbc", Name: "stir_verifications_total", Help: "STIR/SHAKEN verifications by status"}, []string{"status"})
 	Bans = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "sbc", Name: "bans_total", Help: "Source addresses banned by the scanner protection (auto) or by an operator (manual).",
 	}, []string{"kind"})

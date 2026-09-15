@@ -120,7 +120,7 @@ func (s *Service) Generate(ctx context.Context, accountID uuid.UUID, at time.Tim
 			GROUP BY 1 ORDER BY sum(sell_price) DESC, 1`, inv.OwnerID, start, end)
 	} else {
 		rows, err = s.pool.Query(ctx, `
-			SELECT COALESCE(buy_destination, ''), count(*), COALESCE(sum(buy_billed_seconds), 0), COALESCE(sum(cost), 0)::text
+			SELECT COALESCE(sell_destination, ''), count(*), COALESCE(sum(buy_billed_seconds), 0), COALESCE(sum(cost), 0)::text
 			FROM cdrs WHERE carrier_id = $1 AND disposition = 'answered' AND start_time >= $2 AND start_time < $3
 			GROUP BY 1 ORDER BY sum(cost) DESC, 1`, inv.OwnerID, start, end)
 	}

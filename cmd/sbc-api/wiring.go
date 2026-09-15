@@ -30,6 +30,7 @@ import (
 	"github.com/opensbc/opensbc/internal/logging"
 	"github.com/opensbc/opensbc/internal/metrics"
 	"github.com/opensbc/opensbc/internal/reports"
+	"github.com/opensbc/opensbc/internal/stir"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
 	"github.com/opensbc/opensbc/internal/trace"
@@ -73,6 +74,11 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	pipe.SetBreaker(breaker)
 	gw.SetDegrader(breaker)
 	pipe.SetHealth(gw)
+	if stirV, err := stir.New(stir.Config{MaxAge: cfg.STIR.MaxAge, CAFile: cfg.STIR.CAFile, AllowHTTP: cfg.STIR.AllowHTTP}); err != nil {
+		log.Error("stir verifier disabled", "err", err)
+	} else {
+		pipe.SetSTIR(stirV)
+	}
 	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer, gateways: gw}
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
 	a.admin = admin.New(admin.Deps{Cfg: cfg, Log: log, Store: st, Redis: rdb, Pipe: pipe, Bill: bill, Tables: tb, ESL: sup, Gateways: gw, Renderer: renderer, Version: version,

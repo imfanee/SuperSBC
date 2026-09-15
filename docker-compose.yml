@@ -236,6 +236,13 @@ services:
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.109 }
+  customer-iota:
+    image: opensbc/sipp:3.7
+    profiles: [e2e-clients]
+    working_dir: /out
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
+    networks:
+      sbc: { ipv4_address: 172.28.0.111 }
   customer-unknown:
     image: opensbc/sipp:3.7
     profiles: [e2e-clients]

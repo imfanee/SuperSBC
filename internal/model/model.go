@@ -11,26 +11,28 @@ import (
 
 // Customer is a client identified by source IP.
 type Customer struct {
-	ID                     uuid.UUID  `json:"id" db:"id"`
-	Name                   string     `json:"name" db:"name"`
-	Status                 string     `json:"status" db:"status"`
-	RateGroupID            *uuid.UUID `json:"rate_group_id" db:"rate_group_id"`
-	RouteGroupID           *uuid.UUID `json:"route_group_id" db:"route_group_id"`
-	MaxConcurrentCalls     int        `json:"max_concurrent_calls" db:"max_concurrent_calls"`
-	MaxCPS                 int        `json:"max_cps" db:"max_cps"`
-	AllowedCodecs          []string   `json:"allowed_codecs" db:"allowed_codecs"`
-	TechPrefix             *string    `json:"tech_prefix" db:"tech_prefix"`
-	DefaultCountryCode     *string    `json:"default_country_code" db:"default_country_code"`
-	IntlPrefix             string     `json:"intl_prefix" db:"intl_prefix"`
-	MediaMode              string     `json:"media_mode" db:"media_mode"`
-	DTMFMode               string     `json:"dtmf_mode" db:"dtmf_mode"`
-	SRTPMode               string     `json:"srtp_mode" db:"srtp_mode"`
-	RequireTLS             bool       `json:"require_tls" db:"require_tls"`
-	TrustPAI               bool       `json:"trust_pai" db:"trust_pai"`
-	BlockedPrefixesEnabled bool       `json:"blocked_prefixes_enabled" db:"blocked_prefixes_enabled"`
-	Notes                  string     `json:"notes" db:"notes"`
-	CreatedAt              time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt              time.Time  `json:"updated_at" db:"updated_at"`
+	ID                 uuid.UUID  `json:"id" db:"id"`
+	Name               string     `json:"name" db:"name"`
+	Status             string     `json:"status" db:"status"`
+	RateGroupID        *uuid.UUID `json:"rate_group_id" db:"rate_group_id"`
+	RouteGroupID       *uuid.UUID `json:"route_group_id" db:"route_group_id"`
+	MaxConcurrentCalls int        `json:"max_concurrent_calls" db:"max_concurrent_calls"`
+	MaxCPS             int        `json:"max_cps" db:"max_cps"`
+	AllowedCodecs      []string   `json:"allowed_codecs" db:"allowed_codecs"`
+	TechPrefix         *string    `json:"tech_prefix" db:"tech_prefix"`
+	DefaultCountryCode *string    `json:"default_country_code" db:"default_country_code"`
+	IntlPrefix         string     `json:"intl_prefix" db:"intl_prefix"`
+	MediaMode          string     `json:"media_mode" db:"media_mode"`
+	DTMFMode           string     `json:"dtmf_mode" db:"dtmf_mode"`
+	SRTPMode           string     `json:"srtp_mode" db:"srtp_mode"`
+	RequireTLS         bool       `json:"require_tls" db:"require_tls"`
+	// STIRMode: ignore (default), verify (record the result) or require (reject unverified calls). D-64.
+	STIRMode               string    `json:"stir_mode" db:"stir_mode"`
+	TrustPAI               bool      `json:"trust_pai" db:"trust_pai"`
+	BlockedPrefixesEnabled bool      `json:"blocked_prefixes_enabled" db:"blocked_prefixes_enabled"`
+	Notes                  string    `json:"notes" db:"notes"`
+	CreatedAt              time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt              time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // CustomerIP is one authorised source address of a customer.
@@ -246,6 +248,8 @@ type CDR struct {
 	SRTPIn            bool             `json:"srtp_in" db:"srtp_in"`
 	SRTPOut           bool             `json:"srtp_out" db:"srtp_out"`
 	Privacy           bool             `json:"privacy" db:"privacy"`
+	STIRStatus        *string          `json:"stir_status" db:"stir_status"`
+	STIRAttest        *string          `json:"stir_attest" db:"stir_attest"`
 	SBCNode           *string          `json:"sbc_node" db:"sbc_node"`
 	BilledAt          *time.Time       `json:"billed_at" db:"billed_at"`
 	BilledBy          *string          `json:"billed_by" db:"billed_by"`

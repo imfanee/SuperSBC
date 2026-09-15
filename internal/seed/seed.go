@@ -39,6 +39,7 @@ type customerDef struct {
 	maxCC, maxCPS     int
 	media, srtp       string
 	requireTLS        bool
+	stir              string
 }
 
 // Demo data. Carrier hosts are the sipp UAS containers of docker compose.
@@ -97,17 +98,19 @@ var (
 		{"33", "France (no carriers)", []string{}},
 	}
 	customers = []customerDef{
-		{"acme", "172.28.0.101/32", "10.000000", "0", 0, 0, "", "", false},
-		{"beta", "172.28.0.102/32", "0.000000", "0", 0, 0, "", "", false},
-		{"gamma", "172.28.0.103/32", "0.080000", "0", 0, 0, "", "", false},
-		{"delta-limited", "172.28.0.104/32", "100.000000", "0", 1, 0, "", "", false},
-		{"epsilon-cps", "172.28.0.105/32", "100.000000", "0", 0, 1, "", "", false},
+		{"acme", "172.28.0.101/32", "10.000000", "0", 0, 0, "", "", false, ""},
+		{"beta", "172.28.0.102/32", "0.000000", "0", 0, 0, "", "", false, ""},
+		{"gamma", "172.28.0.103/32", "0.080000", "0", 0, 0, "", "", false, ""},
+		{"delta-limited", "172.28.0.104/32", "100.000000", "0", 1, 0, "", "", false, ""},
+		{"epsilon-cps", "172.28.0.105/32", "100.000000", "0", 0, 1, "", "", false, ""},
 		// Load test source (tests/load/run.sh): deep pockets, no limits.
-		{"loadtest", "172.28.0.110/32", "10000.000000", "0", 0, 0, "", "", false},
+		{"loadtest", "172.28.0.110/32", "10000.000000", "0", 0, 0, "", "", false, ""},
 		// Section 7 [M5] policies
-		{"zeta-tls", "172.28.0.107/32", "100.000000", "0", 0, 0, "", "", true},
-		{"eta-srtp", "172.28.0.108/32", "100.000000", "0", 0, 0, "", "mandatory", false},
-		{"theta-bypass", "172.28.0.109/32", "100.000000", "0", 0, 0, "bypass", "", false},
+		{"zeta-tls", "172.28.0.107/32", "100.000000", "0", 0, 0, "", "", true, ""},
+		{"eta-srtp", "172.28.0.108/32", "100.000000", "0", 0, 0, "", "mandatory", false, ""},
+		{"theta-bypass", "172.28.0.109/32", "100.000000", "0", 0, 0, "bypass", "", false, ""},
+		// STIR/SHAKEN (D-64): rejects calls without a verified Identity header
+		{"iota-stir", "172.28.0.111/32", "100.000000", "0", 0, 0, "", "", false, "require"},
 	}
 )
 
@@ -177,7 +180,7 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 			Name: c.name, Status: "active", RateGroupID: &sellID, RouteGroupID: &routeID,
 			MaxConcurrentCalls: c.maxCC, MaxCPS: c.maxCPS, AllowedCodecs: []string{"PCMA", "PCMU", "OPUS", "G722"},
 			IntlPrefix: "00", BlockedPrefixesEnabled: true, Notes: "Demo customer",
-			MediaMode: c.media, SRTPMode: c.srtp, RequireTLS: c.requireTLS,
+			MediaMode: c.media, SRTPMode: c.srtp, RequireTLS: c.requireTLS, STIRMode: c.stir,
 		})
 		if err != nil {
 			return err

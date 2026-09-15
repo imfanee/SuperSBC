@@ -29,6 +29,8 @@ type SetupRequest struct {
 	Privacy bool `json:"privacy"`
 	// PAINumber is the user part of P-Asserted-Identity when present.
 	PAINumber string `json:"pai_number"`
+	// Identity is the STIR/SHAKEN Identity header of the INVITE, if any (D-64).
+	Identity string `json:"identity"`
 }
 
 // App is a dialplan application Lua executes on the a-leg before dialling.

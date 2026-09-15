@@ -32,6 +32,7 @@ export interface Customer {
   dtmf_mode: "rfc2833" | "info" | "inband";
   srtp_mode: "off" | "optional" | "mandatory";
   require_tls: boolean;
+  stir_mode: "ignore" | "verify" | "require";
   notes: string;
   created_at: string;
   updated_at: string;
@@ -251,6 +252,8 @@ export interface CDR {
   srtp_in: boolean;
   srtp_out: boolean;
   privacy: boolean;
+  stir_status: string | null;
+  stir_attest: string | null;
   sbc_node: string | null;
 }
 

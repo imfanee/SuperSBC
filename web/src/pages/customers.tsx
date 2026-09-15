@@ -58,6 +58,7 @@ const customerSchema = z.object({
   dtmf_mode: z.enum(["rfc2833", "info", "inband"]),
   srtp_mode: z.enum(["off", "optional", "mandatory"]),
   require_tls: z.boolean(),
+  stir_mode: z.enum(["ignore", "verify", "require"]),
 });
 type CustomerForm = z.infer<typeof customerSchema>;
 
@@ -81,6 +82,7 @@ function toForm(c?: Customer | null): CustomerForm {
     dtmf_mode: c?.dtmf_mode ?? "rfc2833",
     srtp_mode: c?.srtp_mode ?? "optional",
     require_tls: c?.require_tls ?? false,
+    stir_mode: c?.stir_mode ?? "ignore",
   };
 }
 
@@ -203,6 +205,50 @@ export function CustomerForm({
           <Input {...register("currency")} placeholder="USD" maxLength={3} />
         </Field>
       )}
+      {(
+        [
+          [
+            "media_mode",
+            "Media",
+            ["anchor", "proxy", "bypass"],
+            "anchor: relay and transcode; proxy: relay untouched; bypass: direct media when the carrier allows it too",
+          ],
+          ["dtmf_mode", "DTMF from customer", ["rfc2833", "info", "inband"], ""],
+          [
+            "srtp_mode",
+            "SRTP",
+            ["off", "optional", "mandatory"],
+            "mandatory rejects plain RTP offers with 488 SRTP required",
+          ],
+          [
+            "stir_mode",
+            "STIR/SHAKEN",
+            ["ignore", "verify", "require"],
+            "verify: record the result; require: 428/436/438 for unverified calls",
+          ],
+        ] as const
+      ).map(([key, label, opts, hint]) => (
+        <Field key={key} label={label} hint={hint}>
+          <Select value={watch(key)} onValueChange={(v) => setValue(key, v as never)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {opts.map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      ))}
+      <div className="flex items-center gap-2 pt-5">
+        <Switch checked={watch("require_tls")} onCheckedChange={(v) => setValue("require_tls", v)} id="tls" />
+        <label htmlFor="tls" className="text-sm">
+          Require SIP TLS (UDP and TCP get 403 TLS required)
+        </label>
+      </div>
       <div className="flex items-center gap-2 pt-5">
         <Switch
           checked={watch("blocked_prefixes_enabled")}
@@ -474,7 +520,7 @@ export function CustomerDetailPage() {
                     ["Block lists", c.blocked_prefixes_enabled ? "applied" : "bypassed"],
                     [
                       "Media / DTMF / SRTP",
-                      `${c.media_mode} / ${c.dtmf_mode} / ${c.srtp_mode}${c.require_tls ? ", TLS required" : ""}`,
+                      `${c.media_mode} / ${c.dtmf_mode} / ${c.srtp_mode}${c.require_tls ? ", TLS required" : ""}, STIR ${c.stir_mode}`,
                     ],
                     ["Authorised IPs", d.ips.length],
                   ]}

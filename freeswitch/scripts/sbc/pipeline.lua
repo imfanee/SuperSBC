@@ -127,6 +127,8 @@ function pipeline.run(session)
     srtp_offered = srtp_offered(session),
     privacy = privacy_requested(session),
     pai_number = pai_user(session),
+    -- STIR/SHAKEN Identity header (D-64); Sofia exposes unknown headers as sip_h_<name>.
+    identity = session:getVariable("sip_h_Identity") or "",
   }
   log:info("invite", { src = req.src_ip .. ":" .. req.src_port, caller = req.caller, called = req.called })
 
