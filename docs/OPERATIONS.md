@@ -154,6 +154,10 @@ Codecs: the profiles negotiate `SBC_FS_INGRESS_CODECS` / `SBC_FS_EGRESS_CODECS` 
 
 Capacity: `SBC_FS_MAX_SESSIONS` and `SBC_FS_SESSIONS_PER_SECOND` count both legs (a call is two sessions). `SBC_ROUTING_GLOBAL_MAX_CHANNELS` and `SBC_ROUTING_GLOBAL_MAX_CPS` cap admitted calls in the API.
 
+### SIP capture with HOMER
+
+Set `SBC_FS_HEP_SERVER=udp:172.28.0.1:9060;hep=3;capture_id=1` (dev) or the address of your HOMER (live), restart FreeSWITCH, and every SIP message of both legs is mirrored as HEPv3. `make homer-up` runs heplify-server, its database and the HOMER UI (http://127.0.0.1:19080, admin / sipcapture) for the lab; for production point `SBC_FS_HEP_SERVER` at your capture infrastructure. Correlate with the SBC by Call-ID (the CDR list search accepts it) or by the `X-SBC-Call` header on the carrier leg.
+
 ## 10. Monitoring
 
 * `/readyz` on the API: 200 only when Postgres, Redis, ESL and both Sofia profiles are fine. Use it for load balancer health checks.

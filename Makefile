@@ -4,7 +4,7 @@ COMPOSE ?= docker compose
 GO ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall
+.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -106,6 +106,12 @@ live-replay-cdrs: ## Re-post spooled CDRs on live
 
 live-backup: ## Immediate pg_dump of the live database into backups/live
 	mkdir -p backups/live && $(LIVE) exec -T postgres pg_dump -Fc -U opensbc opensbc > backups/live/opensbc-$$(date -u +%Y%m%d-%H%M%S).dump && ls -la backups/live | tail -1
+
+homer-up: ## Start HOMER (heplify-server on 172.28.0.1:9060, webapp on 127.0.0.1:19080, admin/sipcapture)
+	$(COMPOSE) --profile homer up -d
+
+homer-down: ## Stop HOMER (only its services; the SBC keeps running)
+	$(COMPOSE) --profile homer rm -sf homer-webapp heplify-server homer-db
 
 live-monitoring: ## Start prometheus and grafana for live (grafana at https://host:8443/grafana/)
 	$(LIVE) --profile monitoring up -d

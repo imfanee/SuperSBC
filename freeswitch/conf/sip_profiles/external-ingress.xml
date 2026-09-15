@@ -12,7 +12,7 @@
   <settings>
     <param name="debug" value="0"/>
     <param name="sip-trace" value="no"/>
-    <param name="sip-capture" value="no"/>
+    <param name="sip-capture" value="$${sbc_sip_capture}"/>
     <param name="user-agent-string" value="$${sbc_user_agent}"/>
     <param name="context" value="public"/>
     <param name="dialplan" value="XML"/>
