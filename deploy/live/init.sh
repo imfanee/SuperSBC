@@ -57,6 +57,9 @@ SBC_FAILOVER_BREAKER_ASR_THRESHOLD_PERCENT=10
 SBC_FAILOVER_BREAKER_ASR_MIN_SAMPLES=50
 SBC_FAILOVER_BREAKER_DEGRADED_SECONDS=60
 SBC_FAILOVER_GATEWAY_PING_INTERVAL_SECONDS=10
+SBC_BAN_THRESHOLD=20
+SBC_BAN_WINDOW=5m
+SBC_BAN_DURATION=1h
 
 # FreeSWITCH on the host network
 SBC_FS_NODE_IP=$NODE_IP
@@ -64,6 +67,13 @@ SBC_FS_EXT_IP=$NODE_IP
 SBC_FS_ESL_LISTEN_IP=172.29.0.1
 SBC_FS_INGRESS_PORT=5060
 SBC_FS_EGRESS_PORT=5080
+SBC_FS_TLS=true
+SBC_FS_INGRESS_TLS_PORT=5061
+SBC_FS_EGRESS_TLS_PORT=5081
+SBC_FS_TLS_VERIFY_POLICY=none
+SBC_FS_TLS_VERSION=tlsv1.2,tlsv1.3
+SBC_FS_INGRESS_100REL=false
+SBC_FS_EGRESS_100REL=false
 SBC_FS_RTP_START=16384
 SBC_FS_RTP_END=32768
 SBC_FS_MAX_SESSIONS=400
@@ -95,5 +105,13 @@ if [ ! -f deploy/live/tls/server.crt ]; then
     -subj "/CN=$NODE_IP/O=OpenSBC" -addext "subjectAltName=IP:$NODE_IP" >/dev/null 2>&1
   chmod 600 deploy/live/tls/server.key
   echo "wrote self-signed certificate deploy/live/tls/server.crt for $NODE_IP (replace with a real one when you have a hostname)"
+fi
+# FreeSWITCH TLS files (D-53): agent.pem = key plus certificate, cafile.pem = the chain to trust.
+# Regenerated from server.crt/server.key whenever they are newer, so replacing the certificate is enough.
+if [ ! -f deploy/live/tls/agent.pem ] || [ deploy/live/tls/server.crt -nt deploy/live/tls/agent.pem ]; then
+  cat deploy/live/tls/server.key deploy/live/tls/server.crt > deploy/live/tls/agent.pem
+  cp deploy/live/tls/server.crt deploy/live/tls/cafile.pem
+  chmod 600 deploy/live/tls/agent.pem
+  echo "wrote deploy/live/tls/agent.pem and cafile.pem for FreeSWITCH"
 fi
 echo "next: make live-up"
