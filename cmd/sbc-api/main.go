@@ -32,7 +32,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/opensbc/opensbc/internal/cache"
 	"github.com/opensbc/opensbc/internal/config"
 	"github.com/opensbc/opensbc/internal/db"
 	"github.com/opensbc/opensbc/internal/esl"
@@ -90,7 +89,7 @@ func serve(ctx context.Context, cfg *config.Config, log *slogLogger) error {
 			return fmt.Errorf("migrate: %w", err)
 		}
 	}
-	rdb, err := cache.Connect(ctx, cfg.RedisURL)
+	rdb, err := connectRedis(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("redis: %w", err)
 	}

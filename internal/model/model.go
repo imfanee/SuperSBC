@@ -270,6 +270,8 @@ type ActiveCall struct {
 	MaxCallSeconds int             `json:"max_call_seconds" db:"max_call_seconds"`
 	StartedAt      time.Time       `json:"started_at" db:"started_at"`
 	ExpiresAt      time.Time       `json:"expires_at" db:"expires_at"`
+	// Node is the SBC node that made the reservation (D-68).
+	Node string `json:"node" db:"node"`
 }
 
 // Disposition values (cdrs.disposition).

@@ -62,6 +62,7 @@ curl -s localhost:8080/readyz | jq
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | load test results (25 CPS sustained on a 4 vCPU VM) and the defects the test found |
 | [docs/SECURITY.md](docs/SECURITY.md) | OWASP ASVS level 1 walkthrough |
 | [docs/GO_LIVE.md](docs/GO_LIVE.md) | dev and live environments on one box, pilot onboarding, firewall |
+| [docs/HA.md](docs/HA.md) | two box active-passive set-up: VIP, Postgres replica, Redis Sentinel, what survives a failure |
 
 ## Milestones
 

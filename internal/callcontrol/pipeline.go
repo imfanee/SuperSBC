@@ -276,7 +276,7 @@ func (p *Pipeline) Reserve(ctx context.Context, cust *model.Customer, rate *mode
 		if err := store.InsertActiveCall(ctx, tx, &model.ActiveCall{
 			CallUUID: cdr.CallUUID, CustomerID: cust.ID, AccountID: acc.ID, CalledNumber: cdr.CalledNumber,
 			ReservedAmount: reserve, MaxCallSeconds: maxSecs, StartedAt: cdr.StartTime,
-			ExpiresAt: cdr.StartTime.Add(p.cfg.Billing.MaxCallDuration),
+			ExpiresAt: cdr.StartTime.Add(p.cfg.Billing.MaxCallDuration), Node: p.cfg.NodeName,
 		}); err != nil {
 			return err
 		}

@@ -53,7 +53,7 @@ func (r *Reconciler) Once(ctx context.Context) (int, error) {
 	var expired []model.ActiveCall
 	var err error
 	if connected {
-		expired, err = r.eng.st.StaleActiveCalls(ctx, r.eng.cfg.Billing.OrphanTimeout, 500)
+		expired, err = r.eng.st.StaleActiveCalls(ctx, r.eng.cfg.NodeName, r.eng.cfg.Billing.OrphanTimeout, 500)
 	} else {
 		expired, err = r.eng.st.ExpiredActiveCalls(ctx, r.eng.cfg.Billing.OrphanTimeout, 200)
 	}

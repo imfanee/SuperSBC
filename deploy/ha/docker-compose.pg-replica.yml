@@ -1,0 +1,21 @@
+# Streaming replica of the live Postgres on the second box (D-68).
+#   docker compose -f deploy/ha/docker-compose.pg-replica.yml --env-file .env.live up -d
+# Promote with: docker compose -f ... exec pg-replica pg_ctl promote
+# Automatic failover (Patroni, or a managed Postgres) is deliberately not bundled.
+services:
+  pg-replica:
+    image: postgres:16-alpine
+    entrypoint: ["/replica-entrypoint.sh"]
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PRIMARY_HOST: ${PG_PRIMARY_HOST:?set PG_PRIMARY_HOST}
+      PRIMARY_PORT: ${PG_PRIMARY_PORT:-25432}
+      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?set REPLICATION_PASSWORD}
+    volumes:
+      - ./postgres/replica-entrypoint.sh:/replica-entrypoint.sh:ro
+      - pgreplica:/var/lib/postgresql/data
+    ports:
+      - "${SBC_PG_PORT:-25432}:5432"
+    restart: unless-stopped
+volumes:
+  pgreplica:

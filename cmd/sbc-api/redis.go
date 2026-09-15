@@ -11,6 +11,13 @@ import (
 )
 
 func connectRedis(ctx context.Context, cfg *config.Config) (*redis.Client, error) {
+	if len(cfg.RedisSentinelAddrs) > 0 {
+		opt, err := redis.ParseURL(cfg.RedisURL)
+		if err != nil {
+			return nil, err
+		}
+		return cache.ConnectSentinel(ctx, cfg.RedisSentinelMaster, cfg.RedisSentinelAddrs, opt.Password, opt.Password, opt.DB)
+	}
 	return cache.Connect(ctx, cfg.RedisURL)
 }
 

@@ -113,9 +113,9 @@ func FinalizeCDR(ctx context.Context, tx pgx.Tx, c *model.CDR) error {
 
 // InsertActiveCall records an open reservation.
 func InsertActiveCall(ctx context.Context, q Querier, a *model.ActiveCall) error {
-	_, err := q.Exec(ctx, `INSERT INTO active_calls (call_uuid, customer_id, account_id, called_number, reserved_amount, max_call_seconds, started_at, expires_at)
-		VALUES ($1, $2, $3, $4, $5::numeric, $6, $7, $8) ON CONFLICT (call_uuid) DO NOTHING`,
-		a.CallUUID, a.CustomerID, a.AccountID, a.CalledNumber, a.ReservedAmount, a.MaxCallSeconds, a.StartedAt, a.ExpiresAt)
+	_, err := q.Exec(ctx, `INSERT INTO active_calls (call_uuid, customer_id, account_id, called_number, reserved_amount, max_call_seconds, started_at, expires_at, node)
+		VALUES ($1, $2, $3, $4, $5::numeric, $6, $7, $8, $9) ON CONFLICT (call_uuid) DO NOTHING`,
+		a.CallUUID, a.CustomerID, a.AccountID, a.CalledNumber, a.ReservedAmount, a.MaxCallSeconds, a.StartedAt, a.ExpiresAt, a.Node)
 	return wrapErr(err)
 }
 
@@ -148,15 +148,17 @@ func (s *Store) ActiveCalls(ctx context.Context) ([]model.ActiveCall, error) {
 
 // ExpiredActiveCalls lists reservations older than their expiry plus grace.
 func (s *Store) ExpiredActiveCalls(ctx context.Context, grace time.Duration, limit int) ([]model.ActiveCall, error) {
-	return many[model.ActiveCall](ctx, s.pool, `SELECT call_uuid, customer_id, account_id, called_number, reserved_amount, max_call_seconds, started_at, expires_at
+	return many[model.ActiveCall](ctx, s.pool, `SELECT call_uuid, customer_id, account_id, called_number, reserved_amount, max_call_seconds, started_at, expires_at, node
 		FROM active_calls WHERE expires_at + $1::interval < now() ORDER BY expires_at LIMIT $2`, grace, limit)
 }
 
-// StaleActiveCalls lists reservations started more than age ago (candidates
-// for the reconciliation sweep when FreeSWITCH can be asked about them).
-func (s *Store) StaleActiveCalls(ctx context.Context, age time.Duration, limit int) ([]model.ActiveCall, error) {
-	return many[model.ActiveCall](ctx, s.pool, `SELECT call_uuid, customer_id, account_id, called_number, reserved_amount, max_call_seconds, started_at, expires_at
-		FROM active_calls WHERE started_at + $1::interval < now() ORDER BY started_at LIMIT $2`, age, limit)
+// StaleActiveCalls lists reservations of this node started more than age ago
+// (candidates for the reconciliation sweep when this node's FreeSWITCH can be
+// asked about them). Reservations made before the node column existed
+// (empty node) are included so an upgrade does not leave them behind.
+func (s *Store) StaleActiveCalls(ctx context.Context, node string, age time.Duration, limit int) ([]model.ActiveCall, error) {
+	return many[model.ActiveCall](ctx, s.pool, `SELECT call_uuid, customer_id, account_id, called_number, reserved_amount, max_call_seconds, started_at, expires_at, node
+		FROM active_calls WHERE (node = $3 OR node = '') AND started_at + $1::interval < now() ORDER BY started_at LIMIT $2`, age, limit, node)
 }
 
 // CountActiveCallsByCustomer returns the number of open reservations per customer.

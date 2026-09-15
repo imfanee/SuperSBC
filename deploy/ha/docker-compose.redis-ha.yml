@@ -1,0 +1,19 @@
+# Redis with a replica and a sentinel on each box (D-68).
+#   docker compose -f deploy/ha/docker-compose.redis-ha.yml up -d
+# On the primary box leave REDIS_REPLICAOF empty; on the second box set it to
+# "198.51.100.11 6379". Sentinels elect a new master when the primary box dies.
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["sh", "-c", "exec redis-server --appendonly yes --replica-announce-ip ${REDIS_ANNOUNCE_IP:?} ${REDIS_REPLICAOF:+--replicaof $REDIS_REPLICAOF}"]
+    ports: ["6379:6379"]
+    volumes: ["redisha:/data"]
+    restart: unless-stopped
+  sentinel:
+    image: redis:7-alpine
+    command: ["sh", "-c", "cp /sentinel.conf /tmp/sentinel.conf && exec redis-sentinel /tmp/sentinel.conf --sentinel announce-ip ${REDIS_ANNOUNCE_IP:?}"]
+    ports: ["26379:26379"]
+    volumes: ["./redis/sentinel.conf:/sentinel.conf:ro"]
+    restart: unless-stopped
+volumes:
+  redisha:

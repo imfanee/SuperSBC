@@ -4,9 +4,9 @@ Features from the specification that are documented rather than built, with the 
 
 | Feature | Mechanism | Notes |
 |---------|-----------|-------|
-| High availability | Two SBC hosts behind a VIP (keepalived, VRRP); Postgres primary and streaming replica with automatic failover (Patroni or a managed service); Redis Sentinel; the Go API is stateless and can run on both hosts. FreeSWITCH call state is not replicated: in-flight calls drop on failover, reservations are released by the reconciliation worker on the surviving node within `orphan_timeout` | Documented honestly: FreeSWITCH has no shared call state without commercial extensions |
 | Rate deck versioning and diff | `effective_from`/`effective_to` already allow future decks; a UI diff between two imports is not built | |
 | Per-attempt PDD from the b-leg | `uuid_dump` of the b-leg is not available after the bridge returns; the current PDD attribution uses the a-leg progress timestamps (D-29) | An ESL listener on b-leg `CHANNEL_PROGRESS` could store exact times per attempt |
 | Email and webhook delivery of notifications | `notifications` rows are written (low balance); a delivery worker with SMTP/webhook config would consume them | |
 | Least cost routing with quality weighting | LCR mode orders by buy rate; a quality score (ASR, PDD from the roll-ups) could be blended in | |
 | Number portability lookup | An external ENUM/HTTP query before Step 3 (`npdi`, `rn` parameters) | |
+| Seamless failover of calls in progress | A stateless SIP proxy layer (Kamailio dispatcher) in front of two FreeSWITCH nodes with media anchored on the proxy side, or the commercial FreeSWITCH HA extensions | The active-passive design (docs/HA.md) drops the calls of a failed node |

@@ -22,6 +22,9 @@ type Config struct {
 	DatabaseURL string
 	AutoMigrate bool
 	RedisURL    string
+	// Redis Sentinel (D-68): when SentinelAddrs is set, RedisURL is ignored except for password and db.
+	RedisSentinelAddrs  []string
+	RedisSentinelMaster string
 
 	ESLHost     string
 	ESLPort     int
@@ -122,23 +125,25 @@ func Load() (*Config, error) {
 	}
 
 	c := &Config{
-		Env:            getenv("SBC_ENV", "dev"),
-		NodeName:       getenv("SBC_NODE_NAME", hostname()),
-		AdminListen:    getenv("SBC_ADMIN_LISTEN", ":8080"),
-		InternalListen: getenv("SBC_INTERNAL_LISTEN", ":8081"),
-		InternalSecret: req("SBC_INTERNAL_SECRET"),
-		DatabaseURL:    req("SBC_DATABASE_URL"),
-		AutoMigrate:    getbool("SBC_AUTO_MIGRATE", true),
-		RedisURL:       getenv("SBC_REDIS_URL", "redis://redis:6379/0"),
-		ESLHost:        getenv("SBC_ESL_HOST", "freeswitch"),
-		ESLPort:        getint("SBC_ESL_PORT", 8021),
-		ESLPassword:    req("SBC_ESL_PASSWORD"),
-		FSConfigDir:    getenv("SBC_FS_CONFIG_DIR", "/fsconfig"),
-		FSNodeIP:       getenv("SBC_FS_NODE_IP", ""),
-		ACLMode:        getenv("SBC_ACL_MODE", "dialplan"),
-		FSLogFile:      getenv("SBC_FS_LOG_FILE", "/var/log/freeswitch/freeswitch.log"),
-		LogLevel:       getenv("SBC_LOG_LEVEL", "info"),
-		OpenAPIFile:    getenv("SBC_OPENAPI_FILE", ""),
+		Env:                 getenv("SBC_ENV", "dev"),
+		NodeName:            getenv("SBC_NODE_NAME", hostname()),
+		AdminListen:         getenv("SBC_ADMIN_LISTEN", ":8080"),
+		InternalListen:      getenv("SBC_INTERNAL_LISTEN", ":8081"),
+		InternalSecret:      req("SBC_INTERNAL_SECRET"),
+		DatabaseURL:         req("SBC_DATABASE_URL"),
+		AutoMigrate:         getbool("SBC_AUTO_MIGRATE", true),
+		RedisURL:            getenv("SBC_REDIS_URL", "redis://redis:6379/0"),
+		RedisSentinelAddrs:  splitList(getenv("SBC_REDIS_SENTINEL_ADDRS", "")),
+		RedisSentinelMaster: getenv("SBC_REDIS_SENTINEL_MASTER", "sbcmaster"),
+		ESLHost:             getenv("SBC_ESL_HOST", "freeswitch"),
+		ESLPort:             getint("SBC_ESL_PORT", 8021),
+		ESLPassword:         req("SBC_ESL_PASSWORD"),
+		FSConfigDir:         getenv("SBC_FS_CONFIG_DIR", "/fsconfig"),
+		FSNodeIP:            getenv("SBC_FS_NODE_IP", ""),
+		ACLMode:             getenv("SBC_ACL_MODE", "dialplan"),
+		FSLogFile:           getenv("SBC_FS_LOG_FILE", "/var/log/freeswitch/freeswitch.log"),
+		LogLevel:            getenv("SBC_LOG_LEVEL", "info"),
+		OpenAPIFile:         getenv("SBC_OPENAPI_FILE", ""),
 		Billing: Billing{
 			ReserveMinutes:      getint("SBC_BILLING_RESERVE_MINUTES", 5),
 			MaxCallDuration:     getduration("SBC_BILLING_MAX_CALL_DURATION", 4*time.Hour),
@@ -245,4 +250,15 @@ func getduration(key string, def time.Duration) time.Duration {
 		return def
 	}
 	return d
+}
+
+// splitList splits a comma separated list, trimming blanks.
+func splitList(s string) []string {
+	var out []string
+	for _, p := range strings.Split(s, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }

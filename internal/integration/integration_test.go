@@ -388,3 +388,35 @@ func TestIntegrationSoftDeleteNames(t *testing.T) {
 		t.Fatalf("delete customer: %v", err)
 	}
 }
+
+// Multi node (D-68): the node scoped sweep only considers its own
+// reservations; a stale reservation made by another node is left alone.
+func TestIntegrationStaleActiveCallsNodeScoped(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	e.cfg.NodeName = "node-a"
+	callID := uuid.New()
+	resp, err := e.pipe.Setup(ctx, callcontrol.SetupRequest{CallUUID: callID.String(), SrcIP: "172.28.0.101", SrcPort: 5060, Caller: "1", Called: "442071234567"})
+	if err != nil || resp.Action != "dial" {
+		t.Fatalf("setup: %v %+v", err, resp)
+	}
+	if _, err := e.st.Pool().Exec(ctx, `UPDATE active_calls SET started_at = now() - interval '1 hour' WHERE call_uuid = $1`, callID); err != nil {
+		t.Fatal(err)
+	}
+	mine, err := e.st.StaleActiveCalls(ctx, "node-a", time.Minute, 10)
+	if err != nil || len(mine) != 1 || mine[0].Node != "node-a" {
+		t.Fatalf("own node: %v %+v", err, mine)
+	}
+	other, err := e.st.StaleActiveCalls(ctx, "node-b", time.Minute, 10)
+	if err != nil || len(other) != 0 {
+		t.Fatalf("other node must not see it: %v %+v", err, other)
+	}
+	// reservations from before the upgrade (no node) are swept by any node
+	if _, err := e.st.Pool().Exec(ctx, `UPDATE active_calls SET node = '' WHERE call_uuid = $1`, callID); err != nil {
+		t.Fatal(err)
+	}
+	legacy, err := e.st.StaleActiveCalls(ctx, "node-b", time.Minute, 10)
+	if err != nil || len(legacy) != 1 {
+		t.Fatalf("legacy rows: %v %+v", err, legacy)
+	}
+}
