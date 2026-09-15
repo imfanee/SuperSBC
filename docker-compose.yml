@@ -91,6 +91,8 @@ services:
   freeswitch:
     image: safarov/freeswitch:1.10.12
     env_file: .env
+    # Run FreeSWITCH directly: the image entrypoint also starts an Erlang epmd on 0.0.0.0:4369.
+    entrypoint: ["/usr/bin/freeswitch", "-nf", "-nonat"]
     # Every call uses four sockets (RTP and RTCP on both legs) plus SIP and
     # ESL; the default 1024 descriptors exhaust at about 150 concurrent calls.
     ulimits:

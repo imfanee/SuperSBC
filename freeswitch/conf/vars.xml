@@ -6,6 +6,8 @@
   <X-PRE-PROCESS cmd="exec-set" data="sbc_node_ip=echo ${SBC_FS_NODE_IP:-auto}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_ext_ip=echo ${SBC_FS_EXT_IP:-${SBC_FS_NODE_IP:-auto}}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_esl_listen_ip=echo ${SBC_FS_ESL_LISTEN_IP:-0.0.0.0}"/>
+  <!-- On the host network, local ESL clients (fs_cli, healthcheck) connect from the node address. -->
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_esl_local_cidr=echo ${SBC_FS_NODE_IP:-127.0.0.1}/32 | sed s#auto/32#127.0.0.1/32#"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_ingress_port=echo ${SBC_FS_INGRESS_PORT:-5060}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_egress_port=echo ${SBC_FS_EGRESS_PORT:-5080}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_rtp_start=echo ${SBC_FS_RTP_START:-16384}"/>

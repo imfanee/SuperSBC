@@ -101,6 +101,8 @@ services:
     image: safarov/freeswitch:1.10.12
     env_file: ../../.env.live
     network_mode: host
+    # Run FreeSWITCH directly: the image entrypoint also starts an Erlang epmd on 0.0.0.0:4369.
+    entrypoint: ["/usr/bin/freeswitch", "-nf", "-nonat"]
     ulimits:
       nofile: { soft: 65536, hard: 65536 }
     volumes:
