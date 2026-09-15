@@ -242,6 +242,13 @@ func restartAPI(t *testing.T, env map[string]string) {
 	t.Helper()
 	cmd := compose(t, "up", "-d", "--no-build", "api")
 	cmd.Env = os.Environ()
+	// The image tag follows the git version (compose: opensbc/sbc-api:${SBC_VERSION:-dev});
+	// without it compose would recreate the container from a stale ":dev" image.
+	if os.Getenv("SBC_VERSION") == "" {
+		if out, err := exec.CommandContext(context.Background(), "git", "-C", repoRoot(t), "describe", "--tags", "--always", "--dirty").Output(); err == nil {
+			cmd.Env = append(cmd.Env, "SBC_VERSION="+strings.TrimSpace(string(out)))
+		}
+	}
 	for k, v := range env {
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}

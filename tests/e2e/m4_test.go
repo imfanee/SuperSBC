@@ -292,7 +292,8 @@ func TestM4_CDRsAndActiveCalls(t *testing.T) {
 		code, act := a.do("GET", "/calls/active", nil)
 		a.mustOK(code, act, "active")
 		for _, it := range items(act) {
-			if it["called_number"] == "442071234567" && it["freeswitch_seen"] == true {
+			// wait for the answered state so the API hangup produces a BYE, not a CANCEL
+			if it["called_number"] == "442071234567" && it["freeswitch_seen"] == true && (it["state"] == "ACTIVE" || it["state"] == "answered") {
 				active = it
 			}
 		}

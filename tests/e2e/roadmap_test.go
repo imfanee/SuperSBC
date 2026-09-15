@@ -284,6 +284,31 @@ func TestRoadmap_TLSClientCert(t *testing.T) {
 	run("req", "-newkey", "rsa:2048", "-nodes", "-keyout", filepath.Join(out, "other-key.pem"), "-out", filepath.Join(out, "other.csr"), "-subj", "/CN=other.example/O=OpenSBC")
 	run("x509", "-req", "-in", filepath.Join(out, "other.csr"), "-CA", filepath.Join(tls, "cert.pem"), "-CAkey", filepath.Join(tls, "key.pem"), "-CAcreateserial",
 		"-out", filepath.Join(out, "other-cert.pem"), "-days", "2")
+	// The subject list is rendered when customers change and applies at the
+	// next profile start (D-67): restart the ingress profile through the API.
+	a := newAPIClient(t)
+	a.ok(a.login("admin@example.com", adminPassword(t)))
+	var code int
+	var rs map[string]any
+	for i := 0; i < 20; i++ { // a preceding test may have restarted the API; wait for its ESL link
+		if code, rs = a.do("POST", "/system/profiles/external-ingress/restart", nil); code == 200 {
+			break
+		}
+		time.Sleep(time.Second)
+	}
+	a.mustOK(code, rs, "restart profile")
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		out := compose(t, "exec", "-T", "api", "wget", "-qO-", "http://127.0.0.1:8080/readyz")
+		if b, err := out.Output(); err == nil && strings.Contains(string(b), `"ready":true`) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("ingress profile did not come back")
+		}
+		time.Sleep(time.Second)
+	}
+	time.Sleep(2 * time.Second)
 	sc := scenario(t, "uac_call.xml.tmpl", map[string]string{"__TALK__": "500"})
 	for _, c := range []struct{ name, cert, key string }{{"unknown CA", "rogue-cert.pem", "rogue-key.pem"}, {"unlisted subject", "other-cert.pem", "other-key.pem"}} {
 		res := placeTLSCallWithCert(t, "customer-zeta", sc, "442071234567", c.cert, c.key)

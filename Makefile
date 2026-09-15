@@ -69,7 +69,7 @@ reconcile: ## Prove ledger and account invariants
 e2e: ## End-to-end SIP tests with sipp mock customers and carriers
 	SBC_VERSION=$(VERSION) $(COMPOSE) --profile e2e up -d --build
 	$(COMPOSE) exec api /app/sbc-api seed
-	$(GO) test -count=1 -tags e2e -v -timeout 20m ./tests/e2e/...
+	SBC_VERSION=$(VERSION) $(GO) test -count=1 -tags e2e -v -timeout 30m ./tests/e2e/...
 
 e2e-ui: ## Playwright tests against the running web UI (needs make up and make seed)
 	cd web && npx playwright install chromium >/dev/null 2>&1 || true
