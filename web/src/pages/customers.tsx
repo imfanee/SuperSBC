@@ -59,6 +59,7 @@ const customerSchema = z.object({
   srtp_mode: z.enum(["off", "optional", "mandatory"]),
   require_tls: z.boolean(),
   stir_mode: z.enum(["ignore", "verify", "require"]),
+  tls_subject: z.string().max(500),
 });
 type CustomerForm = z.infer<typeof customerSchema>;
 
@@ -83,6 +84,7 @@ function toForm(c?: Customer | null): CustomerForm {
     srtp_mode: c?.srtp_mode ?? "optional",
     require_tls: c?.require_tls ?? false,
     stir_mode: c?.stir_mode ?? "ignore",
+    tls_subject: c?.tls_subject ?? "",
   };
 }
 
@@ -243,6 +245,12 @@ export function CustomerForm({
           </Select>
         </Field>
       ))}
+      <Field
+        label="TLS client certificate subject"
+        hint="CN or SAN of the customer's certificate (comma separated for several); applied when the ingress profile verifies client certificates and is restarted"
+      >
+        <Input {...register("tls_subject")} placeholder="sip.customer.example" />
+      </Field>
       <div className="flex items-center gap-2 pt-5">
         <Switch checked={watch("require_tls")} onCheckedChange={(v) => setValue("require_tls", v)} id="tls" />
         <label htmlFor="tls" className="text-sm">

@@ -10,4 +10,3 @@ Features from the specification that are documented rather than built, with the 
 | Email and webhook delivery of notifications | `notifications` rows are written (low balance); a delivery worker with SMTP/webhook config would consume them | |
 | Least cost routing with quality weighting | LCR mode orders by buy rate; a quality score (ASR, PDD from the roll-ups) could be blended in | |
 | Number portability lookup | An external ENUM/HTTP query before Step 3 (`npdi`, `rn` parameters) | |
-| Per customer TLS client certificate verification | `SBC_FS_TLS_VERIFY_POLICY=in` plus a CA bundle in `cafile.pem`; bind the certificate subject to the customer | Verify policy is `none` today (D-53) |

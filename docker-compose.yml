@@ -108,6 +108,10 @@ services:
         volume: { subpath: gateways }
       - type: volume
         source: fsconfig
+        target: /etc/freeswitch/sip_profiles/external-ingress
+        volume: { subpath: ingress }
+      - type: volume
+        source: fsconfig
         target: /etc/freeswitch/acl.d
         volume: { subpath: acl }
       - fslogs:/var/log/freeswitch

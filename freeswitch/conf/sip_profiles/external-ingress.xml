@@ -66,6 +66,9 @@
     <param name="tls-version" value="$${sbc_tls_version}"/>
     <param name="tls-verify-policy" value="$${sbc_tls_verify_policy}"/>
     <param name="tls-verify-date" value="true"/>
+    <param name="tls-verify-depth" value="$${sbc_tls_verify_depth}"/>
+    <!-- tls-verify-in-subjects rendered by sbc-api from the customers (D-67) -->
+    <X-PRE-PROCESS cmd="include" data="external-ingress/*.xml"/>
     <param name="NDLB-force-rport" value="true"/>
     <param name="NDLB-received-in-nat-reg-contact" value="false"/>
     <param name="aggressive-nat-detection" value="false"/>

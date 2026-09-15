@@ -11,11 +11,16 @@ import (
 
 // placeTLSCall is placeCall over SIP TLS to the ingress TLS port.
 func placeTLSCall(t *testing.T, customer, scenarioPath, called string) callResult {
+	return placeTLSCallWithCert(t, customer, scenarioPath, called, "cert.pem", "key.pem")
+}
+
+// placeTLSCallWithCert is placeTLSCall presenting the given client certificate (files in tests/e2e/out).
+func placeTLSCallWithCert(t *testing.T, customer, scenarioPath, called, cert, key string) callResult {
 	t.Helper()
 	ip := customerIP[customer]
 	logName := fmt.Sprintf("%s_%d.msg", strings.ReplaceAll(t.Name(), "/", "_"), time.Now().UnixNano())
 	args := []string{"--profile", "e2e-clients", "run", "--rm", "-T", customer,
-		"-sf", scenarioPath, "-t", "l1", "-tls_cert", "/out/cert.pem", "-tls_key", "/out/key.pem",
+		"-sf", scenarioPath, "-t", "l1", "-tls_cert", "/out/" + cert, "-tls_key", "/out/" + key,
 		"-i", ip, "-p", "5061", "-mi", ip, "-mp", "7000", "-s", called, "-m", "1", "-l", "1", "-r", "1",
 		"-nostdin", "-trace_msg", "-message_file", "/out/" + logName, "-trace_err", "-error_file", "/dev/null",
 		"-cid_str", fmt.Sprintf("tls-%%u-%%p-%d@%%s", time.Now().UnixNano()), "-timeout", "60s", "172.28.0.10:5061"}

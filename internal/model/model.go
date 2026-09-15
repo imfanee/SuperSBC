@@ -27,7 +27,10 @@ type Customer struct {
 	SRTPMode           string     `json:"srtp_mode" db:"srtp_mode"`
 	RequireTLS         bool       `json:"require_tls" db:"require_tls"`
 	// STIRMode: ignore (default), verify (record the result) or require (reject unverified calls). D-64.
-	STIRMode               string    `json:"stir_mode" db:"stir_mode"`
+	STIRMode string `json:"stir_mode" db:"stir_mode"`
+	// TLSSubject is the certificate subject (CN or SAN, comma separated for several)
+	// the customer presents over TLS; empty when client certificates are not verified. D-67.
+	TLSSubject             string    `json:"tls_subject" db:"tls_subject"`
 	TrustPAI               bool      `json:"trust_pai" db:"trust_pai"`
 	BlockedPrefixesEnabled bool      `json:"blocked_prefixes_enabled" db:"blocked_prefixes_enabled"`
 	Notes                  string    `json:"notes" db:"notes"`

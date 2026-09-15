@@ -18,6 +18,7 @@ func (h *Handler) mountSystem(r chi.Router) {
 	r.Get("/system/settings", h.getSettings)
 	r.With(admins).Put("/system/settings", h.putSettings)
 	r.Get("/system/gateways", h.gatewayStates)
+	r.With(admins).Post("/system/profiles/{name}/restart", h.restartProfile)
 	r.Get("/system/notifications", h.notifications)
 	r.Get("/audit-log", h.auditLog)
 }
@@ -428,4 +429,30 @@ func (h *Handler) openapiJSON(w http.ResponseWriter, _ *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(b)
+}
+
+// restartProfile godoc
+// @Summary Restart a Sofia profile so it re-reads its configuration (drops the calls on that profile; use at a quiet time)
+// @Tags system
+// @Produce json
+// @Param name path string true "external-ingress|external-egress"
+// @Success 200 {object} map[string]string
+// @Router /system/profiles/{name}/restart [post]
+func (h *Handler) restartProfile(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+	if name != "external-ingress" && name != "external-egress" {
+		fail(w, http.StatusBadRequest, "unknown profile")
+		return
+	}
+	if h.ESL == nil || !h.ESL.Connected() {
+		fail(w, http.StatusServiceUnavailable, "FreeSWITCH not connected")
+		return
+	}
+	out, err := h.ESL.API(r.Context(), "sofia profile "+name+" restart reloadxml")
+	if err != nil {
+		failErr(w, err)
+		return
+	}
+	h.audit(r, "profile.restart", "profile", name, nil, map[string]string{"result": strings.TrimSpace(out)})
+	writeJSON(w, http.StatusOK, map[string]string{"profile": name, "result": strings.TrimSpace(out)})
 }

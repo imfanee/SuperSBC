@@ -57,3 +57,15 @@ func TestBanExport(t *testing.T) {
 		t.Fatalf("export:\n%s", out)
 	}
 }
+
+func TestTLSSubjects(t *testing.T) {
+	out := TLSSubjects([]model.Customer{
+		{Status: "active", TLSSubject: "sip.acme.example, 203.0.113.9"},
+		{Status: "active", TLSSubject: "trunk.beta.example"},
+		{Status: "suspended", TLSSubject: "old.example"},
+		{Status: "active", TLSSubject: " sip.acme.example "},
+	})
+	if !strings.Contains(out, `value="203.0.113.9,sip.acme.example,trunk.beta.example"`) || strings.Contains(out, "old.example") {
+		t.Fatalf("subjects:\n%s", out)
+	}
+}

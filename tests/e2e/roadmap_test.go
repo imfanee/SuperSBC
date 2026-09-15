@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -257,4 +259,39 @@ func TestRoadmap_HEPCapture(t *testing.T) {
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
+}
+
+// TLS client certificate verification (D-67): the dev ingress profile runs
+// with tls-verify-policy subjects_in, so a client certificate must chain to
+// cafile.pem and carry a subject listed on a customer. The M5 TLS test covers
+// the accepted case; here a certificate from an unknown CA and one from the
+// trusted CA with an unlisted subject are both refused at the handshake.
+func TestRoadmap_TLSClientCert(t *testing.T) {
+	copyTLSFiles(t)
+	out := filepath.Join(repoRoot(t), "tests", "e2e", "out")
+	tls := filepath.Join(repoRoot(t), "freeswitch", "tls")
+	run := func(args ...string) {
+		t.Helper()
+		cmd := exec.CommandContext(context.Background(), "openssl", args...)
+		if b, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("openssl %v: %v\n%s", args, err, b)
+		}
+	}
+	// unknown CA, listed subject
+	run("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2", "-keyout", filepath.Join(out, "rogue-key.pem"), "-out", filepath.Join(out, "rogue-cert.pem"),
+		"-subj", "/CN=172.28.0.10/O=Rogue", "-addext", "subjectAltName=IP:172.28.0.10")
+	// trusted CA, unlisted subject
+	run("req", "-newkey", "rsa:2048", "-nodes", "-keyout", filepath.Join(out, "other-key.pem"), "-out", filepath.Join(out, "other.csr"), "-subj", "/CN=other.example/O=OpenSBC")
+	run("x509", "-req", "-in", filepath.Join(out, "other.csr"), "-CA", filepath.Join(tls, "cert.pem"), "-CAkey", filepath.Join(tls, "key.pem"), "-CAcreateserial",
+		"-out", filepath.Join(out, "other-cert.pem"), "-days", "2")
+	sc := scenario(t, "uac_call.xml.tmpl", map[string]string{"__TALK__": "500"})
+	for _, c := range []struct{ name, cert, key string }{{"unknown CA", "rogue-cert.pem", "rogue-key.pem"}, {"unlisted subject", "other-cert.pem", "other-key.pem"}} {
+		res := placeTLSCallWithCert(t, "customer-zeta", sc, "442071234567", c.cert, c.key)
+		if len(res.FinalLines) != 0 {
+			t.Errorf("%s: call should have failed at the TLS handshake, got %v", c.name, res.FinalLines)
+		}
+	}
+	// the right certificate still works
+	res := placeTLSCall(t, "customer-zeta", sc, "442071234567")
+	expectFinal(t, res, "200 OK")
 }

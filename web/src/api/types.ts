@@ -33,6 +33,7 @@ export interface Customer {
   srtp_mode: "off" | "optional" | "mandatory";
   require_tls: boolean;
   stir_mode: "ignore" | "verify" | "require";
+  tls_subject: string;
   notes: string;
   created_at: string;
   updated_at: string;

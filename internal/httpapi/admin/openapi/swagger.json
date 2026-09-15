@@ -368,6 +368,10 @@
                     "tech_prefix": {
                         "type": "string"
                     },
+                    "tls_subject": {
+                        "maxLength": 500,
+                        "type": "string"
+                    },
                     "trust_pai": {
                         "type": "boolean"
                     }
@@ -1144,6 +1148,10 @@
                         "type": "string"
                     },
                     "tech_prefix": {
+                        "type": "string"
+                    },
+                    "tls_subject": {
+                        "description": "TLSSubject is the certificate subject (CN or SAN, comma separated for several)\nthe customer presents over TLS; empty when client certificates are not verified. D-67.",
                         "type": "string"
                     },
                     "trust_pai": {
@@ -5518,6 +5526,40 @@
                     }
                 },
                 "summary": "Recent notifications (low balance etc.)",
+                "tags": [
+                    "system"
+                ]
+            }
+        },
+        "/system/profiles/{name}/restart": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "external-ingress|external-egress",
+                        "in": "path",
+                        "name": "name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Restart a Sofia profile so it re-reads its configuration (drops the calls on that profile; use at a quiet time)",
                 "tags": [
                     "system"
                 ]

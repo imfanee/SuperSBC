@@ -169,6 +169,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `GET` | `/system/status` | Readiness of every dependency plus configuration summary |
 | `GET` | `/system/version` | Build version (unauthenticated) |
 | `POST` | `/system/banned-ips` | Ban a source address (FreeSWITCH ACL deny, reloaded immediately) |
+| `POST` | `/system/profiles/{name}/restart` | Restart a Sofia profile so it re-reads its configuration (drops the calls on that profile; use at a quiet time) |
 | `POST` | `/system/siptrace` | Enable Sofia SIP tracing for N minutes (global or one profile); messages land in the FreeSWITCH log |
 | `PUT` | `/system/settings` | Upsert settings rows |
 
