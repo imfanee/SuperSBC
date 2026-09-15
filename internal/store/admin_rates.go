@@ -246,7 +246,7 @@ func (s *Store) ListRoutes(ctx context.Context, groupID uuid.UUID, search string
 		return nil, err
 	}
 	rcs, err := many[RouteCarrierRow](ctx, s.pool, `
-		SELECT rc.id, rc.route_id, rc.carrier_id, rc.priority, rc.weight, rc.enabled, c.name AS carrier_name, c.status::text AS carrier_status
+		SELECT rc.id, rc.route_id, rc.carrier_id, rc.priority, rc.weight, rc.enabled, rc."window", c.name AS carrier_name, c.status::text AS carrier_status
 		FROM route_carriers rc JOIN routes r ON r.id = rc.route_id JOIN carriers c ON c.id = rc.carrier_id
 		WHERE r.route_group_id = $1 ORDER BY rc.route_id, rc.priority, rc.weight DESC`, groupID)
 	if err != nil {
@@ -271,7 +271,7 @@ func (s *Store) RouteByID(ctx context.Context, id uuid.UUID) (*RouteRow, error) 
 		return nil, err
 	}
 	rcs, err := many[RouteCarrierRow](ctx, s.pool, `
-		SELECT rc.id, rc.route_id, rc.carrier_id, rc.priority, rc.weight, rc.enabled, c.name AS carrier_name, c.status::text AS carrier_status
+		SELECT rc.id, rc.route_id, rc.carrier_id, rc.priority, rc.weight, rc.enabled, rc."window", c.name AS carrier_name, c.status::text AS carrier_status
 		FROM route_carriers rc JOIN carriers c ON c.id = rc.carrier_id WHERE rc.route_id = $1 ORDER BY rc.priority, rc.weight DESC`, id)
 	if err != nil {
 		return nil, err
@@ -309,6 +309,7 @@ type RouteCarrierSpec struct {
 	Priority  int       `json:"priority"`
 	Weight    int       `json:"weight"`
 	Enabled   bool      `json:"enabled"`
+	Window    string    `json:"window"`
 }
 
 // ReplaceRouteCarriers replaces the ordered carrier list of a route.
@@ -326,7 +327,7 @@ func (s *Store) ReplaceRouteCarriers(ctx context.Context, routeID uuid.UUID, spe
 			if w <= 0 {
 				w = 100
 			}
-			if _, err := tx.Exec(ctx, `INSERT INTO route_carriers (route_id, carrier_id, priority, weight, enabled) VALUES ($1, $2, $3, $4, $5)`, routeID, sp.CarrierID, prio, w, sp.Enabled); err != nil {
+			if _, err := tx.Exec(ctx, `INSERT INTO route_carriers (route_id, carrier_id, priority, weight, enabled, "window") VALUES ($1, $2, $3, $4, $5, $6)`, routeID, sp.CarrierID, prio, w, sp.Enabled, strings.TrimSpace(sp.Window)); err != nil {
 				return wrapErr(err)
 			}
 		}

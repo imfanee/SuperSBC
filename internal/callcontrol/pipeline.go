@@ -25,6 +25,7 @@ import (
 	"github.com/opensbc/opensbc/internal/rating"
 	"github.com/opensbc/opensbc/internal/store"
 	"github.com/opensbc/opensbc/internal/tables"
+	"github.com/opensbc/opensbc/internal/timewindow"
 )
 
 // CarrierHealth answers whether a carrier should be skipped or demoted.
@@ -341,6 +342,11 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 		}
 		if p.health.GatewayDown(c.GatewayName()) {
 			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "gateway_down"})
+			continue
+		}
+		// Time-of-day routing window of this route carrier (D-61).
+		if win, err := timewindow.Parse(rc.Window); err != nil || !win.Contains(p.now()) {
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "outside_window"})
 			continue
 		}
 		// Carrier capacity (Section 7): skip a carrier already at its channel limit.

@@ -4,7 +4,6 @@ Features from the specification that are documented rather than built, with the 
 
 | Feature | Mechanism | Notes |
 |---------|-----------|-------|
-| Time-of-day and day-of-week routing windows | `route_carriers.window` (cron-like or `mon-fri 08:00-18:00 Europe/London`); `Route` filters carriers outside their window | Pure Go, unit testable |
 | Carrier failed attempt charging | `carriers.charge_failed_attempts` exists; billing would rate each attempt with `classification != answered` at the carrier's connect fee | Needs a `cost` ledger entry per attempt |
 | Invoices and statements as PDF | `reports.Statement` is the data; render with a Go PDF library on a monthly cron | CSV export exists today |
 | STIR/SHAKEN | A `passthrough` header rule for `Identity` already forwards the customer's signature; verification and signing need an STI-VS/AS integration | Not started |

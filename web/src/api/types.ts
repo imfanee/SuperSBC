@@ -171,6 +171,7 @@ export interface RouteCarrier {
   priority: number;
   weight: number;
   enabled: boolean;
+  window?: string;
   carrier_name?: string;
   carrier_status?: string;
 }

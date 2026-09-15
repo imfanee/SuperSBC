@@ -184,6 +184,7 @@ function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Rou
           priority: i + 1,
           weight: c.weight || 100,
           enabled: c.enabled,
+          window: c.window ?? "",
         })),
       };
       return route ? put(`/routes/${route.id}`, body) : post(`/route-groups/${groupId}/routes`, body);
@@ -253,6 +254,16 @@ function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Rou
                   <span className="text-xs text-warning">no buy rate: skipped</span>
                 )}
                 <span className="ml-auto flex items-center gap-1">
+                  <label className="text-xs text-muted-foreground">window</label>
+                  <Input
+                    className="h-7 w-52 text-xs"
+                    value={c.window ?? ""}
+                    placeholder="always (mon-fri 08:00-18:00 Europe/London)"
+                    title="Time-of-day window: days hh:mm-hh:mm [zone]; clauses separated by ;"
+                    onChange={(e) =>
+                      setCarriers((cs) => cs.map((x, j) => (j === i ? { ...x, window: e.target.value } : x)))
+                    }
+                  />
                   <label className="text-xs text-muted-foreground">weight</label>
                   <Input
                     className="h-7 w-16 text-xs"
@@ -310,6 +321,7 @@ function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Rou
                   priority: cs.length + 1,
                   weight: 100,
                   enabled: true,
+                  window: "",
                   carrier_name: undefined,
                 },
               ])

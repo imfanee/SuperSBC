@@ -13,6 +13,7 @@ import (
 	"github.com/opensbc/opensbc/internal/numbering"
 	"github.com/opensbc/opensbc/internal/rating"
 	"github.com/opensbc/opensbc/internal/store"
+	"github.com/opensbc/opensbc/internal/timewindow"
 )
 
 func (h *Handler) mountRoutes(r chi.Router) {
@@ -208,6 +209,9 @@ func (h *Handler) createRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(in.Carriers) > 0 {
+		if !validateSpecs(w, in.Carriers) {
+			return
+		}
 		if err := h.Store.ReplaceRouteCarriers(r.Context(), route.ID, normaliseSpecs(in.Carriers)); err != nil {
 			failErr(w, err)
 			return
@@ -223,9 +227,22 @@ func (h *Handler) createRoute(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, out)
 }
 
+// validateSpecs parses every routing window so a typo is a 400, not a
+// carrier silently skipped at call time.
+func validateSpecs(w http.ResponseWriter, specs []store.RouteCarrierSpec) bool {
+	for _, s := range specs {
+		if _, err := timewindow.Parse(s.Window); err != nil {
+			fail(w, http.StatusBadRequest, err.Error())
+			return false
+		}
+	}
+	return true
+}
+
 func normaliseSpecs(specs []store.RouteCarrierSpec) []store.RouteCarrierSpec {
 	out := make([]store.RouteCarrierSpec, 0, len(specs))
 	for i, s := range specs {
+		s.Window = strings.TrimSpace(s.Window)
 		if s.Priority <= 0 {
 			s.Priority = i + 1
 		}
@@ -357,7 +374,7 @@ func (h *Handler) setRouteCarriers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var in routeCarriersInput
-	if !h.decode(w, r, &in) {
+	if !h.decode(w, r, &in) || !validateSpecs(w, in.Carriers) {
 		return
 	}
 	if err := h.Store.ReplaceRouteCarriers(r.Context(), id, normaliseSpecs(in.Carriers)); err != nil {

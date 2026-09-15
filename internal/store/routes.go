@@ -38,7 +38,7 @@ func (s *Store) RoutesForGroup(ctx context.Context, groupID uuid.UUID) ([]model.
 		return routes, nil
 	}
 	rcs, err := many[model.RouteCarrier](ctx, s.pool, `
-		SELECT rc.id, rc.route_id, rc.carrier_id, rc.priority, rc.weight, rc.enabled
+		SELECT rc.id, rc.route_id, rc.carrier_id, rc.priority, rc.weight, rc.enabled, rc."window"
 		FROM route_carriers rc
 		JOIN routes r ON r.id = rc.route_id
 		JOIN carriers c ON c.id = rc.carrier_id AND c.deleted_at IS NULL AND c.status = 'active'

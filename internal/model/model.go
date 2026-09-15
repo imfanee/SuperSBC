@@ -137,6 +137,9 @@ type RouteCarrier struct {
 	Priority  int       `json:"priority" db:"priority"`
 	Weight    int       `json:"weight" db:"weight"`
 	Enabled   bool      `json:"enabled" db:"enabled"`
+	// Window restricts the carrier to a time-of-day and day-of-week window
+	// (internal/timewindow syntax); empty means always.
+	Window string `json:"window" db:"window"`
 }
 
 // Account is the money account of a customer or carrier.
