@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 const customerCols = `id, name, status::text AS status, rate_group_id, route_group_id, max_concurrent_calls, max_cps,

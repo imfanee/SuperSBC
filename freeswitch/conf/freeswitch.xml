@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  OpenSBC FreeSWITCH configuration root. Pruned vanilla: only what a
+  SuperSBC FreeSWITCH configuration root. Pruned vanilla: only what a
   wholesale SBC needs. Secrets and addresses come from the environment via
   exec-set in vars.xml so the tree contains no credentials.
 -->

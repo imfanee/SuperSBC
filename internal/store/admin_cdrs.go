@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 // CDRFilter is the rich filter of the CDR list (Section 8).

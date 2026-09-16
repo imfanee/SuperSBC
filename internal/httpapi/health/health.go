@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/opensbc/opensbc/internal/esl"
+	"github.com/imfanee/supersbc/internal/esl"
 )
 
 // Deps are the dependencies /readyz verifies.

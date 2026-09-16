@@ -1,5 +1,5 @@
 [Unit]
-Description=OpenSBC: mirror the SBC ban list into nftables every 30 seconds
+Description=SuperSBC: mirror the SBC ban list into nftables every 30 seconds
 
 [Timer]
 OnBootSec=1min

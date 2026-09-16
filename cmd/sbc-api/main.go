@@ -1,7 +1,7 @@
-// Command sbc-api is the OpenSBC control plane: internal call control API,
+// Command sbc-api is the SuperSBC control plane: internal call control API,
 // admin REST API, billing engine, ESL consumer and background workers.
 //
-//	@title			OpenSBC Admin API
+//	@title			SuperSBC Admin API
 //	@version		1.0
 //	@description	Session Border Controller control plane: customers, carriers, rate decks, routing, CDRs, reports.
 //	@BasePath		/api/v1
@@ -32,11 +32,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/opensbc/opensbc/internal/config"
-	"github.com/opensbc/opensbc/internal/db"
-	"github.com/opensbc/opensbc/internal/esl"
-	"github.com/opensbc/opensbc/internal/httpapi/health"
-	"github.com/opensbc/opensbc/internal/logging"
+	"github.com/imfanee/supersbc/internal/config"
+	"github.com/imfanee/supersbc/internal/db"
+	"github.com/imfanee/supersbc/internal/esl"
+	"github.com/imfanee/supersbc/internal/httpapi/health"
+	"github.com/imfanee/supersbc/internal/logging"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".

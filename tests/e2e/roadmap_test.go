@@ -16,7 +16,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/stir"
+	"github.com/imfanee/supersbc/internal/stir"
 )
 
 // Time-of-day routing window (D-61): a carrier outside its window is
@@ -281,7 +281,7 @@ func TestRoadmap_TLSClientCert(t *testing.T) {
 	run("req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "2", "-keyout", filepath.Join(out, "rogue-key.pem"), "-out", filepath.Join(out, "rogue-cert.pem"),
 		"-subj", "/CN=172.28.0.10/O=Rogue", "-addext", "subjectAltName=IP:172.28.0.10")
 	// trusted CA, unlisted subject
-	run("req", "-newkey", "rsa:2048", "-nodes", "-keyout", filepath.Join(out, "other-key.pem"), "-out", filepath.Join(out, "other.csr"), "-subj", "/CN=other.example/O=OpenSBC")
+	run("req", "-newkey", "rsa:2048", "-nodes", "-keyout", filepath.Join(out, "other-key.pem"), "-out", filepath.Join(out, "other.csr"), "-subj", "/CN=other.example/O=SuperSBC")
 	run("x509", "-req", "-in", filepath.Join(out, "other.csr"), "-CA", filepath.Join(tls, "cert.pem"), "-CAkey", filepath.Join(tls, "key.pem"), "-CAcreateserial",
 		"-out", filepath.Join(out, "other-cert.pem"), "-days", "2")
 	// The subject list is rendered when customers change and applies at the

@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 const carrierCols = `id, name, status::text AS status, rate_group_id, gateway_host, gateway_port, transport::text AS transport,

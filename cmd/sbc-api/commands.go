@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/opensbc/opensbc/internal/config"
-	"github.com/opensbc/opensbc/internal/db"
-	"github.com/opensbc/opensbc/internal/seed"
-	"github.com/opensbc/opensbc/internal/store"
+	"github.com/imfanee/supersbc/internal/config"
+	"github.com/imfanee/supersbc/internal/db"
+	"github.com/imfanee/supersbc/internal/seed"
+	"github.com/imfanee/supersbc/internal/store"
 )
 
 func runSeed(ctx context.Context, cfg *config.Config, log *slog.Logger) error {

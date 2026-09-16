@@ -6,9 +6,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/metrics"
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/metrics"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 type headerRuleInput struct {

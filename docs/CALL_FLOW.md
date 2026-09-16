@@ -1,6 +1,6 @@
 # Call flow
 
-This document follows one INVITE from a customer through OpenSBC, step by step, naming the code that runs at each point. Section numbers refer to the original specification.
+This document follows one INVITE from a customer through SuperSBC, step by step, naming the code that runs at each point. Section numbers refer to the original specification.
 
 ## Where things run
 

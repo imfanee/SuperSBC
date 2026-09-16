@@ -38,7 +38,7 @@ test-unit: ## Unit tests
 
 test-integration: ## Integration tests against compose Postgres and Redis
 	$(COMPOSE) up -d postgres redis
-	SBC_TEST_DATABASE_URL=postgres://opensbc:$${POSTGRES_PASSWORD:-opensbc}@127.0.0.1:$${SBC_PG_PORT:-15432}/opensbc_test?sslmode=disable \
+	SBC_TEST_DATABASE_URL=postgres://supersbc:$${POSTGRES_PASSWORD:-supersbc}@127.0.0.1:$${SBC_PG_PORT:-15432}/supersbc_test?sslmode=disable \
 	SBC_TEST_REDIS_URL=redis://127.0.0.1:$${SBC_REDIS_PORT:-16379}/1 \
 	$(GO) test -race -count=1 -tags integration ./internal/... -run 'Integration'
 
@@ -79,7 +79,7 @@ replay-cdrs: ## Re-post CDRs spooled by mod_json_cdr while the API was down
 	$(COMPOSE) exec freeswitch sh /etc/freeswitch/replay_json_cdr.sh
 
 # ---- live environment (deploy/live) ----
-LIVE := docker compose -p opensbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml
+LIVE := docker compose -p supersbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml
 
 live-init: ## One-off: generate .env.live (random secrets) and a self-signed certificate
 	deploy/live/init.sh $(NODE_IP)
@@ -105,7 +105,7 @@ live-replay-cdrs: ## Re-post spooled CDRs on live
 	$(LIVE) exec freeswitch sh /etc/freeswitch/replay_json_cdr.sh
 
 live-backup: ## Immediate pg_dump of the live database into backups/live
-	mkdir -p backups/live && $(LIVE) exec -T postgres pg_dump -Fc -U opensbc opensbc > backups/live/opensbc-$$(date -u +%Y%m%d-%H%M%S).dump && ls -la backups/live | tail -1
+	mkdir -p backups/live && $(LIVE) exec -T postgres pg_dump -Fc -U supersbc supersbc > backups/live/supersbc-$$(date -u +%Y%m%d-%H%M%S).dump && ls -la backups/live | tail -1
 
 homer-up: ## Start HOMER (heplify-server on 172.28.0.1:9060, webapp on 127.0.0.1:19080, admin/sipcapture)
 	$(COMPOSE) --profile homer up -d
@@ -120,8 +120,8 @@ live-ban-sync: ## Mirror the SBC ban list into the nftables "banned" set once (i
 	deploy/live/ban-sync.sh
 
 live-ban-timer: ## Install and start the systemd timer that runs live-ban-sync every 30 seconds
-	install -m 644 deploy/live/opensbc-ban-sync.service deploy/live/opensbc-ban-sync.timer /etc/systemd/system/
-	systemctl daemon-reload && systemctl enable --now opensbc-ban-sync.timer
+	install -m 644 deploy/live/supersbc-ban-sync.service deploy/live/supersbc-ban-sync.timer /etc/systemd/system/
+	systemctl daemon-reload && systemctl enable --now supersbc-ban-sync.timer
 
 live-firewall: ## Apply and persist the nftables ruleset in deploy/live/nftables.conf
 	nft -f deploy/live/nftables.conf && cp deploy/live/nftables.conf /etc/nftables.conf && systemctl enable --now nftables >/dev/null 2>&1; nft list chain inet sbc input | head -30

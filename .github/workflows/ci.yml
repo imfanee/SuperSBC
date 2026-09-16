@@ -34,9 +34,9 @@ jobs:
     services:
       postgres:
         image: postgres:16-alpine
-        env: { POSTGRES_USER: opensbc, POSTGRES_PASSWORD: opensbc, POSTGRES_DB: opensbc }
+        env: { POSTGRES_USER: supersbc, POSTGRES_PASSWORD: supersbc, POSTGRES_DB: supersbc }
         ports: ["5432:5432"]
-        options: --health-cmd "pg_isready -U opensbc" --health-interval 5s --health-timeout 3s --health-retries 20
+        options: --health-cmd "pg_isready -U supersbc" --health-interval 5s --health-timeout 3s --health-retries 20
       redis:
         image: redis:7-alpine
         ports: ["6379:6379"]
@@ -44,10 +44,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with: { go-version: "1.26" }
-      - run: PGPASSWORD=opensbc psql -h 127.0.0.1 -U opensbc -d opensbc -c 'CREATE DATABASE opensbc_test OWNER opensbc'
+      - run: PGPASSWORD=supersbc psql -h 127.0.0.1 -U supersbc -d supersbc -c 'CREATE DATABASE supersbc_test OWNER supersbc'
       - run: go test -race -count=1 -tags integration ./internal/... -run Integration
         env:
-          SBC_TEST_DATABASE_URL: postgres://opensbc:opensbc@127.0.0.1:5432/opensbc_test?sslmode=disable
+          SBC_TEST_DATABASE_URL: postgres://supersbc:supersbc@127.0.0.1:5432/supersbc_test?sslmode=disable
           SBC_TEST_REDIS_URL: redis://127.0.0.1:6379/1
 
   web:

@@ -16,7 +16,7 @@
   <X-PRE-PROCESS cmd="exec-set" data="sbc_sessions_per_second=echo ${SBC_FS_SESSIONS_PER_SECOND:-100}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_ingress_codecs=echo ${SBC_FS_INGRESS_CODECS:-PCMA,PCMU,OPUS,G722}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_egress_codecs=echo ${SBC_FS_EGRESS_CODECS:-PCMA,PCMU,OPUS,G722}"/>
-  <X-PRE-PROCESS cmd="exec-set" data="sbc_user_agent=echo ${SBC_FS_USER_AGENT:-OpenSBC}"/>
+  <X-PRE-PROCESS cmd="exec-set" data="sbc_user_agent=echo ${SBC_FS_USER_AGENT:-SuperSBC}"/>
   <X-PRE-PROCESS cmd="exec-set" data="sbc_log_level=echo ${SBC_FS_LOG_LEVEL:-info}"/>
   <!-- SIP TLS (Section 7): certificates in /etc/freeswitch/tls (agent.pem = key + certificate, cafile.pem) -->
   <X-PRE-PROCESS cmd="exec-set" data="sbc_tls=echo ${SBC_FS_TLS:-false}"/>

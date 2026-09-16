@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/opensbc/opensbc/internal/trace"
+	"github.com/imfanee/supersbc/internal/trace"
 )
 
 func (h *Handler) mountTrace(r chi.Router) {

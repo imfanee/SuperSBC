@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/esl"
+	"github.com/imfanee/supersbc/internal/esl"
 )
 
 // State of one gateway.

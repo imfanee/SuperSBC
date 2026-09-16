@@ -1,4 +1,4 @@
-# Redis Sentinel for OpenSBC (D-68): one sentinel per box plus a third
+# Redis Sentinel for SuperSBC (D-68): one sentinel per box plus a third
 # (quorum 2) on any other machine. Point every sbc-api at all sentinels with
 # SBC_REDIS_SENTINEL_ADDRS and SBC_REDIS_SENTINEL_MASTER=sbcmaster.
 port 26379

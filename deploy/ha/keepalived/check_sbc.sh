@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# keepalived health check for an OpenSBC node: the local API must report
+# keepalived health check for an SuperSBC node: the local API must report
 # ready (Postgres, Redis, ESL and both Sofia profiles) or the node loses
 # priority and the VIP moves. Install as /usr/local/bin/check_sbc.sh.
 set -u

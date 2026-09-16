@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/opensbc/opensbc/internal/failover"
+	"github.com/imfanee/supersbc/internal/failover"
 )
 
 // Breaker is the per-carrier circuit breaker of Section 6, kept in Redis so

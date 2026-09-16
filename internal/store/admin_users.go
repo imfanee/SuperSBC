@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 const userCols = `id, email, password_hash, role, totp_secret, totp_enabled, status, last_login_at, created_at, updated_at`

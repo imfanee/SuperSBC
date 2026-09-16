@@ -2063,7 +2063,7 @@
     },
     "info": {
         "description": "Session Border Controller control plane: customers, carriers, rate decks, routing, CDRs, reports.",
-        "title": "OpenSBC Admin API",
+        "title": "SuperSBC Admin API",
         "version": "1.0"
     },
     "externalDocs": {

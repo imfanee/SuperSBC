@@ -1,4 +1,4 @@
-# OpenSBC Admin API
+# SuperSBC Admin API
 
 Generated from handler annotations by `make openapi` (swag v2, OpenAPI 3.1). The live document is served at `/api/docs` (Swagger UI) and `/api/docs/openapi.json`.
 

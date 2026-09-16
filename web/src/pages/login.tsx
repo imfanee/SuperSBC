@@ -69,7 +69,7 @@ export function LoginPage() {
   });
 
   return (
-    <AuthFrame title="Sign in to OpenSBC" description="Wholesale SBC administration">
+    <AuthFrame title="Sign in to SuperSBC" description="Wholesale SBC administration">
       <form onSubmit={submit} className="space-y-3" noValidate>
         <Field label="Email" error={form.formState.errors.email?.message}>
           <Input
@@ -119,7 +119,7 @@ export function LoginPage() {
 
 export function ForgotPasswordPage() {
   return (
-    <AuthFrame title="Forgot password" description="OpenSBC does not send email">
+    <AuthFrame title="Forgot password" description="SuperSBC does not send email">
       <p className="text-sm text-muted-foreground">
         Ask an administrator to generate a reset link for your account (Users and keys, Reset password). The
         link opens the reset page with a one-time token valid for one hour.

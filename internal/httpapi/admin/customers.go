@@ -8,9 +8,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/model"
-	"github.com/opensbc/opensbc/internal/store"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/store"
 )
 
 func (h *Handler) mountCustomers(r chi.Router) {

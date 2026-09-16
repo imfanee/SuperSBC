@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/config"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/config"
 )
 
 func connectRedis(ctx context.Context, cfg *config.Config) (*redis.Client, error) {

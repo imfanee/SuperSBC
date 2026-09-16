@@ -8,8 +8,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/opensbc/opensbc/internal/auth"
-	"github.com/opensbc/opensbc/internal/failover"
+	"github.com/imfanee/supersbc/internal/auth"
+	"github.com/imfanee/supersbc/internal/failover"
 )
 
 func (h *Handler) mountSystem(r chi.Router) {
@@ -414,7 +414,7 @@ func (h *Handler) resetUserPassword(w http.ResponseWriter, r *http.Request) {
 // docsPage serves a Swagger UI page for the generated OpenAPI document.
 func (h *Handler) docsPage(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = w.Write([]byte(`<!doctype html><html><head><meta charset="utf-8"><title>OpenSBC API</title>
+	_, _ = w.Write([]byte(`<!doctype html><html><head><meta charset="utf-8"><title>SuperSBC API</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css"></head>
 <body><div id="ui"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js"></script>

@@ -28,7 +28,7 @@ SBC_BOOTSTRAP_ADMIN_PASSWORD=$ADMIN_PW
 
 SBC_ADMIN_LISTEN=:8080
 SBC_INTERNAL_LISTEN=:8081
-SBC_DATABASE_URL=postgres://opensbc:PGPW@postgres:5432/opensbc?sslmode=disable
+SBC_DATABASE_URL=postgres://supersbc:PGPW@postgres:5432/supersbc?sslmode=disable
 SBC_AUTO_MIGRATE=true
 SBC_REDIS_URL=redis://redis:6379/0
 SBC_ESL_HOST=172.29.0.1
@@ -62,7 +62,7 @@ SBC_BAN_WINDOW=5m
 SBC_BAN_DURATION=1h
 SBC_BAN_EXPORT_FILE=/state/banned_ips.txt
 # Invoices (D-63): issuer printed on the PDF
-SBC_INVOICE_OPERATOR_NAME=OpenSBC
+SBC_INVOICE_OPERATOR_NAME=SuperSBC
 SBC_INVOICE_OPERATOR_ADDRESS=
 SBC_INVOICE_FOOTER=
 # STIR/SHAKEN verification (D-64)
@@ -94,7 +94,7 @@ SBC_FS_MAX_SESSIONS=400
 SBC_FS_SESSIONS_PER_SECOND=40
 SBC_FS_INGRESS_CODECS=PCMA,PCMU,OPUS,G722
 SBC_FS_EGRESS_CODECS=PCMA,PCMU,OPUS,G722
-SBC_FS_USER_AGENT=OpenSBC
+SBC_FS_USER_AGENT=SuperSBC
 SBC_FS_LOG_LEVEL=info
 SBC_API_INTERNAL_URL=http://127.0.0.1:8081
 
@@ -118,7 +118,7 @@ mkdir -p deploy/live/tls backups/live deploy/live/state
 chown 10001:10001 deploy/live/state
 if [ ! -f deploy/live/tls/server.crt ]; then
   openssl req -x509 -newkey rsa:2048 -nodes -days 825 -keyout deploy/live/tls/server.key -out deploy/live/tls/server.crt \
-    -subj "/CN=$NODE_IP/O=OpenSBC" -addext "subjectAltName=IP:$NODE_IP" >/dev/null 2>&1
+    -subj "/CN=$NODE_IP/O=SuperSBC" -addext "subjectAltName=IP:$NODE_IP" >/dev/null 2>&1
   chmod 600 deploy/live/tls/server.key
   echo "wrote self-signed certificate deploy/live/tls/server.crt for $NODE_IP (replace with a real one when you have a hostname)"
 fi

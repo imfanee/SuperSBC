@@ -16,12 +16,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/billing"
-	"github.com/opensbc/opensbc/internal/callcontrol"
-	"github.com/opensbc/opensbc/internal/logging"
-	"github.com/opensbc/opensbc/internal/metrics"
-	"github.com/opensbc/opensbc/internal/model"
-	"github.com/opensbc/opensbc/internal/store"
+	"github.com/imfanee/supersbc/internal/billing"
+	"github.com/imfanee/supersbc/internal/callcontrol"
+	"github.com/imfanee/supersbc/internal/logging"
+	"github.com/imfanee/supersbc/internal/metrics"
+	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/store"
 )
 
 // Handler serves the internal API.

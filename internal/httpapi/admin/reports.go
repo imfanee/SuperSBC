@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/opensbc/opensbc/internal/reports"
+	"github.com/imfanee/supersbc/internal/reports"
 )
 
 // ReportsHandler serves /reports/* (Section 10).

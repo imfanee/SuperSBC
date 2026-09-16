@@ -182,7 +182,7 @@ func Load() (*Config, error) {
 			Forward:   getbool("SBC_STIR_FORWARD", true),
 		},
 		Invoice: Invoice{
-			OperatorName:    getenv("SBC_INVOICE_OPERATOR_NAME", "OpenSBC"),
+			OperatorName:    getenv("SBC_INVOICE_OPERATOR_NAME", "SuperSBC"),
 			OperatorAddress: getenv("SBC_INVOICE_OPERATOR_ADDRESS", ""),
 			Footer:          getenv("SBC_INVOICE_FOOTER", ""),
 		},

@@ -1,4 +1,4 @@
-# keepalived on an OpenSBC node (D-68). Copy to /etc/keepalived/keepalived.conf
+# keepalived on an SuperSBC node (D-68). Copy to /etc/keepalived/keepalived.conf
 # on both nodes; on the second node set state BACKUP, priority 100 and swap
 # the unicast addresses. The VIP is the address customers and carriers use;
 # FreeSWITCH binds it on both nodes (net.ipv4.ip_nonlocal_bind=1, see

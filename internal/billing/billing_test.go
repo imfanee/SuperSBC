@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 func TestFromVariables(t *testing.T) {

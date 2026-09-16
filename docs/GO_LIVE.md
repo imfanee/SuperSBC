@@ -2,7 +2,7 @@
 
 | | dev | live ("mini-live") |
 |---|---|---|
-| compose project | `opensbc` (`docker-compose.yml`, `.env`) | `opensbc-live` (`deploy/live/docker-compose.live.yml`, `.env.live`) |
+| compose project | `supersbc` (`docker-compose.yml`, `.env`) | `supersbc-live` (`deploy/live/docker-compose.live.yml`, `.env.live`) |
 | network | private bridge 172.28.0.0/24, sipp mock carriers and customers | private bridge 172.29.0.0/24 for postgres, redis, api, web; **FreeSWITCH on the host network** |
 | SIP | 172.28.0.10:5060 inside the bridge only | `<public ip>:5060` customers, `:5080` carriers, RTP 16384 to 32768 on the host |
 | web / API | http://127.0.0.1:13000 and http://127.0.0.1:18080 (loopback only) | https://`<public ip>`:8443 (8080 redirects to it) |

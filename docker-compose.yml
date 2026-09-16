@@ -1,4 +1,4 @@
-name: opensbc
+name: supersbc
 
 x-logging: &logging
   driver: json-file
@@ -23,16 +23,16 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: opensbc
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opensbc}
-      POSTGRES_DB: opensbc
+      POSTGRES_USER: supersbc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supersbc}
+      POSTGRES_DB: supersbc
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./deploy/postgres/initdb:/docker-entrypoint-initdb.d:ro
     ports:
       - "127.0.0.1:${SBC_PG_PORT:-15432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U opensbc -d opensbc"]
+      test: ["CMD-SHELL", "pg_isready -U supersbc -d supersbc"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -61,7 +61,7 @@ services:
       context: .
       args:
         VERSION: ${SBC_VERSION:-dev}
-    image: opensbc/sbc-api:${SBC_VERSION:-dev}
+    image: supersbc/sbc-api:${SBC_VERSION:-dev}
     env_file: .env
     ulimits:
       nofile: { soft: 65536, hard: 65536 }
@@ -132,7 +132,7 @@ services:
   web:
     build:
       context: ./web
-    image: opensbc/web:${SBC_VERSION:-dev}
+    image: supersbc/web:${SBC_VERSION:-dev}
     ports:
       - "127.0.0.1:${SBC_WEB_PORT:-13000}:80"
     depends_on:
@@ -146,7 +146,7 @@ services:
   # Started with: docker compose --profile e2e up -d
   carrier-answer:
     build: ./tests/e2e/sipp
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e]
     command: ["-sf", "/scenarios/uas_answer.xml", "-i", "172.28.0.61", "-p", "5060", "-mi", "172.28.0.61", "-mp", "6000", "-nostdin", "-trace_err", "-error_file", "/dev/null", "-trace_msg", "-message_file", "/out/carrier-answer.msg"]
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
@@ -154,7 +154,7 @@ services:
       sbc: { ipv4_address: 172.28.0.61 }
     restart: unless-stopped
   carrier-503:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e]
     command: ["-sf", "/scenarios/uas_503.xml", "-i", "172.28.0.62", "-p", "5060", "-nostdin", "-trace_err", "-error_file", "/dev/null"]
     volumes: ["./tests/e2e/scenarios:/scenarios:ro"]
@@ -162,7 +162,7 @@ services:
       sbc: { ipv4_address: 172.28.0.62 }
     restart: unless-stopped
   carrier-404:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e]
     command: ["-sf", "/scenarios/uas_404.xml", "-i", "172.28.0.63", "-p", "5060", "-nostdin", "-trace_err", "-error_file", "/dev/null"]
     volumes: ["./tests/e2e/scenarios:/scenarios:ro"]
@@ -172,84 +172,84 @@ services:
 
   # Mock customers are one-shot: docker compose --profile e2e-clients run --rm customer-acme <sipp args>
   customer-acme:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.101 }
   customer-beta:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.102 }
   customer-gamma:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.103 }
   customer-delta:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.104 }
   customer-epsilon:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.105 }
   customer-euro:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.106 }
   customer-loadtest:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.110 }
   customer-zeta:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.107 }
   customer-eta:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.108 }
   customer-theta:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.109 }
   customer-iota:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.111 }
   customer-unknown:
-    image: opensbc/sipp:3.7
+    image: supersbc/sipp:3.7
     profiles: [e2e-clients]
     working_dir: /out
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
@@ -349,9 +349,9 @@ services:
     profiles: [backup]
     environment:
       PGHOST: postgres
-      PGUSER: opensbc
-      PGPASSWORD: ${POSTGRES_PASSWORD:-opensbc}
-      PGDATABASE: opensbc
+      PGUSER: supersbc
+      PGPASSWORD: ${POSTGRES_PASSWORD:-supersbc}
+      PGDATABASE: supersbc
       BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
     volumes:
       - ./deploy/backup/backup.sh:/usr/local/bin/backup.sh:ro

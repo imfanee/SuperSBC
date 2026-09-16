@@ -8,12 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/callcontrol"
-	"github.com/opensbc/opensbc/internal/numbering"
-	"github.com/opensbc/opensbc/internal/rating"
-	"github.com/opensbc/opensbc/internal/store"
-	"github.com/opensbc/opensbc/internal/timewindow"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/callcontrol"
+	"github.com/imfanee/supersbc/internal/numbering"
+	"github.com/imfanee/supersbc/internal/rating"
+	"github.com/imfanee/supersbc/internal/store"
+	"github.com/imfanee/supersbc/internal/timewindow"
 )
 
 func (h *Handler) mountRoutes(r chi.Router) {

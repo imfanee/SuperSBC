@@ -2,7 +2,7 @@
 # Mirrors the SBC ban list (written by sbc-api to deploy/live/state/banned_ips.txt,
 # SBC_BAN_EXPORT_FILE) into the nftables set "inet sbc banned" so packets from
 # banned addresses are dropped before they reach FreeSWITCH (D-66).
-# Idempotent; run from the systemd timer (deploy/live/opensbc-ban-sync.timer),
+# Idempotent; run from the systemd timer (deploy/live/supersbc-ban-sync.timer),
 # cron, or once with "make live-ban-sync".
 set -euo pipefail
 FILE=${1:-"$(dirname "$0")/state/banned_ips.txt"}

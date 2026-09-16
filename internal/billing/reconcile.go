@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/esl"
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/esl"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 // Reconciler releases reservations of calls whose hangup was never billed

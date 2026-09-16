@@ -1,6 +1,6 @@
-# OpenSBC Architecture
+# SuperSBC Architecture
 
-OpenSBC is a deliberately simple Session Border Controller with prepaid wholesale billing.
+SuperSBC is a deliberately simple Session Border Controller with prepaid wholesale billing.
 It is built from four runtime components and two data stores:
 
 | Component | Technology | Responsibility |
@@ -19,7 +19,7 @@ flowchart LR
     subgraph Customers
         C1[Customer PBX / switch<br/>identified by source IP]
     end
-    subgraph OpenSBC host
+    subgraph SuperSBC host
         FS[FreeSWITCH<br/>profile external-ingress :5060 tls 5061<br/>profile external-egress :5080 tls 5081]
         LUA[sbc_inbound.lua<br/>mod_lua]
         API[sbc-api (Go)<br/>internal API :8081<br/>admin API :8080]

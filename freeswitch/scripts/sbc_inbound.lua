@@ -1,4 +1,4 @@
--- OpenSBC ingress entry point: runs the pipeline for every INVITE that
+-- SuperSBC ingress entry point: runs the pipeline for every INVITE that
 -- reaches the "public" dialplan context. Any Lua error is caught and turned
 -- into "503 SBC internal error" so a bug can never leave a call hanging.
 local ok, err = pcall(function()

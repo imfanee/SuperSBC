@@ -5,10 +5,10 @@
 # API requests retry through the pool).
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
-LIVE="docker compose -p opensbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml"
+LIVE="docker compose -p supersbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml"
 : "${REPLICATION_PASSWORD:?set REPLICATION_PASSWORD}"
 : "${REPLICA_IP:?set REPLICA_IP (address of the replica box)}"
-$LIVE exec -T postgres psql -U opensbc -d postgres -v ON_ERROR_STOP=1 <<SQL
+$LIVE exec -T postgres psql -U supersbc -d postgres -v ON_ERROR_STOP=1 <<SQL
 DO \$\$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'replicator') THEN
     CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD '${REPLICATION_PASSWORD}';

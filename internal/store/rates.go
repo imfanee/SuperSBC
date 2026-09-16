@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 const rateCols = `id, rate_group_id, prefix, destination, rate_per_min, connect_fee, initial_increment, subsequent_increment,

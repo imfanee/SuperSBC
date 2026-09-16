@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 const cdrCols = `call_uuid, customer_id, carrier_id, src_ip::text AS src_ip, src_port, caller_number_raw, caller_number, called_number_raw, called_number,

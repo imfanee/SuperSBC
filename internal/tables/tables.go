@@ -15,10 +15,10 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/model"
-	"github.com/opensbc/opensbc/internal/prefix"
-	"github.com/opensbc/opensbc/internal/store"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/prefix"
+	"github.com/imfanee/supersbc/internal/store"
 )
 
 // Tables is the cache of rate and route tries.

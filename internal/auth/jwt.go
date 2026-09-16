@@ -31,7 +31,7 @@ func NewSigner(secret string, ttl time.Duration) *Signer {
 func (s *Signer) Issue(userID uuid.UUID, email, role string) (string, time.Time, error) {
 	exp := time.Now().Add(s.ttl)
 	c := Claims{UserID: userID, Email: email, Role: role, RegisteredClaims: jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(exp), IssuedAt: jwt.NewNumericDate(time.Now()), Issuer: "opensbc",
+		ExpiresAt: jwt.NewNumericDate(exp), IssuedAt: jwt.NewNumericDate(time.Now()), Issuer: "supersbc",
 	}}
 	tok, err := jwt.NewWithClaims(jwt.SigningMethodHS256, c).SignedString(s.secret)
 	return tok, exp, err
@@ -45,7 +45,7 @@ func (s *Signer) Verify(token string) (*Claims, error) {
 			return nil, errors.New("unexpected signing method")
 		}
 		return s.secret, nil
-	}, jwt.WithIssuer("opensbc"), jwt.WithExpirationRequired())
+	}, jwt.WithIssuer("supersbc"), jwt.WithExpirationRequired())
 	if err != nil || !t.Valid {
 		return nil, errors.New("invalid token")
 	}

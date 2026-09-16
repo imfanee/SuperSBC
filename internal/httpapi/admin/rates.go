@@ -13,9 +13,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/model"
-	"github.com/opensbc/opensbc/internal/rating"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/rating"
 )
 
 func (h *Handler) mountRates(r chi.Router) {

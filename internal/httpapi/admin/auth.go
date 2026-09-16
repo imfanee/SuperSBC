@@ -7,7 +7,7 @@ import (
 
 	"github.com/pquerna/otp/totp"
 
-	"github.com/opensbc/opensbc/internal/auth"
+	"github.com/imfanee/supersbc/internal/auth"
 )
 
 const (
@@ -235,7 +235,7 @@ func (h *Handler) totpSetup(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	key, err := totp.Generate(totp.GenerateOpts{Issuer: "OpenSBC", AccountName: u.Email})
+	key, err := totp.Generate(totp.GenerateOpts{Issuer: "SuperSBC", AccountName: u.Email})
 	if err != nil {
 		failErr(w, err)
 		return

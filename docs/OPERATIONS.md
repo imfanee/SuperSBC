@@ -1,6 +1,6 @@
 # Operations
 
-Day-two runbook for OpenSBC. The commands use the dev stack (`docker compose`, `make ...`); for the live stack substitute `make live-...` targets or `docker compose -p opensbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml` (see [GO_LIVE.md](GO_LIVE.md)).
+Day-two runbook for SuperSBC. The commands use the dev stack (`docker compose`, `make ...`); for the live stack substitute `make live-...` targets or `docker compose -p supersbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml` (see [GO_LIVE.md](GO_LIVE.md)).
 
 ## 1. Start, stop, upgrade
 
@@ -130,15 +130,15 @@ Only `admin` users can move money; `operator` can change routing and configurati
 
 ## 8. Backups and restore
 
-Enable the nightly dump: `docker compose --profile backup up -d` (02:30 UTC, `pg_dump -Fc`, 14 days retained in `./backups`). Manual: `docker compose exec postgres pg_dump -Fc -U opensbc opensbc > opensbc-$(date +%F).dump`.
+Enable the nightly dump: `docker compose --profile backup up -d` (02:30 UTC, `pg_dump -Fc`, 14 days retained in `./backups`). Manual: `docker compose exec postgres pg_dump -Fc -U supersbc supersbc > supersbc-$(date +%F).dump`.
 
 Restore on a fresh stack:
 
 ```bash
 make up                                   # start; the API creates an empty schema
 docker compose stop api
-docker compose exec -T postgres dropdb -U opensbc opensbc && docker compose exec -T postgres createdb -U opensbc opensbc
-docker compose exec -T postgres pg_restore -U opensbc -d opensbc --no-owner < opensbc-2026-09-14.dump
+docker compose exec -T postgres dropdb -U supersbc supersbc && docker compose exec -T postgres createdb -U supersbc supersbc
+docker compose exec -T postgres pg_restore -U supersbc -d supersbc --no-owner < supersbc-2026-09-14.dump
 docker compose start api                  # renders gateways and ACLs from the restored data
 ```
 
@@ -167,7 +167,7 @@ Set `SBC_FS_HEP_SERVER=udp:172.28.0.1:9060;hep=3;capture_id=1` (dev) or the addr
 ## 10. Monitoring
 
 * `/readyz` on the API: 200 only when Postgres, Redis, ESL and both Sofia profiles are fine. Use it for load balancer health checks.
-* `/metrics`: Prometheus. The Grafana dashboard (`deploy/grafana/dashboards/opensbc.json`) shows live calls, CPS, ASR and PDD per carrier, rejections by step, gateway and breaker state, revenue and cost, Lua to API latency.
+* `/metrics`: Prometheus. The Grafana dashboard (`deploy/grafana/dashboards/supersbc.json`) shows live calls, CPS, ASR and PDD per carrier, rejections by step, gateway and breaker state, revenue and cost, Lua to API latency.
 * Alerts worth having: `sbc_gateway_up == 0` for more than 2 minutes, `sbc_carrier_degraded == 1`, `rate(sbc_call_rejections_total{step="authorize"}[5m])` spikes (scanner or misconfigured customer), `rate(sbc_reservation_failures_total[5m])` (customers out of money), `histogram_quantile(0.99, rate(sbc_internal_api_duration_seconds_bucket[5m])) > 0.5` (the 2 s Lua timeout is approaching).
 
 ## 11. Security checklist (OWASP ASVS level 1 walkthrough)

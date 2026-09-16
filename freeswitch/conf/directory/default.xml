@@ -1,6 +1,6 @@
 <include>
-  <!-- No SIP users: OpenSBC is a trunk SBC, all authentication is by IP. -->
-  <domain name="opensbc.invalid">
+  <!-- No SIP users: SuperSBC is a trunk SBC, all authentication is by IP. -->
+  <domain name="supersbc.invalid">
     <params>
       <param name="dial-string" value="{presence_id=${dialed_user}@${dialed_domain}}${sofia_contact(${dialed_user}@${dialed_domain})}"/>
     </params>

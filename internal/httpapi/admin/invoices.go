@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/opensbc/opensbc/internal/invoice"
+	"github.com/imfanee/supersbc/internal/invoice"
 )
 
 func (h *Handler) mountInvoices(r chi.Router) {

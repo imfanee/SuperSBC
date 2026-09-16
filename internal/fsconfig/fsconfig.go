@@ -17,9 +17,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/opensbc/opensbc/internal/esl"
-	"github.com/opensbc/opensbc/internal/model"
-	"github.com/opensbc/opensbc/internal/store"
+	"github.com/imfanee/supersbc/internal/esl"
+	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/store"
 )
 
 // Renderer writes gateway and ACL files.
@@ -200,7 +200,7 @@ func (r *Renderer) SetBanExportFile(path string) { r.banFile = path }
 // address, "ip seconds_left" (0 = permanent), expired entries omitted.
 func BanExport(banned []model.BannedIP, now time.Time) string {
 	var b strings.Builder
-	b.WriteString("# OpenSBC banned addresses; generated " + now.UTC().Format(time.RFC3339) + "\n")
+	b.WriteString("# SuperSBC banned addresses; generated " + now.UTC().Format(time.RFC3339) + "\n")
 	for _, ip := range banned {
 		secs := 0
 		if ip.ExpiresAt != nil {

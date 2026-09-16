@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/store"
+	"github.com/imfanee/supersbc/internal/store"
 )
 
 func (h *Handler) mountCDRs(r chi.Router) {

@@ -14,13 +14,13 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/config"
-	"github.com/opensbc/opensbc/internal/logging"
-	"github.com/opensbc/opensbc/internal/metrics"
-	"github.com/opensbc/opensbc/internal/model"
-	"github.com/opensbc/opensbc/internal/rating"
-	"github.com/opensbc/opensbc/internal/store"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/config"
+	"github.com/imfanee/supersbc/internal/logging"
+	"github.com/imfanee/supersbc/internal/metrics"
+	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/rating"
+	"github.com/imfanee/supersbc/internal/store"
 )
 
 // FXSource resolves exchange rates (implemented by tables.Tables).

@@ -2,7 +2,7 @@
 
 // Package integration holds tests that need a real Postgres and Redis
 // (D-38). They run the migrations on the dedicated database given by
-// SBC_TEST_DATABASE_URL (opensbc_test in compose), truncate it, and use the
+// SBC_TEST_DATABASE_URL (supersbc_test in compose), truncate it, and use the
 // Redis database of SBC_TEST_REDIS_URL.
 package integration
 
@@ -18,17 +18,17 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 
-	"github.com/opensbc/opensbc/internal/billing"
-	"github.com/opensbc/opensbc/internal/cache"
-	"github.com/opensbc/opensbc/internal/callcontrol"
-	"github.com/opensbc/opensbc/internal/config"
-	"github.com/opensbc/opensbc/internal/db"
-	"github.com/opensbc/opensbc/internal/failover"
-	"github.com/opensbc/opensbc/internal/logging"
-	"github.com/opensbc/opensbc/internal/model"
-	"github.com/opensbc/opensbc/internal/seed"
-	"github.com/opensbc/opensbc/internal/store"
-	"github.com/opensbc/opensbc/internal/tables"
+	"github.com/imfanee/supersbc/internal/billing"
+	"github.com/imfanee/supersbc/internal/cache"
+	"github.com/imfanee/supersbc/internal/callcontrol"
+	"github.com/imfanee/supersbc/internal/config"
+	"github.com/imfanee/supersbc/internal/db"
+	"github.com/imfanee/supersbc/internal/failover"
+	"github.com/imfanee/supersbc/internal/logging"
+	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/seed"
+	"github.com/imfanee/supersbc/internal/store"
+	"github.com/imfanee/supersbc/internal/tables"
 )
 
 type env struct {

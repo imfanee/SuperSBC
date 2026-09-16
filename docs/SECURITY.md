@@ -1,6 +1,6 @@
 # Security review checklist
 
-OWASP ASVS 4.0 level 1 walkthrough of OpenSBC as built. "Yes" means implemented and covered by a test where one is practical; "Partial" and "No" items are tracked in ROADMAP.md.
+OWASP ASVS 4.0 level 1 walkthrough of SuperSBC as built. "Yes" means implemented and covered by a test where one is practical; "Partial" and "No" items are tracked in ROADMAP.md.
 
 ## V2 Authentication
 

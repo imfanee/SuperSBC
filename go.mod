@@ -1,4 +1,4 @@
-module github.com/opensbc/opensbc
+module github.com/imfanee/supersbc
 
 go 1.26.0
 

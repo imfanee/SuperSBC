@@ -110,7 +110,7 @@ export function AppShell() {
       >
         <div className={cn("flex h-14 items-center gap-2 border-b px-3", collapsed && "justify-center px-0")}>
           <PhoneForwarded className="h-5 w-5 text-primary" />
-          {!collapsed && <span className="font-semibold tracking-tight">OpenSBC</span>}
+          {!collapsed && <span className="font-semibold tracking-tight">SuperSBC</span>}
         </div>
         <SidebarNav collapsed={collapsed} />
         <div className="border-t p-2">
@@ -129,7 +129,7 @@ export function AppShell() {
       <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
         <DialogContent side="right" className="w-72 p-0 sm:max-w-xs left-0 right-auto">
           <DialogTitle className="flex h-14 items-center gap-2 border-b px-4">
-            <PhoneForwarded className="h-5 w-5 text-primary" /> OpenSBC
+            <PhoneForwarded className="h-5 w-5 text-primary" /> SuperSBC
           </DialogTitle>
           <SidebarNav collapsed={false} onNavigate={() => setMobileOpen(false)} />
         </DialogContent>

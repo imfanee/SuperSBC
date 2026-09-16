@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 // Section 7 [M5] policies: media mode, DTMF interworking, privacy, SRTP and

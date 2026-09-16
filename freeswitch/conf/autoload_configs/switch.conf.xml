@@ -9,6 +9,6 @@
     <param name="dump-cores" value="no"/>
     <param name="rtp-enable-zrtp" value="false"/>
     <param name="core-db-name" value="/dev/shm/core.db"/>
-    <param name="switchname" value="opensbc"/>
+    <param name="switchname" value="supersbc"/>
   </settings>
 </configuration>

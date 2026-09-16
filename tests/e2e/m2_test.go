@@ -103,7 +103,7 @@ func TestM2_HeaderSanitisation(t *testing.T) {
 			t.Errorf("carrier received %q:\n%s", forbidden, inv)
 		}
 	}
-	if !strings.Contains(inv, "User-Agent: OpenSBC") {
+	if !strings.Contains(inv, "User-Agent: SuperSBC") {
 		t.Errorf("carrier did not see our User-Agent:\n%s", inv)
 	}
 	if !strings.Contains(inv, "From: \"15550001111\" <sip:15550001111@172.28.0.10>") && !strings.Contains(inv, "<sip:15550001111@172.28.0.10>") {

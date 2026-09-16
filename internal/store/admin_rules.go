@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/opensbc/opensbc/internal/model"
+	"github.com/imfanee/supersbc/internal/model"
 )
 
 const headerRuleCols = `id, owner_type::text AS owner_type, owner_id, direction, action, header, value, priority, enabled, created_at, updated_at`

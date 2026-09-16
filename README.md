@@ -1,4 +1,4 @@
-# OpenSBC
+# SuperSBC
 
 A deliberately simple, production-minded Session Border Controller with prepaid wholesale billing.
 

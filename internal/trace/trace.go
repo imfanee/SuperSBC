@@ -13,8 +13,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/opensbc/opensbc/internal/esl"
-	"github.com/opensbc/opensbc/internal/logging"
+	"github.com/imfanee/supersbc/internal/esl"
+	"github.com/imfanee/supersbc/internal/logging"
 )
 
 const (
