@@ -4,19 +4,41 @@ import { cn } from "@/lib/utils";
 
 const Tabs = TabsPrimitive.Root;
 
+/**
+ * A tab strip that scrolls horizontally instead of wrapping when the tabs do
+ * not fit (phones); the active tab is kept in view.
+ */
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground flex-wrap",
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, onClick, ...props }, ref) => {
+  const inner = React.useRef<HTMLDivElement | null>(null);
+  React.useEffect(() => {
+    inner.current
+      ?.querySelector<HTMLElement>('[data-state="active"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, []);
+  return (
+    <TabsPrimitive.List
+      ref={(el) => {
+        inner.current = el;
+        if (typeof ref === "function") ref(el);
+        else if (ref) ref.current = el;
+      }}
+      className={cn(
+        "flex h-9 w-fit max-w-full items-center justify-start overflow-x-auto overflow-y-hidden rounded-lg bg-muted p-1 text-muted-foreground [scrollbar-width:thin]",
+        className,
+      )}
+      onClick={(e) => {
+        (e.target as HTMLElement)
+          .closest("[role=tab]")
+          ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+        onClick?.(e);
+      }}
+      {...props}
+    />
+  );
+});
 TabsList.displayName = "TabsList";
 
 const TabsTrigger = React.forwardRef<
