@@ -58,6 +58,6 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 
 * `make live-firewall` now also installs the SIP rate limits and the `banned` set; `make live-ban-timer` keeps the set in sync with the SBC ban list (D-66).
 * SIP TLS listens on 5061 (customers) and 5081 (carriers, allow-listed); client certificate verification is off (`SBC_FS_TLS_VERIFY_POLICY=none`) until you have customer certificates (D-67).
-* HEP capture is off (`SBC_FS_HEP_SERVER` empty); point it at a HOMER when you want full SIP capture (D-65).
+* HEP capture is on: live FreeSWITCH mirrors SIP to heplify-server on the live bridge address (`SBC_FS_HEP_SERVER=udp:172.29.0.1:9060;hep=3;capture_id=2`); `make homer-up` runs HOMER, UI at http://127.0.0.1:19080 over an ssh tunnel (admin / sipcapture, change it). Dev traffic is capture_id 1, live is 2 (D-65).
 * Invoices, STIR/SHAKEN verification and routing windows are configured per customer, carrier and route in the UI; nothing to enable on the box.
 * A second box can be added following docs/HA.md.

@@ -162,7 +162,7 @@ Capacity: `SBC_FS_MAX_SESSIONS` and `SBC_FS_SESSIONS_PER_SECOND` count both legs
 
 ### SIP capture with HOMER
 
-Set `SBC_FS_HEP_SERVER=udp:172.28.0.1:9060;hep=3;capture_id=1` (dev) or the address of your HOMER (live), restart FreeSWITCH, and every SIP message of both legs is mirrored as HEPv3. `make homer-up` runs heplify-server, its database and the HOMER UI (http://127.0.0.1:19080, admin / sipcapture) for the lab; for production point `SBC_FS_HEP_SERVER` at your capture infrastructure. Correlate with the SBC by Call-ID (the CDR list search accepts it) or by the `X-SBC-Call` header on the carrier leg.
+Set `SBC_FS_HEP_SERVER=udp:172.28.0.1:9060;hep=3;capture_id=1` (dev) or the address of your HOMER (live), restart FreeSWITCH, and every SIP message of both legs is mirrored as HEPv3. `make homer-up` runs heplify-server (bound to both docker bridge addresses, so the live stack uses `udp:172.29.0.1:9060`), its database and the HOMER UI (http://127.0.0.1:19080, admin / sipcapture); for a larger deployment point `SBC_FS_HEP_SERVER` at a dedicated capture box. Correlate with the SBC by Call-ID (the CDR list search accepts it) or by the `X-SBC-Call` header on the carrier leg.
 
 ## 10. Monitoring
 

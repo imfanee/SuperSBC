@@ -316,8 +316,12 @@ services:
       HEPLIFYSERVER_LOGLVL: info
       HEPLIFYSERVER_LOGSTD: "true"
       HEPLIFYSERVER_DEDUP: "false"
+    # Bound to the docker bridge gateways only (dev 172.28.0.1, live 172.29.0.1) so the
+    # host network live FreeSWITCH can send HEP without exposing 9060 to the internet.
+    # On a box without the live stack set SBC_HEP_BIND_LIVE=127.0.0.1.
     ports:
       - "${SBC_HEP_BIND:-172.28.0.1}:9060:9060/udp"
+      - "${SBC_HEP_BIND_LIVE:-172.29.0.1}:9060:9060/udp"
     depends_on:
       homer-db: { condition: service_healthy }
     restart: unless-stopped
