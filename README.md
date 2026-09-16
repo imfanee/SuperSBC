@@ -8,7 +8,7 @@ A deliberately simple, production-minded Session Border Controller with prepaid 
 * **PostgreSQL** is the system of record, **Redis** the hot cache.
 * **React + TypeScript** admin UI.
 
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and [docs/DECISIONS.md](docs/DECISIONS.md) for every assumption.
+New here? Start with [docs/INSTALLATION.md](docs/INSTALLATION.md), then the [user guide](docs/USER_GUIDE.md) and the [administrator guide](docs/ADMIN_GUIDE.md). Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design and [docs/DECISIONS.md](docs/DECISIONS.md) for every assumption.
 
 ## Two environments on one box
 
@@ -52,6 +52,11 @@ curl -s localhost:8080/readyz | jq
 
 | Document | Content |
 |----------|---------|
+| [docs/INSTALLATION.md](docs/INSTALLATION.md) | step by step installation: development stack in 15 minutes, live box with TLS and firewall, upgrades |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | operating the SBC through the UI: customers, carriers, rates, routes, CDRs, reports, money, common tasks |
+| [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) | running the box: environments, users and roles, network security, monitoring, backups, upgrades |
+| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | every environment variable and file |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | symptoms, every SIP response the SBC generates, fixes |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | components, call flow, data model, failure modes |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | every assumption, numbered |
 | [docs/CALL_FLOW.md](docs/CALL_FLOW.md) | the ingress pipeline step by step, SIP codes and reason phrases |
