@@ -395,12 +395,12 @@ export function RouteGroupDetailPage() {
         header: "Carriers",
         cell: ({ row }) => (
           <span className="flex flex-wrap gap-1">
-            {row.original.carriers.map((c, i) => (
+            {(row.original.carriers ?? []).map((c, i) => (
               <Badge key={c.carrier_id} variant={c.enabled ? "secondary" : "outline"}>
                 {i + 1}. {c.carrier_name}
               </Badge>
             ))}
-            {row.original.carriers.length === 0 && <span className="text-xs text-warning">none</span>}
+            {(row.original.carriers ?? []).length === 0 && <span className="text-xs text-warning">none</span>}
           </span>
         ),
       },

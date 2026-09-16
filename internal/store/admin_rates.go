@@ -258,7 +258,11 @@ func (s *Store) ListRoutes(ctx context.Context, groupID uuid.UUID, search string
 	}
 	out := make([]RouteRow, 0, len(routes))
 	for _, r := range routes {
-		out = append(out, RouteRow{Route: r, CarrierRows: byRoute[r.ID]})
+		crs := byRoute[r.ID]
+		if crs == nil {
+			crs = []RouteCarrierRow{} // JSON [] rather than null for a route without carriers
+		}
+		out = append(out, RouteRow{Route: r, CarrierRows: crs})
 	}
 	return out, nil
 }
@@ -275,6 +279,9 @@ func (s *Store) RouteByID(ctx context.Context, id uuid.UUID) (*RouteRow, error) 
 		FROM route_carriers rc JOIN carriers c ON c.id = rc.carrier_id WHERE rc.route_id = $1 ORDER BY rc.priority, rc.weight DESC`, id)
 	if err != nil {
 		return nil, err
+	}
+	if rcs == nil {
+		rcs = []RouteCarrierRow{}
 	}
 	return &RouteRow{Route: *r, CarrierRows: rcs}, nil
 }
