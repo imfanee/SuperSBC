@@ -29,8 +29,9 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 2. Rate groups: create the selling deck (CSV import) and the buying deck of your carrier.
 3. Carriers: create the carrier (gateway host, port, transport, buying deck, auth if any, `sip_options_ping` on). Then open 5080 for it:
    ```bash
-   nft add element inet sbc carriers { 203.0.113.10 }            # now
-   # and add the address to the set in deploy/live/nftables.conf so it survives a reboot
+   echo 'elements = { 203.0.113.10 }' > deploy/live/carriers.nft   # git-ignored allow-list
+   make live-firewall
+   nft list set inet sbc carriers                                 # check
    ```
    Check Carriers, gateway state UP after a minute.
 4. Route groups: create a group, add a route per prefix with the ordered carriers.
