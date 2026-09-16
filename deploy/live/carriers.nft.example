@@ -1,0 +1,2 @@
+# Copy to carriers.nft and list your carriers (comma separated, CIDR allowed)
+elements = { 203.0.113.10, 198.51.100.0/24 }

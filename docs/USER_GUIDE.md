@@ -96,7 +96,7 @@ The carrier's account records what you owe it (`cost` entries). Top-ups there re
 
 Carrier > Gateway shows the FreeSWITCH gateway state (`UP`, `DOWN`, `NOREG`, `REGED`), the last ping and the circuit breaker state (`degraded` after too many consecutive faults or a low ASR; a degraded carrier is tried last for a minute).
 
-On a live box remember to add the carrier's addresses to the firewall `carriers` set (admin guide), otherwise the carrier's responses never arrive.
+On a live box ask the administrator to add the carrier's addresses to the firewall `carriers` set (`deploy/live/carriers.nft`, then `make live-firewall`); without it the carrier's own OPTIONS pings and inbound calls are dropped.
 
 ## 5. Rates, routes and header rules
 

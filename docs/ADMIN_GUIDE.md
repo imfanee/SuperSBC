@@ -49,7 +49,7 @@ Containers: `supersbc-live-{api,web,freeswitch,postgres,redis}-1` (live), `super
 * drops everything from the `banned` set, which `make live-ban-timer` keeps equal to the SBC ban list (System > Banned IPs) every 30 seconds;
 * rate limits SIP per source (200 UDP packets per second, 30 new TCP connections per second) so a flood is dropped by the kernel before FreeSWITCH parses it.
 
-Carrier addresses: `nft add element inet sbc carriers { a.b.c.d }` and add the same line to the file so it survives a reboot. Check what is being dropped: `nft list chain inet sbc input` (the counters) and `nft list set inet sbc banned`.
+Carrier addresses: list them in `deploy/live/carriers.nft` (included by the ruleset, git-ignored) and run `make live-firewall`; `nft list set inet sbc carriers` shows what is active. Note that responses to calls the SBC originates are always accepted (connection tracking), so a missing carrier address only breaks what the carrier initiates: its OPTIONS pings and inbound calls. Check what is being dropped: `nft list chain inet sbc input` (the counters) and `nft list set inet sbc banned`.
 
 ### 4.2 Customer authentication and scanner protection
 

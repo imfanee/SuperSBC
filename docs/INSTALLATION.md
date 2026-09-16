@@ -117,10 +117,10 @@ make live-firewall
 make live-ban-timer     # keeps the "banned" set in sync with the SBC ban list every 30 s
 ```
 
-Add each carrier's signalling addresses to the set (also persist them in `deploy/live/nftables.conf`):
+Add each carrier's signalling addresses to `deploy/live/carriers.nft` (copy `carriers.nft.example`; git-ignored) and re-run `make live-firewall`. Check with:
 
 ```bash
-nft add element inet sbc carriers { 203.0.113.0/24 }
+nft list set inet sbc carriers
 ```
 
 Step 4. Log in at `https://<public ip>:8443` (self signed certificate warning is expected until step 5), change the admin password (top right, Account), enable two factor authentication, create personal user accounts (System > Users) and stop using the bootstrap account.
