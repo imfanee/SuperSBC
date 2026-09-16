@@ -26,6 +26,7 @@ import (
 	"github.com/imfanee/supersbc/internal/failover"
 	"github.com/imfanee/supersbc/internal/logging"
 	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/reports"
 	"github.com/imfanee/supersbc/internal/seed"
 	"github.com/imfanee/supersbc/internal/store"
 	"github.com/imfanee/supersbc/internal/tables"
@@ -418,5 +419,24 @@ func TestIntegrationStaleActiveCallsNodeScoped(t *testing.T) {
 	legacy, err := e.st.StaleActiveCalls(ctx, "node-b", time.Minute, 10)
 	if err != nil || len(legacy) != 1 {
 		t.Fatalf("legacy rows: %v %+v", err, legacy)
+	}
+}
+
+// An hour with only rejected calls has no answered row in the roll-up; the
+// dashboard query must return zeros, not NULLs (dashboard error seen on live).
+func TestIntegrationHourlyRollupNullSafe(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	hour := time.Now().UTC().Truncate(time.Hour).Add(-48 * time.Hour)
+	if _, err := e.st.Pool().Exec(ctx, `INSERT INTO cdr_hourly_stats (hour, customer_id, carrier_id, disposition, calls, billsec, sell_price, cost, pdd_ms_sum, pdd_count, short_calls)
+		VALUES ($1, NULL, NULL, 'rejected_auth', 7, 0, 0, 0, 0, 0, 0)`, hour); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := reports.New(e.st.Pool()).HourlyFromRollup(ctx, reports.Range{From: hour, To: hour.Add(time.Hour)})
+	if err != nil {
+		t.Fatalf("hourly from rollup: %v", err)
+	}
+	if len(rows) != 1 || rows[0].Attempts != 7 || rows[0].Answered != 0 || rows[0].Rejected != 7 {
+		t.Fatalf("rows: %+v", rows)
 	}
 }

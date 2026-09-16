@@ -57,15 +57,16 @@ func (r *Rollup) Once(ctx context.Context) error {
 func (s *Service) HourlyFromRollup(ctx context.Context, r Range) ([]Row, error) {
 	rows, err := s.pool.Query(ctx, `
 		SELECT to_char(hour, 'YYYY-MM-DD"T"HH24:00:00Z') AS key, to_char(hour, 'YYYY-MM-DD HH24:00') AS label,
-		  sum(calls) AS attempts, sum(calls) FILTER (WHERE disposition = 'answered') AS answered,
-		  sum(calls) FILTER (WHERE disposition IN ('rejected_auth','rejected_balance','rejected_route')) AS rejected,
-		  sum(calls) FILTER (WHERE disposition = 'failed') AS failed,
+		  COALESCE(sum(calls), 0) AS attempts, COALESCE(sum(calls) FILTER (WHERE disposition = 'answered'), 0) AS answered,
+		  COALESCE(sum(calls) FILTER (WHERE disposition IN ('rejected_auth','rejected_balance','rejected_route')), 0) AS rejected,
+		  COALESCE(sum(calls) FILTER (WHERE disposition = 'failed'), 0) AS failed,
 		  COALESCE(sum(calls) FILTER (WHERE disposition = 'answered')::float / NULLIF(sum(calls) FILTER (WHERE disposition NOT IN ('rejected_auth','rejected_balance','rejected_route')), 0), 0) AS asr,
 		  COALESCE(sum(calls) FILTER (WHERE disposition IN ('answered','busy','no_answer','cancelled'))::float / NULLIF(sum(calls) FILTER (WHERE disposition NOT IN ('rejected_auth','rejected_balance','rejected_route')), 0), 0) AS ner,
 		  COALESCE(sum(billsec)::float / NULLIF(sum(calls) FILTER (WHERE disposition = 'answered'), 0), 0) AS acd,
-		  sum(billsec) AS billsec, sum(billsec)::float / 60 AS minutes, sum(sell_price)::text AS revenue, sum(cost)::text AS cost, sum(sell_price - cost)::text AS margin,
+		  COALESCE(sum(billsec), 0) AS billsec, COALESCE(sum(billsec), 0)::float / 60 AS minutes,
+		  COALESCE(sum(sell_price), 0)::text AS revenue, COALESCE(sum(cost), 0)::text AS cost, COALESCE(sum(sell_price - cost), 0)::text AS margin,
 		  COALESCE(sum(sell_price - cost)::float / NULLIF(sum(sell_price)::float, 0), 0) AS margin_pct,
-		  COALESCE(sum(pdd_ms_sum)::float / NULLIF(sum(pdd_count), 0), 0) AS pdd_avg_ms, 0::float AS pdd_p95_ms, sum(short_calls) AS short_calls
+		  COALESCE(sum(pdd_ms_sum)::float / NULLIF(sum(pdd_count), 0), 0) AS pdd_avg_ms, 0::float AS pdd_p95_ms, COALESCE(sum(short_calls), 0) AS short_calls
 		FROM cdr_hourly_stats WHERE hour >= date_trunc('hour', $1::timestamptz) AND hour < $2
 		  AND ($3::uuid IS NULL OR customer_id = $3) AND ($4::uuid IS NULL OR carrier_id = $4)
 		GROUP BY hour ORDER BY hour`, r.From, r.To, r.CustomerID, r.CarrierID)
