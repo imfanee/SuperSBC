@@ -548,7 +548,31 @@ export function UsersPage() {
   });
   const columns = useMemo<ColumnDef<User, unknown>[]>(
     () => [
-      { header: "Email", accessorKey: "email" },
+      {
+        header: "Email",
+        cell: ({ row }) => (
+          <Input
+            key={row.original.email}
+            defaultValue={row.original.email}
+            className="h-7 w-64"
+            title="Edit and press Enter to change the e-mail address"
+            onKeyDown={(e) => {
+              const v = (e.target as HTMLInputElement).value.trim();
+              if (e.key === "Enter" && v && v !== row.original.email) {
+                put(`/users/${row.original.id}`, {
+                  email: v,
+                  role: row.original.role,
+                  status: row.original.status,
+                })
+                  .then(
+                    () => (toast.success("E-mail changed"), qc.invalidateQueries({ queryKey: ["users"] })),
+                  )
+                  .catch((err) => toast.error(err.message));
+              }
+            }}
+          />
+        ),
+      },
       {
         header: "Role",
         cell: ({ row }) => (

@@ -8,7 +8,7 @@ Roles: **viewer** can read everything, **operator** can also change customers, c
 
 Open the UI (`https://<your sbc>:8443` on a live box, `http://127.0.0.1:13000` in development) and sign in with your e-mail and password. If two factor authentication is enabled on your account you are asked for the six digit code from your authenticator app.
 
-Forgot your password: SuperSBC sends no e-mail. Ask an admin to generate a one time reset link for you (System > Users > Reset link); it is valid for one hour.
+Forgot your password: on the sign in page choose "Forgot your password?" and enter your e-mail; a one time reset link (valid one hour) is sent when the SBC has an outgoing mail server configured. Otherwise ask an admin to generate the link for you (System > Users > Reset link).
 
 Your own account (top right > Account): change password, enable two factor authentication (scan the QR code, confirm with a code), see your active sessions.
 

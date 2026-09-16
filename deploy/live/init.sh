@@ -70,6 +70,14 @@ SBC_STIR_MAX_AGE=60s
 SBC_STIR_CA_FILE=
 SBC_STIR_ALLOW_HTTP=false
 SBC_STIR_FORWARD=true
+# Password reset by e-mail (D-70): empty host disables
+SBC_SMTP_HOST=
+SBC_SMTP_PORT=587
+SBC_SMTP_USERNAME=
+SBC_SMTP_PASSWORD=
+SBC_SMTP_FROM=SuperSBC <noreply@example.com>
+SBC_SMTP_TLS=
+SBC_PUBLIC_URL=https://$NODE_IP:8443
 
 # FreeSWITCH on the host network
 SBC_FS_NODE_IP=$NODE_IP

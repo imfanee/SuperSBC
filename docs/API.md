@@ -26,7 +26,9 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `DELETE` | `/auth/api-keys/{id}` | Revoke an API key |
 | `GET` | `/auth/api-keys` | List API keys (own keys; admins see all) |
 | `GET` | `/auth/me` | Current principal |
+| `GET` | `/auth/options` | Public login options: whether password reset by e-mail is available (unauthenticated) |
 | `POST` | `/auth/api-keys` | Create an API key (the plaintext is returned once) |
+| `POST` | `/auth/forgot` | E-mail a one-time password reset link to an account (unauthenticated; always 202 so addresses cannot be enumerated) |
 | `POST` | `/auth/login` | Log in with email and password (and TOTP code when enabled) |
 | `POST` | `/auth/logout` | Log out (revokes the refresh session and clears cookies) |
 | `POST` | `/auth/password` | Change own password (revokes other sessions) |

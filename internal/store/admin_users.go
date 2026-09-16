@@ -41,8 +41,8 @@ func (s *Store) CreateUser(ctx context.Context, email, passwordHash, role string
 }
 
 // UpdateUser updates role and status.
-func (s *Store) UpdateUser(ctx context.Context, id uuid.UUID, role, status string) (*model.User, error) {
-	return one[model.User](ctx, s.pool, `UPDATE users SET role = $2, status = $3 WHERE id = $1 RETURNING `+userCols, id, role, status)
+func (s *Store) UpdateUser(ctx context.Context, id uuid.UUID, email, role, status string) (*model.User, error) {
+	return one[model.User](ctx, s.pool, `UPDATE users SET email = COALESCE(NULLIF(lower($4), ''), email), role = $2, status = $3 WHERE id = $1 RETURNING `+userCols, id, role, status, email)
 }
 
 // SetPassword updates the password hash and revokes all sessions.

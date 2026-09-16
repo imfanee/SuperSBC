@@ -343,7 +343,7 @@ func (h *Handler) updateUser(w http.ResponseWriter, r *http.Request) {
 		failErr(w, err)
 		return
 	}
-	out, err := h.Store.UpdateUser(r.Context(), id, in.Role, in.Status)
+	out, err := h.Store.UpdateUser(r.Context(), id, in.Email, in.Role, in.Status)
 	if err != nil {
 		failErr(w, err)
 		return

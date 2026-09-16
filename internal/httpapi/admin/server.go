@@ -28,6 +28,7 @@ import (
 	"github.com/imfanee/supersbc/internal/fsconfig"
 	"github.com/imfanee/supersbc/internal/gateways"
 	"github.com/imfanee/supersbc/internal/invoice"
+	"github.com/imfanee/supersbc/internal/mail"
 	"github.com/imfanee/supersbc/internal/model"
 	"github.com/imfanee/supersbc/internal/store"
 	"github.com/imfanee/supersbc/internal/tables"
@@ -51,6 +52,7 @@ type Deps struct {
 	Reports  *ReportsHandler
 	Trace    *trace.Store
 	Invoices *invoice.Service
+	Mailer   *mail.Mailer
 }
 
 // Handler is the admin API.
@@ -92,6 +94,8 @@ func (h *Handler) Mount(r chi.Router) {
 		r.Post("/auth/refresh", h.refresh)
 		r.Post("/auth/logout", h.logout)
 		r.Post("/auth/reset", h.resetPassword)
+		r.Post("/auth/forgot", h.forgotPassword)
+		r.Get("/auth/options", h.authOptions)
 		r.Get("/system/version", h.version)
 
 		r.Group(func(r chi.Router) {

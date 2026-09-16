@@ -402,6 +402,17 @@
                 },
                 "type": "object"
             },
+            "admin.forgotInput": {
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "email"
+                ],
+                "type": "object"
+            },
             "admin.fxInput": {
                 "properties": {
                     "base": {
@@ -2212,6 +2223,52 @@
                 ]
             }
         },
+        "/auth/forgot": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.forgotInput",
+                                "summary": "body",
+                                "description": "account e-mail"
+                            }
+                        }
+                    },
+                    "description": "account e-mail",
+                    "required": true
+                },
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.errorBody"
+                                }
+                            }
+                        },
+                        "description": "Too Many Requests"
+                    },
+                    "503": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.errorBody"
+                                }
+                            }
+                        },
+                        "description": "e-mail not configured"
+                    }
+                },
+                "summary": "E-mail a one-time password reset link to an account (unauthenticated; always 202 so addresses cannot be enumerated)",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
         "/auth/login": {
             "post": {
                 "requestBody": {
@@ -2293,6 +2350,29 @@
                     }
                 },
                 "summary": "Current principal",
+                "tags": [
+                    "auth"
+                ]
+            }
+        },
+        "/auth/options": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "boolean"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Public login options: whether password reset by e-mail is available (unauthenticated)",
                 "tags": [
                     "auth"
                 ]

@@ -63,6 +63,7 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 | Symptom | Check |
 |---|---|
 | UI shows "network error" or 502 | `docker logs supersbc-live-web-1` (nginx) and `supersbc-live-api-1`; `readyz` |
+| Reset e-mail never arrives | `SBC_SMTP_HOST` set? `docker logs supersbc-live-api-1 \| grep "reset e-mail"` shows the SMTP error (auth, TLS, relay refused); the forgot page still returns 202 by design; ten requests per address in 15 minutes are throttled (429) |
 | Login fails with correct password | account locked after failures (wait or admin reset), clock skew above a minute breaks TOTP, cookies blocked (Secure cookies over plain http: use https) |
 | 403 on every write | CSRF token missing (browser extensions, stale tab: reload), or role is `viewer` |
 | API key rejected | header must be `Authorization: Bearer sbc_...`; key disabled or expired |

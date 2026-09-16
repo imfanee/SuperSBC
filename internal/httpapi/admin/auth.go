@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"time"
@@ -384,4 +385,78 @@ func (h *Handler) revokeAPIKey(w http.ResponseWriter, r *http.Request) {
 	}
 	h.audit(r, "apikey.revoke", "api_key", id.String(), nil, nil)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// authOptions godoc
+// @Summary Public login options: whether password reset by e-mail is available (unauthenticated)
+// @Tags auth
+// @Produce json
+// @Success 200 {object} map[string]bool
+// @Router /auth/options [get]
+func (h *Handler) authOptions(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]bool{"email_reset": h.Mailer.Enabled()})
+}
+
+type forgotInput struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+// forgotPassword godoc
+// @Summary E-mail a one-time password reset link to an account (unauthenticated; always 202 so addresses cannot be enumerated)
+// @Tags auth
+// @Accept json
+// @Param body body forgotInput true "account e-mail"
+// @Success 202
+// @Failure 429 {object} errorBody
+// @Failure 503 {object} errorBody "e-mail not configured"
+// @Router /auth/forgot [post]
+func (h *Handler) forgotPassword(w http.ResponseWriter, r *http.Request) {
+	if !h.Mailer.Enabled() {
+		fail(w, http.StatusServiceUnavailable, "password reset by e-mail is not configured; ask an administrator for a reset link")
+		return
+	}
+	var in forgotInput
+	if !h.decode(w, r, &in) {
+		return
+	}
+	ip := remoteIP(r)
+	// Same throttle as login: a burst of requests per address or per account is refused.
+	if byEmail, byIP, _ := h.Store.RecentFailedLogins(r.Context(), in.Email, ip, failureWindow); byEmail >= maxFailures || byIP >= maxFailuresIP {
+		fail(w, http.StatusTooManyRequests, "too many requests, try again later")
+		return
+	}
+	h.Store.RecordLoginAttempt(r.Context(), in.Email, ip, false)
+	w.WriteHeader(http.StatusAccepted)
+	u, err := h.Store.UserByEmail(r.Context(), in.Email)
+	if err != nil || u.Status != "active" {
+		return // silently: the response must not reveal whether the account exists
+	}
+	token, err := auth.RandomToken(32)
+	if err != nil {
+		h.Log.Error("reset token", "error", err)
+		return
+	}
+	if err := h.Store.CreatePasswordReset(r.Context(), u.ID, auth.HashToken(token), time.Now().Add(time.Hour), "self-service"); err != nil {
+		h.Log.Error("reset token store", "error", err)
+		return
+	}
+	base := h.Cfg.PublicURL
+	if base == "" {
+		base = "https://" + r.Host
+	}
+	link := base + "/reset-password?token=" + token
+	body := "Someone (hopefully you) asked to reset the SuperSBC password of " + u.Email + ".\n\n" +
+		"Open this link within one hour to set a new password:\n\n  " + link + "\n\n" +
+		"If you did not ask for this, ignore this message; the link expires and your password stays unchanged.\n" +
+		"Request came from " + ip + ".\n"
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+		defer cancel()
+		if err := h.Mailer.Send(ctx, u.Email, "SuperSBC password reset", body); err != nil {
+			h.Log.Error("reset e-mail failed", "to", u.Email, "error", err)
+			return
+		}
+		h.Log.Info("reset e-mail sent", "to", u.Email, "ip", ip)
+	}()
+	h.audit(r, "user.reset_email", "user", u.ID.String(), nil, map[string]string{"ip": ip})
 }

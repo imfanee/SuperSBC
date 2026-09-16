@@ -43,6 +43,9 @@ type Config struct {
 	Ban      Ban
 	Invoice  Invoice
 	STIR     STIR
+	SMTP     SMTP
+	// PublicURL is the address users open the UI at (used in e-mailed links), e.g. https://sbc.example.com:8443
+	PublicURL string
 
 	LogLevel    string
 	OpenAPIFile string // optional path overriding the embedded OpenAPI document
@@ -55,6 +58,16 @@ type Billing struct {
 	OrphanTimeout       time.Duration
 	LowBalanceThreshold string // decimal as string, "0" disables
 	Currency            string
+}
+
+// SMTP is the outgoing mail server for password reset links (D-70); Host empty disables e-mail.
+type SMTP struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	From     string
+	TLS      string // starttls | tls | none
 }
 
 // STIR tunes STIR/SHAKEN verification (D-64).
@@ -175,6 +188,15 @@ func Load() (*Config, error) {
 			Duration:   getduration("SBC_BAN_DURATION", time.Hour),
 			ExportFile: getenv("SBC_FIREWALL_EXPORT_FILE", getenv("SBC_BAN_EXPORT_FILE", "")),
 		},
+		SMTP: SMTP{
+			Host:     getenv("SBC_SMTP_HOST", ""),
+			Port:     getint("SBC_SMTP_PORT", 587),
+			Username: getenv("SBC_SMTP_USERNAME", ""),
+			Password: getenv("SBC_SMTP_PASSWORD", ""),
+			From:     getenv("SBC_SMTP_FROM", ""),
+			TLS:      getenv("SBC_SMTP_TLS", ""),
+		},
+		PublicURL: strings.TrimRight(getenv("SBC_PUBLIC_URL", ""), "/"),
 		STIR: STIR{
 			MaxAge:    getduration("SBC_STIR_MAX_AGE", 60*time.Second),
 			CAFile:    getenv("SBC_STIR_CA_FILE", ""),

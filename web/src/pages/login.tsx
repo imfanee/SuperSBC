@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Field } from "@/components/form";
 import { CreditFooter } from "@/components/layout/credit-footer";
 import { useAuth } from "@/hooks/use-auth";
-import { ApiError, post } from "@/api/client";
+import { ApiError, get, post } from "@/api/client";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -122,11 +123,60 @@ export function LoginPage() {
 }
 
 export function ForgotPasswordPage() {
+  const options = useQuery({
+    queryKey: ["auth-options"],
+    queryFn: () => get<{ email_reset: boolean }>("/auth/options"),
+  });
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await post("/auth/forgot", { email });
+      setSent(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Request failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (options.data?.email_reset) {
+    return (
+      <AuthFrame title="Forgot password" description="We will e-mail you a one-time reset link">
+        {sent ? (
+          <p className="text-sm text-muted-foreground" data-testid="forgot-sent">
+            If an account exists for <b>{email}</b>, a reset link is on its way. It is valid for one hour.
+            Check your spam folder if it does not arrive.
+          </p>
+        ) : (
+          <form onSubmit={submit} className="space-y-3" noValidate>
+            <Field label="E-mail">
+              <Input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                data-testid="forgot-email"
+              />
+            </Field>
+            <Button type="submit" className="w-full" disabled={busy || !email} data-testid="forgot-submit">
+              Send reset link
+            </Button>
+          </form>
+        )}
+        <Button asChild variant="outline" className="mt-4 w-full">
+          <Link to="/login">Back to sign in</Link>
+        </Button>
+      </AuthFrame>
+    );
+  }
   return (
-    <AuthFrame title="Forgot password" description="SuperSBC does not send email">
+    <AuthFrame title="Forgot password" description="E-mail delivery is not configured on this SBC">
       <p className="text-sm text-muted-foreground">
-        Ask an administrator to generate a reset link for your account (Users and keys, Reset password). The
-        link opens the reset page with a one-time token valid for one hour.
+        Ask an administrator to generate a reset link for your account (Users and keys, Reset link). The link
+        opens the reset page with a one-time token valid for one hour.
       </p>
       <Button asChild variant="outline" className="mt-4 w-full">
         <Link to="/login">Back to sign in</Link>

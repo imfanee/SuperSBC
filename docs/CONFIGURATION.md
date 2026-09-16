@@ -106,6 +106,17 @@ Durations use Go syntax (`30s`, `5m`, `4h`). Booleans are `true`/`false`.
 | `SBC_STIR_ALLOW_HTTP` | `false` | accept `http://` x5u URLs (labs only) |
 | `SBC_STIR_FORWARD` | `true` | forward a verified Identity header to the carrier |
 
+## E-mail (password reset links)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `SBC_SMTP_HOST` | empty | outgoing SMTP server; empty disables e-mail (the forgot page then points at the admin generated link) |
+| `SBC_SMTP_PORT` | `587` | 587 STARTTLS, 465 implicit TLS, 25 clear |
+| `SBC_SMTP_USERNAME`, `SBC_SMTP_PASSWORD` | empty | SMTP AUTH PLAIN credentials (an app password for Gmail or Outlook) |
+| `SBC_SMTP_FROM` | `SuperSBC <noreply@<host>>` | sender |
+| `SBC_SMTP_TLS` | by port | `starttls`, `tls` or `none` |
+| `SBC_PUBLIC_URL` | request host | base URL of the UI used in e-mailed links, e.g. `https://sbc.example.com:8443` |
+
 ## Invoices
 
 | Variable | Default | Meaning |
