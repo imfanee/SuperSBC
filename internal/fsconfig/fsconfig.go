@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/imfanee/supersbc/internal/esl"
+	"github.com/imfanee/supersbc/internal/firewall"
 	"github.com/imfanee/supersbc/internal/model"
 	"github.com/imfanee/supersbc/internal/store"
 )
@@ -26,12 +27,12 @@ import (
 type Renderer struct {
 	dir     string
 	aclMode string // "dialplan" (default) or "strict"
-	// banFile mirrors the ban list for the host firewall (D-66); empty disables.
-	banFile string
-	nodeIP  string
-	st      *store.Store
-	esl     *esl.Supervisor
-	log     *slog.Logger
+	// fwFile mirrors the allow and ban lists for the host firewall (D-69); empty disables.
+	fwFile string
+	nodeIP string
+	st     *store.Store
+	esl    *esl.Supervisor
+	log    *slog.Logger
 
 	mu       sync.Mutex
 	gateways map[string]string // name -> content hash of last render
@@ -155,9 +156,9 @@ func (r *Renderer) RenderACLs(ctx context.Context) error {
 	if err := writeAtomic(filepath.Join(idir, "tls_subjects.xml"), TLSSubjects(customers)); err != nil {
 		return err
 	}
-	if r.banFile != "" {
-		if err := writeAtomic(r.banFile, BanExport(banned, time.Now())); err != nil {
-			r.log.Warn("ban export failed", "file", r.banFile, "error", err)
+	if r.fwFile != "" {
+		if err := writeAtomic(r.fwFile, string(firewall.Build(ips, carriers, banned, time.Now()).JSON())); err != nil {
+			r.log.Warn("firewall export failed", "file", r.fwFile, "error", err)
 		}
 	}
 	r.log.Info("acls rendered", "customer_ips", len(ips), "banned", len(banned), "mode", r.aclMode)
@@ -193,27 +194,8 @@ func TLSSubjects(customers []model.Customer) string {
 	return b.String()
 }
 
-// SetBanExportFile enables the ban list export (D-66).
-func (r *Renderer) SetBanExportFile(path string) { r.banFile = path }
-
-// BanExport renders the ban list for deploy/live/ban-sync.sh: one line per
-// address, "ip seconds_left" (0 = permanent), expired entries omitted.
-func BanExport(banned []model.BannedIP, now time.Time) string {
-	var b strings.Builder
-	b.WriteString("# SuperSBC banned addresses; generated " + now.UTC().Format(time.RFC3339) + "\n")
-	for _, ip := range banned {
-		secs := 0
-		if ip.ExpiresAt != nil {
-			left := ip.ExpiresAt.Sub(now)
-			if left <= 0 {
-				continue
-			}
-			secs = int(left.Seconds()) + 1
-		}
-		fmt.Fprintf(&b, "%s %d\n", ip.IP, secs)
-	}
-	return b.String()
-}
+// SetFirewallExportFile enables the host firewall export (D-69).
+func (r *Renderer) SetFirewallExportFile(path string) { r.fwFile = path }
 
 // GatewayXML renders one carrier as a Sofia gateway.
 func GatewayXML(c model.Carrier, nodeIP string) string {

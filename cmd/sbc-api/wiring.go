@@ -69,7 +69,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	bill := billing.New(cfg, log, st, rdb)
 	bill.SetFX(tb)
 	renderer := fsconfig.New(cfg.FSConfigDir, cfg.ACLMode, cfg.FSNodeIP, st, sup, log)
-	renderer.SetBanExportFile(cfg.Ban.ExportFile)
+	renderer.SetFirewallExportFile(cfg.Ban.ExportFile)
 	gw := gateways.New(sup, "external-egress", time.Duration(cfg.Failover.GatewayPingIntervalSeconds)*time.Second, log)
 	breaker := callcontrol.NewBreaker(rdb, cfg.Failover.BreakerConsecutiveFaults, cfg.Failover.BreakerASRThresholdPercent, cfg.Failover.BreakerASRMinSamples, cfg.Failover.BreakerDegradedSeconds)
 	pipe.SetBreaker(breaker)

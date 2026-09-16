@@ -40,7 +40,7 @@ Addresses that produce `SBC_BAN_THRESHOLD` (20) `403 IP not authorized` rejectio
 
 ### Packet level flood protection (live)
 
-`make live-firewall` installs per source rate limits on SIP (200 UDP packets per second, 30 new TCP connections per second) and a `banned` set. `make live-ban-timer` installs a systemd timer that mirrors the SBC ban list into that set every 30 seconds (`make live-ban-sync` does it once), so a banned scanner is dropped by the kernel instead of being parsed by FreeSWITCH. Check with `nft list set inet sbc banned` and the counters in `nft list chain inet sbc input`.
+`make live-firewall` installs per source rate limits on SIP (200 UDP packets per second, 30 new TCP connections per second) and the `customers`, `carriers` and `banned` sets; `make live-fwsync` installs the service that fills them from the database within a second of any change (D-69), so unknown sources and banned scanners are dropped by the kernel instead of being parsed by FreeSWITCH. Check with `nft list set inet sbc customers|carriers|banned` and the counters in `nft list chain inet sbc input`.
 
 ## 3. Add a customer
 

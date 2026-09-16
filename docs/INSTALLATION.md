@@ -30,7 +30,7 @@ git clone git@github.com:imfanee/SuperSBC.git /root/supersbc
 cd /root/supersbc
 ```
 
-The live systemd units and scripts assume `/root/supersbc`; if you clone elsewhere, edit `deploy/live/supersbc-ban-sync.service`.
+The live systemd units and scripts assume `/root/supersbc`; if you clone elsewhere, edit `deploy/live/supersbc-fwsync.service` and the include path in `deploy/live/nftables.conf`.
 
 ## 3. Development stack (first call in 15 minutes)
 
@@ -110,17 +110,12 @@ make live-up
 curl -sk https://127.0.0.1:8443/readyz | jq
 ```
 
-Step 3. Firewall. The ruleset in `deploy/live/nftables.conf` allows ssh, the web UI (8080 redirects to 8443), customer SIP (5060 UDP/TCP, 5061 TLS), RTP, and carrier SIP (5080/5081) only from the `carriers` set; it drops everything else, rate limits SIP per source and drops banned addresses. Apply and persist:
+Step 3. Firewall. The ruleset in `deploy/live/nftables.conf` allows ssh, the web UI (8080 redirects to 8443), customer SIP (5060 UDP/TCP, 5061 TLS) from the `customers` set, RTP, and carrier SIP (5080/5081) from the `carriers` set; it drops everything else, rate limits SIP per source and drops the `banned` set. The three sets are filled automatically from the database by `sbc-fwsync` (customer addresses, carrier gateways and extra signalling sources, bans), so adding a customer address or a carrier in the UI opens the firewall for it within a couple of seconds. Apply and persist:
 
 ```bash
-make live-firewall
-make live-ban-timer     # keeps the "banned" set in sync with the SBC ban list every 30 s
-```
-
-Add each carrier's signalling addresses to `deploy/live/carriers.nft` (copy `carriers.nft.example`; git-ignored) and re-run `make live-firewall`. Check with:
-
-```bash
-nft list set inet sbc carriers
+make live-firewall      # ruleset (sets start empty)
+make live-fwsync        # builds and installs the sync service; fills the sets
+nft list set inet sbc customers; nft list set inet sbc carriers
 ```
 
 Step 4. Log in at `https://<public ip>:8443` (self signed certificate warning is expected until step 5), change the admin password (top right, Account), enable two factor authentication, create personal user accounts (System > Users) and stop using the bootstrap account.
@@ -170,7 +165,7 @@ Migrations are embedded in the API and applied at start (`SBC_AUTO_MIGRATE=true`
 make down                 # development containers
 make clean                # plus volumes and images
 $(LIVE) down -v           # live containers and volumes (destroys the live database; take a backup first)
-systemctl disable --now supersbc-ban-sync.timer nftables
+systemctl disable --now supersbc-fwsync nftables
 ```
 
 ## Next steps

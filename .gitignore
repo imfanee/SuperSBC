@@ -13,4 +13,3 @@ freeswitch/tls/*.pem
 deploy/live/state/*
 !deploy/live/state/.gitkeep
 freeswitch/tls/*.srl
-deploy/live/carriers.nft

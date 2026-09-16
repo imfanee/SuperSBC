@@ -4,7 +4,7 @@ COMPOSE ?= docker compose
 GO ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-ban-sync live-ban-timer
+.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-fwsync
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -116,15 +116,15 @@ homer-down: ## Stop HOMER (only its services; the SBC keeps running)
 live-monitoring: ## Start prometheus and grafana for live (grafana at https://host:8443/grafana/)
 	$(LIVE) --profile monitoring up -d
 
-live-ban-sync: ## Mirror the SBC ban list into the nftables "banned" set once (install the systemd timer for continuous sync)
-	deploy/live/ban-sync.sh
+live-fwsync: ## Build and install sbc-fwsync (keeps the nftables customer, carrier and ban sets equal to the database) as a systemd service
+	CGO_ENABLED=0 $(GO) build -o /usr/local/bin/sbc-fwsync ./cmd/sbc-fwsync
+	install -m 644 deploy/live/supersbc-fwsync.service /etc/systemd/system/
+	systemctl daemon-reload && systemctl enable --now supersbc-fwsync.service && systemctl restart supersbc-fwsync.service
+	sleep 2 && nft list set inet sbc customers && nft list set inet sbc carriers
 
-live-ban-timer: ## Install and start the systemd timer that runs live-ban-sync every 30 seconds
-	install -m 644 deploy/live/supersbc-ban-sync.service deploy/live/supersbc-ban-sync.timer /etc/systemd/system/
-	systemctl daemon-reload && systemctl enable --now supersbc-ban-sync.timer
-
-live-firewall: ## Apply and persist the nftables ruleset in deploy/live/nftables.conf
-	nft -f deploy/live/nftables.conf && cp deploy/live/nftables.conf /etc/nftables.conf && systemctl enable --now nftables >/dev/null 2>&1; nft list chain inet sbc input | head -30
+live-firewall: ## Apply and persist the nftables ruleset in deploy/live/nftables.conf (sets are filled by sbc-fwsync)
+	mkdir -p deploy/live/state && touch deploy/live/state/firewall-sets.nft
+	nft -f deploy/live/nftables.conf && cp deploy/live/nftables.conf /etc/nftables.conf && systemctl enable --now nftables >/dev/null 2>&1; nft list chain inet sbc input | head -40
 
 rollback: ## Roll back the latest database migration
 	$(COMPOSE) exec api /app/sbc-api migrate-down

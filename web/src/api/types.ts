@@ -104,6 +104,7 @@ export interface Carrier {
   dtmf_mode: "rfc2833" | "info" | "inband";
   srtp_mode: "off" | "optional" | "mandatory";
   privacy_mode: "anonymize" | "pass" | "ignore";
+  signalling_sources: string[];
   notes: string;
   created_at: string;
 }

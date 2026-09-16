@@ -1,0 +1,13 @@
+[Unit]
+Description=SuperSBC: keep the nftables customer, carrier and ban sets equal to the SBC database
+After=network-online.target nftables.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/sbc-fwsync -file /root/supersbc/deploy/live/state/firewall.json -boot-file /root/supersbc/deploy/live/state/firewall-sets.nft
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

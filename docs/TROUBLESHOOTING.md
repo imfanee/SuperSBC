@@ -33,7 +33,7 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 ## 3. No CDR, customer says the call fails
 
 * Is the INVITE arriving? `fs_cli -x "sofia global siptrace on"` for a minute (or the SIP trace in the UI), or `tcpdump -ni any port 5060`.
-* Firewall: `nft list chain inet sbc input` counters; is the customer address in the `banned` set (`nft list set inet sbc banned`)? Is the customer sending to the right port (5060 UDP/TCP, 5061 TLS)?
+* Firewall: `nft list chain inet sbc input` counters; is the customer's address in the `customers` set (`nft list set inet sbc customers`; it is filled from Customer > IP addresses by sbc-fwsync, `systemctl status supersbc-fwsync`)? Is it banned (`nft list set inet sbc banned`)? Is the customer sending to the right port (5060 UDP/TCP, 5061 TLS)?
 * FreeSWITCH refusing at its own limits: `fs_cli -x "status"` shows sessions and the per second cap; `503 Maximum Calls In Progress` in the trace means `SBC_FS_MAX_SESSIONS` or `_SESSIONS_PER_SECOND`.
 * Profile not running: `fs_cli -x "sofia status"` must show both profiles RUNNING (and their TLS lines).
 

@@ -52,6 +52,7 @@ type carrierInput struct {
 	DTMFMode             string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
 	SRTPMode             string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
 	PrivacyMode          string   `json:"privacy_mode" validate:"omitempty,oneof=anonymize pass ignore"`
+	SignallingSources    []string `json:"signalling_sources" validate:"dive,cidr|ip"`
 }
 
 func (in carrierInput) toModel(w http.ResponseWriter) (*model.Carrier, bool) {
@@ -84,7 +85,7 @@ func (in carrierInput) toModel(w http.ResponseWriter) (*model.Carrier, bool) {
 		DNIPrefix: in.DNIPrefix, ANIPrefix: in.ANIPrefix, StripDigits: in.StripDigits, AuthUsername: strPtr(in.AuthUsername), AuthPassword: in.AuthPassword,
 		FromDomain: strPtr(in.FromDomain), Register: in.Register, AllowedCodecs: codecs, MaxConcurrentCalls: in.MaxConcurrentCalls, MaxCPS: in.MaxCPS,
 		FailoverSIPCodes: in.FailoverSIPCodes, SIPOptionsPing: ping, ChargeFailedAttempts: in.ChargeFailedAttempts, IgnoreEarlyMedia: in.IgnoreEarlyMedia, Notes: in.Notes,
-		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, PrivacyMode: in.PrivacyMode}, true
+		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, PrivacyMode: in.PrivacyMode, SignallingSources: in.SignallingSources}, true
 }
 
 // listCarriers godoc

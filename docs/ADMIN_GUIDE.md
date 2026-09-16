@@ -44,12 +44,9 @@ Containers: `supersbc-live-{api,web,freeswitch,postgres,redis}-1` (live), `super
 
 ### 4.1 Firewall (live)
 
-`deploy/live/nftables.conf` is the whole host firewall, applied and persisted by `make live-firewall`. It allows: ssh, 8080/8443 (web), 5060 UDP/TCP and 5061 TCP (customers), RTP 16384 to 32768, 5080/5081 from the `carriers` set only; everything else to the host is dropped (ESL, the internal API, Postgres and Redis are only reachable from the docker bridges and loopback). It also:
+`deploy/live/nftables.conf` is the whole host firewall, applied and persisted by `make live-firewall`. It allows: ssh, 8080/8443 (web), 5060 UDP/TCP and 5061 TCP from the `customers` set, RTP 16384 to 32768, 5080/5081 from the `carriers` set; everything else to the host is dropped (ESL, the internal API, Postgres and Redis are only reachable from the docker bridges and loopback). It also drops the `banned` set and rate limits SIP per source (200 UDP packets per second, 30 new TCP connections per second) so a flood is dropped by the kernel before FreeSWITCH parses it.
 
-* drops everything from the `banned` set, which `make live-ban-timer` keeps equal to the SBC ban list (System > Banned IPs) every 30 seconds;
-* rate limits SIP per source (200 UDP packets per second, 30 new TCP connections per second) so a flood is dropped by the kernel before FreeSWITCH parses it.
-
-Carrier addresses: list them in `deploy/live/carriers.nft` (included by the ruleset, git-ignored) and run `make live-firewall`; `nft list set inet sbc carriers` shows what is active. Note that responses to calls the SBC originates are always accepted (connection tracking), so a missing carrier address only breaks what the carrier initiates: its OPTIONS pings and inbound calls. Check what is being dropped: `nft list chain inet sbc input` (the counters) and `nft list set inet sbc banned`.
+The three sets are managed by `sbc-fwsync` (`make live-fwsync` installs it as a systemd service, D-69): the API exports customer addresses, carrier gateway hosts plus each carrier's "extra signalling sources", and the bans to `deploy/live/state/firewall.json` on every change; the service applies them to nftables within about a second and keeps `firewall-sets.nft` for boot. Nothing to edit by hand: add the address on the customer or carrier in the UI. Check with `nft list set inet sbc customers|carriers|banned`, `systemctl status supersbc-fwsync` and `journalctl -u supersbc-fwsync`. Unresolvable carrier hostnames are logged and skipped. Check what is being dropped with the counters in `nft list chain inet sbc input`.
 
 ### 4.2 Customer authentication and scanner protection
 

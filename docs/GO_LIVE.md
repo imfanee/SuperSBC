@@ -28,11 +28,7 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 1. Log in at https://51.38.218.42:8443 (accept the self-signed certificate, or install a real one: put `server.crt` and `server.key` in `deploy/live/tls/` and `make live-up`).
 2. Rate groups: create the selling deck (CSV import) and the buying deck of your carrier.
 3. Carriers: create the carrier (gateway host, port, transport, buying deck, auth if any, `sip_options_ping` on). Then open 5080 for it:
-   ```bash
-   echo 'elements = { 203.0.113.10 }' > deploy/live/carriers.nft   # git-ignored allow-list
-   make live-firewall
-   nft list set inet sbc carriers                                 # check
-   ```
+   The firewall opens 5080 for the gateway host automatically (sbc-fwsync); add "Extra signalling sources" if the carrier uses more addresses. Check: `nft list set inet sbc carriers`.
    Check Carriers, gateway state UP after a minute.
 4. Route groups: create a group, add a route per prefix with the ordered carriers.
 5. Customers: create the pilot customer with selling deck, route group, sensible limits (for example 10 concurrent calls, 2 CPS), add their source IP, top up the account.
@@ -57,7 +53,7 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 
 ## Added after the pilot roll-out
 
-* `make live-firewall` now also installs the SIP rate limits and the `banned` set; `make live-ban-timer` keeps the set in sync with the SBC ban list (D-66).
+* `make live-firewall` installs the SIP rate limits and the `customers`, `carriers` and `banned` sets; `make live-fwsync` installs the service that keeps them equal to the database (D-69).
 * SIP TLS listens on 5061 (customers) and 5081 (carriers, allow-listed); client certificate verification is off (`SBC_FS_TLS_VERIFY_POLICY=none`) until you have customer certificates (D-67).
 * HEP capture is on: live FreeSWITCH mirrors SIP to heplify-server on the live bridge address (`SBC_FS_HEP_SERVER=udp:172.29.0.1:9060;hep=3;capture_id=2`); `make homer-up` runs HOMER, UI at http://127.0.0.1:19080 over an ssh tunnel (admin / sipcapture, change it). Dev traffic is capture_id 1, live is 2 (D-65).
 * Invoices, STIR/SHAKEN verification and routing windows are configured per customer, carrier and route in the UI; nothing to enable on the box.

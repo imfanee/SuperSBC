@@ -48,6 +48,7 @@ const schema = z.object({
   from_domain: z.string(),
   register: z.boolean(),
   allowed_codecs: z.string(),
+  signalling_sources: z.string(),
   max_concurrent_calls: z.number().int().min(0),
   max_cps: z.number().int().min(0),
   failover_sip_codes: z.string().regex(/^[\d,\s]*$/, "comma separated codes"),
@@ -79,6 +80,7 @@ function toForm(c?: Carrier | null): FormT {
     from_domain: c?.from_domain ?? "",
     register: c?.register ?? false,
     allowed_codecs: (c?.allowed_codecs ?? ["PCMA", "PCMU"]).join(","),
+    signalling_sources: (c?.signalling_sources ?? []).join(", "),
     max_concurrent_calls: c?.max_concurrent_calls ?? 0,
     max_cps: c?.max_cps ?? 0,
     failover_sip_codes: (c?.failover_sip_codes ?? []).join(","),
@@ -113,6 +115,10 @@ export function CarrierForm({
       allowed_codecs: v.allowed_codecs
         .split(",")
         .map((x: string) => x.trim().toUpperCase())
+        .filter(Boolean),
+      signalling_sources: v.signalling_sources
+        .split(",")
+        .map((x: string) => x.trim())
         .filter(Boolean),
       failover_sip_codes: v.failover_sip_codes
         .split(",")
@@ -183,6 +189,12 @@ export function CarrierForm({
       </Field>
       <Field label="Allowed codecs">
         <Input {...register("allowed_codecs")} />
+      </Field>
+      <Field
+        label="Extra signalling sources"
+        hint="addresses or CIDR blocks the carrier also sends from; the gateway host is allow-listed in the firewall automatically"
+      >
+        <Input {...register("signalling_sources")} placeholder="203.0.113.10, 198.51.100.0/24" />
       </Field>
       <Field label="DNI prefix" hint="prepended to the called number">
         <Input {...register("dni_prefix")} />
@@ -519,6 +531,7 @@ export function CarrierDetailPage() {
                     ["DNI prefix / strip", `${c.dni_prefix || "none"} / ${c.strip_digits}`],
                     ["ANI prefix", c.ani_prefix || "none"],
                     ["Codecs", c.allowed_codecs.join(", ")],
+                    ["Firewall sources", [c.gateway_host, ...(c.signalling_sources ?? [])].join(", ")],
                     ["Limits", `${c.max_concurrent_calls || "∞"} calls, ${c.max_cps || "∞"} cps`],
                     ["Failover override", (c.failover_sip_codes ?? []).join(", ") || "default table"],
                     ["From domain", c.from_domain || "SBC address"],

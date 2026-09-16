@@ -48,7 +48,7 @@ Customers > New customer:
 
 Customer > IP addresses: add each address or CIDR block the customer sends from, optionally restricted to a source port and transport (`udp`, `tcp`, `tls`). The most specific block wins when two customers overlap (they should not). Changes apply within a second; in strict ACL mode FreeSWITCH also reloads its access list.
 
-Calls from an address that is not listed are rejected with `403 IP not authorized` and counted; twenty of them in five minutes ban the address for an hour (System > Banned IPs).
+On a live box the host firewall only accepts SIP from listed addresses (the list is synced automatically), so an unknown source is dropped silently; where the firewall is not in place the SBC rejects it with `403 IP not authorized` and bans the address after twenty attempts in five minutes (System > Banned IPs).
 
 ### 3.3 Put money on the account
 
@@ -96,7 +96,7 @@ The carrier's account records what you owe it (`cost` entries). Top-ups there re
 
 Carrier > Gateway shows the FreeSWITCH gateway state (`UP`, `DOWN`, `NOREG`, `REGED`), the last ping and the circuit breaker state (`degraded` after too many consecutive faults or a low ASR; a degraded carrier is tried last for a minute).
 
-On a live box ask the administrator to add the carrier's addresses to the firewall `carriers` set (`deploy/live/carriers.nft`, then `make live-firewall`); without it the carrier's own OPTIONS pings and inbound calls are dropped.
+The gateway host is allow-listed in the host firewall automatically; if the carrier sends signalling from other addresses (a cluster), list them in "Extra signalling sources" so its OPTIONS pings and inbound calls are accepted too.
 
 ## 5. Rates, routes and header rules
 
@@ -196,7 +196,7 @@ Reports has tabs for traffic over time, per customer, per carrier, per destinati
 **Add a new carrier for a destination**
 1. Rate decks: import the carrier's buying deck.
 2. Carriers > New carrier: gateway, transport, deck, codecs, capacity.
-3. Live box only: add the carrier's addresses to the firewall set.
+3. If the carrier signals from addresses other than its gateway host, fill "Extra signalling sources".
 4. Carrier > Gateway: wait for `UP` (or `NOREG` when pinging is off).
 5. Route groups: add the carrier to the routes, set order, weight, window.
 6. Simulator or Preview: check margins.

@@ -1,7 +1,0 @@
-[Unit]
-Description=SuperSBC: mirror the SBC ban list into nftables
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/root/supersbc/deploy/live/ban-sync.sh

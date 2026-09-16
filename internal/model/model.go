@@ -75,9 +75,12 @@ type Carrier struct {
 	DTMFMode             string     `json:"dtmf_mode" db:"dtmf_mode"`
 	SRTPMode             string     `json:"srtp_mode" db:"srtp_mode"`
 	PrivacyMode          string     `json:"privacy_mode" db:"privacy_mode"`
-	Notes                string     `json:"notes" db:"notes"`
-	CreatedAt            time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt            time.Time  `json:"updated_at" db:"updated_at"`
+	// SignallingSources are extra source addresses (IP or CIDR) of the carrier
+	// allow-listed in the host firewall besides the gateway host (D-69).
+	SignallingSources []string  `json:"signalling_sources" db:"signalling_sources"`
+	Notes             string    `json:"notes" db:"notes"`
+	CreatedAt         time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // GatewayName is the FreeSWITCH gateway name for the carrier.

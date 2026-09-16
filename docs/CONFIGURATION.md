@@ -100,7 +100,7 @@ Durations use Go syntax (`30s`, `5m`, `4h`). Booleans are `true`/`false`.
 | `SBC_AUTH_COOKIE_SECURE` | `false` | set `true` behind HTTPS (live) |
 | `SBC_BOOTSTRAP_ADMIN_EMAIL`, `SBC_BOOTSTRAP_ADMIN_PASSWORD` | `admin@example.com`, empty | first admin, created when no user exists |
 | `SBC_BAN_THRESHOLD`, `SBC_BAN_WINDOW`, `SBC_BAN_DURATION` | `20`, `5m`, `1h` | scanner protection; threshold `0` disables |
-| `SBC_BAN_EXPORT_FILE` | empty | file the ban list is mirrored to for the host firewall (`/state/banned_ips.txt` on live) |
+| `SBC_FIREWALL_EXPORT_FILE` | empty | JSON export of customer and carrier allow-lists and bans for `sbc-fwsync` (`/state/firewall.json` on live; D-69) |
 | `SBC_STIR_MAX_AGE` | `60s` | PASSporT freshness window |
 | `SBC_STIR_CA_FILE` | empty | PEM bundle of trusted STI-CA roots; empty skips chain validation |
 | `SBC_STIR_ALLOW_HTTP` | `false` | accept `http://` x5u URLs (labs only) |
@@ -139,6 +139,6 @@ Durations use Go syntax (`30s`, `5m`, `4h`). Booleans are `true`/`false`.
 | `freeswitch/scripts/sbc` | the Lua call pipeline |
 | `freeswitch/tls`, `deploy/live/tls` | SIP and web TLS material (`agent.pem`, `cafile.pem`, `server.crt`, `server.key`) |
 | `deploy/live/nftables.conf` | host firewall ruleset |
-| `deploy/live/state/banned_ips.txt` | ban list export (live) |
+| `deploy/live/state/firewall.json`, `firewall-sets.nft` | firewall export written by the API and the set contents kept by sbc-fwsync for boot |
 | `deploy/grafana`, `deploy/prometheus` | dashboards and scrape config |
 | `deploy/ha` | keepalived, Postgres replica and Redis Sentinel kit |

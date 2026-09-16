@@ -200,6 +200,13 @@
                     "register": {
                         "type": "boolean"
                     },
+                    "signalling_sources": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
                     "sip_options_ping": {
                         "type": "boolean"
                     },
@@ -1064,6 +1071,14 @@
                     },
                     "register": {
                         "type": "boolean"
+                    },
+                    "signalling_sources": {
+                        "description": "SignallingSources are extra source addresses (IP or CIDR) of the carrier\nallow-listed in the host firewall besides the gateway host (D-69).",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
                     },
                     "sip_options_ping": {
                         "type": "boolean"
