@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/form";
+import { CreditFooter } from "@/components/layout/credit-footer";
 import { useAuth } from "@/hooks/use-auth";
 import { ApiError, post } from "@/api/client";
 
@@ -29,15 +30,18 @@ function AuthFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="items-center text-center">
-          <PhoneForwarded className="mb-2 h-8 w-8 text-primary" />
-          <CardTitle className="text-lg">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>{children}</CardContent>
-      </Card>
+    <div className="flex min-h-screen flex-col bg-muted/40">
+      <div className="flex flex-1 items-center justify-center p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="items-center text-center">
+            <PhoneForwarded className="mb-2 h-8 w-8 text-primary" />
+            <CardTitle className="text-lg">{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </CardHeader>
+          <CardContent>{children}</CardContent>
+        </Card>
+      </div>
+      <CreditFooter />
     </div>
   );
 }

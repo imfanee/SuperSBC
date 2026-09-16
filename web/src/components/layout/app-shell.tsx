@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+
+import { CreditFooter } from "@/components/layout/credit-footer";
 import { ChevronsLeft, LogOut, Menu, PhoneForwarded, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -186,6 +188,7 @@ export function AppShell() {
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
+        <CreditFooter />
       </div>
 
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
