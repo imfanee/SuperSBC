@@ -1,12 +1,18 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, Download, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, Download, FileDown, RefreshCw } from "lucide-react";
 import { get } from "@/api/client";
 import type { CDR } from "@/api/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ErrorBox, PageHeader } from "@/components/page";
 import { cn } from "@/lib/utils";
 
@@ -175,6 +181,35 @@ export function SIPTracePage() {
             <Button variant="outline" size="sm" onClick={download} disabled={!trace.data?.messages.length}>
               <Download /> Download .txt
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!trace.data?.messages.length}
+                  data-testid="pcap-menu"
+                >
+                  <FileDown /> Export pcap
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href={`/api/v1/cdrs/${id}/sip.pcap?leg=customer`} download data-testid="pcap-customer">
+                    Customer leg only
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href={`/api/v1/cdrs/${id}/sip.pcap?leg=carrier`} download data-testid="pcap-carrier">
+                    Carrier leg only
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href={`/api/v1/cdrs/${id}/sip.pcap?leg=all`} download data-testid="pcap-all">
+                    Complete call (both legs)
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" size="sm" asChild>
               <Link to={`/cdrs/${id}/trace`}>Call trace</Link>
             </Button>

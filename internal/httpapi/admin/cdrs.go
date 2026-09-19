@@ -20,6 +20,7 @@ func (h *Handler) mountCDRs(r chi.Router) {
 	r.Get("/cdrs/export", h.exportCDRs)
 	r.Get("/cdrs/{id}", h.getCDR)
 	r.Get("/cdrs/{id}/sip", h.getCDRSIP)
+	r.Get("/cdrs/{id}/sip.pcap", h.getCDRSIPPcap)
 	r.Get("/calls/active", h.activeCalls)
 	r.With(operators).Delete("/calls/active/{id}", h.hangupCall)
 }
@@ -231,18 +232,61 @@ func (h *Handler) hangupCall(w http.ResponseWriter, r *http.Request) {
 // @Failure 503 {object} errorBody "capture store not configured or unreachable"
 // @Router /cdrs/{id}/sip [get]
 func (h *Handler) getCDRSIP(w http.ResponseWriter, r *http.Request) {
-	id, ok := pathUUID(w, r, "id")
+	tr, _, ok := h.loadSIPTrace(w, r)
 	if !ok {
 		return
 	}
+	writeJSON(w, http.StatusOK, tr)
+}
+
+// getCDRSIPPcap godoc
+// @Summary Download the captured SIP of a call as a pcap file (leg=customer|carrier|all)
+// @Tags cdrs
+// @Produce application/vnd.tcpdump.pcap
+// @Param id path string true "call uuid"
+// @Param leg query string false "customer, carrier or all (default)"
+// @Success 200 {file} binary
+// @Failure 503 {object} errorBody "capture store not configured or unreachable"
+// @Router /cdrs/{id}/sip.pcap [get]
+func (h *Handler) getCDRSIPPcap(w http.ResponseWriter, r *http.Request) {
+	tr, id, ok := h.loadSIPTrace(w, r)
+	if !ok {
+		return
+	}
+	leg := r.URL.Query().Get("leg")
+	if leg == "all" || leg == "" {
+		leg = ""
+	} else if leg != "customer" && leg != "carrier" {
+		fail(w, http.StatusBadRequest, "leg must be customer, carrier or all")
+		return
+	}
+	name := "sip-" + id + ".pcap"
+	if leg != "" {
+		name = "sip-" + id + "-" + leg + ".pcap"
+	}
+	w.Header().Set("Content-Type", "application/vnd.tcpdump.pcap")
+	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
+	w.WriteHeader(http.StatusOK)
+	if err := sipcapture.WritePCAP(w, tr.Messages, leg); err != nil {
+		h.Log.Warn("pcap write", "call_uuid", id, "error", err)
+	}
+}
+
+// loadSIPTrace loads the CDR and its captured messages; on failure it has
+// already written the error response.
+func (h *Handler) loadSIPTrace(w http.ResponseWriter, r *http.Request) (*sipcapture.Trace, string, bool) {
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return nil, "", false
+	}
 	if h.Capture == nil || !h.Capture.Enabled() {
 		fail(w, http.StatusServiceUnavailable, "SIP capture store is not configured (SBC_HEP_DATABASE_URL); enable HEP capture and HOMER")
-		return
+		return nil, "", false
 	}
 	c, err := h.Store.CDRRowByUUID(r.Context(), id)
 	if err != nil {
 		failErr(w, err)
-		return
+		return nil, "", false
 	}
 	from := c.StartTime.Add(-30 * time.Second)
 	to := c.StartTime.Add(h.Cfg.Billing.MaxCallDuration + time.Minute)
@@ -257,7 +301,7 @@ func (h *Handler) getCDRSIP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.Log.Warn("sip capture lookup failed", "call_uuid", id, "error", err)
 		fail(w, http.StatusServiceUnavailable, "SIP capture store unreachable: "+err.Error())
-		return
+		return nil, "", false
 	}
-	writeJSON(w, http.StatusOK, tr)
+	return tr, id.String(), true
 }

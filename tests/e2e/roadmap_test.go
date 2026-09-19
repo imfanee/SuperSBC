@@ -4,6 +4,7 @@ package e2e
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"net/http"
@@ -266,6 +267,24 @@ func TestRoadmap_SIPTrace(t *testing.T) {
 	}
 	if str(tr["customer_call_id"]) == "" || len(tr["carrier_call_ids"].([]any)) != 1 {
 		t.Fatalf("call ids: %v %v", tr["customer_call_id"], tr["carrier_call_ids"])
+	}
+	// pcap export: a valid libpcap header and one frame per message of the chosen legs
+	for _, c := range []struct {
+		leg  string
+		want int
+	}{{"all", len(msgs)}, {"customer", legs["customer"]}, {"carrier", legs["carrier"]}} {
+		code, raw := a.do("GET", "/cdrs/"+id+"/sip.pcap?leg="+c.leg, nil)
+		b := []byte(str(raw["raw"]))
+		if code != 200 || len(b) < 24 || binary.LittleEndian.Uint32(b) != 0xa1b2c3d4 {
+			t.Fatalf("pcap %s: %d %d bytes", c.leg, code, len(b))
+		}
+		n := 0
+		for off := 24; off+16 <= len(b); n++ {
+			off += 16 + int(binary.LittleEndian.Uint32(b[off+8:]))
+		}
+		if n != c.want {
+			t.Fatalf("pcap %s: %d frames, want %d", c.leg, n, c.want)
+		}
 	}
 	// the customer leg Call-ID is searchable on the CDR list
 	code, list := a.do("GET", "/cdrs?sip_call_id="+str(tr["customer_call_id"]), nil)

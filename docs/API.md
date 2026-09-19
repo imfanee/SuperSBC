@@ -66,6 +66,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | Method | Path | Summary |
 |---|---|---|
 | `GET` | `/cdrs/export` | Stream CDRs as CSV with the same filters as the list |
+| `GET` | `/cdrs/{id}/sip.pcap` | Download the captured SIP of a call as a pcap file (leg=customer|carrier|all)<br>Query: `leg` |
 | `GET` | `/cdrs/{id}/sip` | Every captured SIP message of a call (customer and carrier legs, headers and bodies) from the HOMER capture store (D-71) |
 | `GET` | `/cdrs/{id}/trace` | Per-call trace: CDR, ledger entries, sbc-api log lines and FreeSWITCH log lines (Lua and Sofia) for one call uuid |
 | `GET` | `/cdrs/{id}` | One CDR with attempts and RTP statistics |

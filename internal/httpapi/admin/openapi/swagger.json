@@ -3364,6 +3364,55 @@
                 ]
             }
         },
+        "/cdrs/{id}/sip.pcap": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "call uuid",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "customer, carrier or all (default)",
+                        "in": "query",
+                        "name": "leg",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/vnd.tcpdump.pcap": {
+                                "schema": {
+                                    "type": "file"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "503": {
+                        "content": {
+                            "application/vnd.tcpdump.pcap": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.errorBody"
+                                }
+                            }
+                        },
+                        "description": "capture store not configured or unreachable"
+                    }
+                },
+                "summary": "Download the captured SIP of a call as a pcap file (leg=customer|carrier|all)",
+                "tags": [
+                    "cdrs"
+                ]
+            }
+        },
         "/cdrs/{id}/trace": {
             "get": {
                 "parameters": [

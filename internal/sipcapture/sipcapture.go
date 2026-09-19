@@ -137,6 +137,10 @@ func (s *Store) Trace(ctx context.Context, q Query) (*Trace, error) {
 		if err := rows.Scan(&m.ID, &m.CallID, &m.Time, &hdr, &m.Raw); err != nil {
 			return nil, err
 		}
+		// HEP carries the capture instant of the sending/receiving node; prefer it over the store's insert time.
+		if sec := intOf(hdr["timeSeconds"]); sec > 0 {
+			m.Time = time.Unix(int64(sec), int64(intOf(hdr["timeUseconds"]))*1000).UTC()
+		}
 		m.SrcIP, _ = hdr["srcIp"].(string)
 		m.DstIP, _ = hdr["dstIp"].(string)
 		m.SrcPort = intOf(hdr["srcPort"])
