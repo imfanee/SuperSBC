@@ -92,8 +92,8 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 
 ## 9. Getting a SIP trace to the carrier or the customer
 
-1. System > SIP trace: enable on the customer profile for 5 minutes, place the call, open the CDR > Trace.
-2. Or HOMER: `make homer-up`, `SBC_FS_HEP_SERVER` set, search by Call-ID at http://127.0.0.1:19080.
+1. CDRs > the call > "SIP trace": every message of both legs with headers and bodies, from the capture store (always on for live, 30 days retention). "Download .txt" gives the carrier something to read. If the page says the capture store is not configured or unreachable: `SBC_HEP_DATABASE_URL` in `.env.live`, `$(LIVE) ps hepdb heplify`, `docker logs supersbc-live-heplify-1`.
+2. System > SIP trace: enable on the customer profile for 5 minutes, place the call, open the CDR > trace (the SBC's own log lines, useful when capture is off).
 3. Or `fs_cli -x "sofia global siptrace on"` and read `docker logs supersbc-live-freeswitch-1`; turn it off afterwards.
 
 The carrier leg carries `X-SBC-Call: <call uuid>` so a carrier can quote it back to you; it is the CDR's `call_uuid`.

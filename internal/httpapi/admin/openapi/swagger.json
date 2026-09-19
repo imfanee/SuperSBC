@@ -1784,6 +1784,81 @@
                 },
                 "type": "object"
             },
+            "sipcapture.Message": {
+                "properties": {
+                    "call_id": {
+                        "type": "string"
+                    },
+                    "dst_ip": {
+                        "type": "string"
+                    },
+                    "dst_port": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "leg": {
+                        "description": "Leg is \"customer\" or \"carrier\", by which side of the SBC the remote address is on.",
+                        "type": "string"
+                    },
+                    "method": {
+                        "description": "Method is the request method or the response status code (\"INVITE\", \"200\").",
+                        "type": "string"
+                    },
+                    "raw": {
+                        "type": "string"
+                    },
+                    "src_ip": {
+                        "type": "string"
+                    },
+                    "src_port": {
+                        "type": "integer"
+                    },
+                    "summary": {
+                        "description": "Summary is the first line of the message.",
+                        "type": "string"
+                    },
+                    "time": {
+                        "type": "string"
+                    },
+                    "transport": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "sipcapture.Trace": {
+                "properties": {
+                    "call_uuid": {
+                        "type": "string"
+                    },
+                    "carrier_call_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "customer_call_id": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string"
+                    },
+                    "messages": {
+                        "items": {
+                            "$ref": "#/components/schemas/sipcapture.Message"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "to": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "store.CDRRow": {
                 "properties": {
                     "answer_time": {
@@ -1934,6 +2009,10 @@
                     },
                     "sell_rate_per_min": {
                         "type": "number"
+                    },
+                    "sip_call_id": {
+                        "description": "SIPCallID is the customer leg Call-ID (D-71).",
+                        "type": "string"
                     },
                     "sip_final_code": {
                         "type": "integer"
@@ -3239,6 +3318,47 @@
                     }
                 },
                 "summary": "One CDR with attempts and RTP statistics",
+                "tags": [
+                    "cdrs"
+                ]
+            }
+        },
+        "/cdrs/{id}/sip": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "call uuid",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sipcapture.Trace"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "503": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/admin.errorBody"
+                                }
+                            }
+                        },
+                        "description": "capture store not configured or unreachable"
+                    }
+                },
+                "summary": "Every captured SIP message of a call (customer and carrier legs, headers and bodies) from the HOMER capture store (D-71)",
                 "tags": [
                     "cdrs"
                 ]

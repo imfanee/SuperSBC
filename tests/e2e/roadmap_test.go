@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -217,47 +216,62 @@ func TestRoadmap_STIR(t *testing.T) {
 	reconcileOK(t)
 }
 
-// HEP capture (D-65): the dev stack mirrors SIP as HEPv3 to 172.28.0.1:9060;
-// the test listens there and expects the INVITE and the 200 OK of one call.
-func TestRoadmap_HEPCapture(t *testing.T) {
-	pc, err := (&net.ListenConfig{}).ListenPacket(context.Background(), "udp", "172.28.0.1:9060")
-	if err != nil {
-		t.Skipf("cannot listen on 172.28.0.1:9060 (homer profile running?): %v", err)
-	}
-	defer func() { _ = pc.Close() }()
-	var mu sync.Mutex
-	var seen []string
-	go func() {
-		buf := make([]byte, 65535)
-		for {
-			n, _, err := pc.ReadFrom(buf)
-			if err != nil {
-				return
-			}
-			if n > 6 && string(buf[:4]) == "HEP3" {
-				mu.Lock()
-				seen = append(seen, string(buf[:n]))
-				mu.Unlock()
-			}
-		}
-	}()
+// SIP capture (D-65, D-71): FreeSWITCH mirrors SIP as HEPv3 to heplify-server
+// (make e2e starts the homer profile) and the CDR "SIP trace" endpoint returns
+// both legs of a call, headers and bodies, from the capture store.
+func TestRoadmap_SIPTrace(t *testing.T) {
+	a := newAPIClient(t)
+	a.ok(a.login("admin@example.com", adminPassword(t)))
+	since := time.Now()
 	sc := scenario(t, "uac_call.xml.tmpl", map[string]string{"__TALK__": "500"})
 	res := placeCall(t, "customer-acme", sc, "442071234567", 1)
 	expectFinal(t, res, "200 OK")
-	deadline := time.Now().Add(5 * time.Second)
+	cdr := lastCDR(t, "172.28.0.101", "442071234567", since)
+	id := str(cdr["call_uuid"])
+	var tr map[string]any
+	deadline := time.Now().Add(15 * time.Second)
 	for {
-		mu.Lock()
-		all := strings.Join(seen, "\n")
-		n := len(seen)
-		mu.Unlock()
-		if strings.Contains(all, "INVITE sip:442071234567@") && strings.Contains(all, "SIP/2.0 200 OK") && strings.Contains(all, "BYE sip:") {
-			t.Logf("%d HEP packets captured", n)
-			return
+		code, body := a.do("GET", "/cdrs/"+id+"/sip", nil)
+		if code == 503 {
+			t.Skipf("capture store not available: %v", body["error"])
+		}
+		a.mustOK(code, body, "sip trace")
+		tr = body
+		if msgs, _ := body["messages"].([]any); len(msgs) >= 10 && strings.Contains(fmt.Sprint(msgs), "BYE sip:") {
+			break
 		}
 		if time.Now().After(deadline) {
-			t.Fatalf("HEP capture incomplete after %d packets", n)
+			t.Fatalf("captured messages: %v", body)
 		}
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
+	}
+	msgs := tr["messages"].([]any)
+	legs := map[string]int{}
+	var invites, sdp, bye int
+	for _, x := range msgs {
+		m := x.(map[string]any)
+		legs[str(m["leg"])]++
+		if m["method"] == "INVITE" {
+			invites++
+			if strings.Contains(str(m["raw"]), "m=audio") {
+				sdp++
+			}
+		}
+		if m["method"] == "BYE" {
+			bye++
+		}
+	}
+	if legs["customer"] == 0 || legs["carrier"] == 0 || invites < 2 || sdp < 2 || bye == 0 {
+		t.Fatalf("legs %v invites %d with sdp %d bye %d", legs, invites, sdp, bye)
+	}
+	if str(tr["customer_call_id"]) == "" || len(tr["carrier_call_ids"].([]any)) != 1 {
+		t.Fatalf("call ids: %v %v", tr["customer_call_id"], tr["carrier_call_ids"])
+	}
+	// the customer leg Call-ID is searchable on the CDR list
+	code, list := a.do("GET", "/cdrs?sip_call_id="+str(tr["customer_call_id"]), nil)
+	a.mustOK(code, list, "cdrs by call id")
+	if n := len(items(list)); n != 1 {
+		t.Fatalf("cdrs by sip_call_id: %d", n)
 	}
 }
 

@@ -44,6 +44,8 @@ type Config struct {
 	Invoice  Invoice
 	STIR     STIR
 	SMTP     SMTP
+	// HEPDatabaseURL is the HOMER capture database (heplify-server writes it); empty disables the SIP trace viewer (D-71).
+	HEPDatabaseURL string
 	// PublicURL is the address users open the UI at (used in e-mailed links), e.g. https://sbc.example.com:8443
 	PublicURL string
 
@@ -196,7 +198,8 @@ func Load() (*Config, error) {
 			From:     getenv("SBC_SMTP_FROM", ""),
 			TLS:      getenv("SBC_SMTP_TLS", ""),
 		},
-		PublicURL: strings.TrimRight(getenv("SBC_PUBLIC_URL", ""), "/"),
+		PublicURL:      strings.TrimRight(getenv("SBC_PUBLIC_URL", ""), "/"),
+		HEPDatabaseURL: getenv("SBC_HEP_DATABASE_URL", ""),
 		STIR: STIR{
 			MaxAge:    getduration("SBC_STIR_MAX_AGE", 60*time.Second),
 			CAFile:    getenv("SBC_STIR_CA_FILE", ""),

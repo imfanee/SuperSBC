@@ -256,6 +256,7 @@ export interface CDR {
   privacy: boolean;
   stir_status: string | null;
   stir_attest: string | null;
+  sip_call_id: string | null;
   sbc_node: string | null;
 }
 

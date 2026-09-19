@@ -67,7 +67,7 @@ reconcile: ## Prove ledger and account invariants
 	$(COMPOSE) exec api /app/sbc-api reconcile
 
 e2e: ## End-to-end SIP tests with sipp mock customers and carriers
-	SBC_VERSION=$(VERSION) $(COMPOSE) --profile e2e up -d --build
+	SBC_VERSION=$(VERSION) $(COMPOSE) --profile e2e --profile homer up -d --build
 	$(COMPOSE) exec api /app/sbc-api seed
 	SBC_VERSION=$(VERSION) $(GO) test -count=1 -tags e2e -v -timeout 30m ./tests/e2e/...
 

@@ -154,7 +154,7 @@ CDRs lists every attempted call, including rejections. Filter by time, customer,
 
 Dispositions: `answered`, `no_answer`, `busy`, `failed` (carrier or network fault), `cancelled` (the customer gave up), `rejected_auth` (address, status, TLS/SRTP/STIR policy), `rejected_balance`, `rejected_route` (no route, blocked, invalid number).
 
-**Trace** on a CDR shows the SIP messages of that call when a SIP trace was active (System > SIP trace or the customer's Trace tab); for permanent capture use HOMER (admin guide).
+**SIP trace** on a CDR (next to the UUID) opens a new tab with every SIP message of the call from the capture store: customer and carrier legs in time order, source and destination, method or status code, and the full headers and body of any message you expand; filter by leg, expand all, download as text. Capture is always on for the live stack and messages are kept for the retention period (30 days by default). **trace** next to it shows the SBC's own decision log for the call (API steps, Lua, FreeSWITCH lines).
 
 ### 6.3 Reports
 

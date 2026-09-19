@@ -24,6 +24,7 @@ networks:
 
 volumes:
   pgdata:
+  hepdata:
   fsconfig:
   fslogs:
   promdata:
@@ -145,6 +146,68 @@ services:
       - ./tls:/etc/nginx/tls:ro
     depends_on:
       - api
+    restart: unless-stopped
+    networks: [live]
+    logging: *logging
+
+  # ---- SIP capture (D-65, D-71): FreeSWITCH mirrors SIP as HEPv3 to heplify-server
+  # (bound to the live bridge gateway), which stores it in hepdb; the CDR "SIP trace"
+  # viewer reads hepdb. The HOMER web UI is optional (--profile homer).
+  hepdb:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: homer
+      POSTGRES_PASSWORD: ${HOMER_DB_PASSWORD:?set HOMER_DB_PASSWORD in .env.live}
+    volumes:
+      - hepdata:/var/lib/postgresql/data
+      - ../homer/initdb.sql:/docker-entrypoint-initdb.d/001_databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homer"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    networks: [live]
+    logging: *logging
+  heplify:
+    image: sipcapture/heplify-server:latest
+    working_dir: /root
+    command: ["./heplify-server"]
+    environment:
+      HEPLIFYSERVER_HEPADDR: 0.0.0.0:9060
+      HEPLIFYSERVER_DBSHEMA: homer7
+      HEPLIFYSERVER_DBDRIVER: postgres
+      HEPLIFYSERVER_DBADDR: hepdb:5432
+      HEPLIFYSERVER_DBUSER: homer
+      HEPLIFYSERVER_DBPASS: ${HOMER_DB_PASSWORD}
+      HEPLIFYSERVER_DBDATATABLE: homer_data
+      HEPLIFYSERVER_DBCONFTABLE: homer_config
+      HEPLIFYSERVER_DBROTATE: "true"
+      HEPLIFYSERVER_DBDROPDAYS: ${HOMER_KEEP_DAYS:-30}
+      HEPLIFYSERVER_LOGLVL: info
+      HEPLIFYSERVER_LOGSTD: "true"
+      HEPLIFYSERVER_DEDUP: "false"
+    ports:
+      - "172.29.0.1:9060:9060/udp"
+    depends_on:
+      hepdb: { condition: service_healthy }
+    restart: unless-stopped
+    networks: [live]
+    logging: *logging
+  homer-webapp:
+    image: sipcapture/webapp:latest
+    profiles: [homer]
+    environment:
+      DB_HOST: hepdb
+      DB_USER: homer
+      DB_PASS: ${HOMER_DB_PASSWORD}
+      DB_DATA: homer_data
+      DB_CONFIG: homer_config
+      LOGLEVEL: info
+    ports:
+      - "127.0.0.1:${SBC_HOMER_PORT:-19081}:80"
+    depends_on:
+      hepdb: { condition: service_healthy }
     restart: unless-stopped
     networks: [live]
     logging: *logging

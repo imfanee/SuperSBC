@@ -339,9 +339,20 @@ export function CDRDetail({ cdr: c }: { cdr: CDR }) {
                 {c.call_uuid}{" "}
                 <Link to={`/cdrs/${c.call_uuid}/trace`} className="underline">
                   trace
-                </Link>
+                </Link>{" "}
+                <a
+                  href={`/cdrs/${c.call_uuid}/sip`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline"
+                  title="All captured SIP messages of this call (both legs, headers and bodies) in a new tab"
+                  data-testid="cdr-sip-trace"
+                >
+                  SIP trace
+                </a>
               </span>,
             ],
+            ["SIP Call-ID", <span className="break-all font-mono text-xs">{c.sip_call_id ?? "n/a"}</span>],
             ["Source", `${c.src_ip ?? ""}:${c.src_port ?? ""}`],
             ["Dialled", <span className="font-mono">{c.called_number_raw}</span>],
             ["Start", dt(c.start_time)],

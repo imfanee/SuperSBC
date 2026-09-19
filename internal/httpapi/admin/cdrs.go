@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/shopspring/decimal"
 
+	"github.com/imfanee/supersbc/internal/sipcapture"
 	"github.com/imfanee/supersbc/internal/store"
 )
 
@@ -18,6 +19,7 @@ func (h *Handler) mountCDRs(r chi.Router) {
 	r.Get("/cdrs", h.listCDRs)
 	r.Get("/cdrs/export", h.exportCDRs)
 	r.Get("/cdrs/{id}", h.getCDR)
+	r.Get("/cdrs/{id}/sip", h.getCDRSIP)
 	r.Get("/calls/active", h.activeCalls)
 	r.With(operators).Delete("/calls/active/{id}", h.hangupCall)
 }
@@ -26,7 +28,7 @@ func cdrFilter(r *http.Request) store.CDRFilter {
 	q := r.URL.Query()
 	f := store.CDRFilter{From: queryTime(r, "from"), To: queryTime(r, "to"), CustomerID: queryUUID(r, "customer_id"), CarrierID: queryUUID(r, "carrier_id"),
 		Prefix: q.Get("prefix"), Caller: q.Get("caller"), Disposition: q.Get("disposition"), SIPCode: queryInt(r, "sip_code"),
-		MinBillsec: queryInt(r, "min_billsec"), MaxBillsec: queryInt(r, "max_billsec"), SrcIP: q.Get("src_ip"), CallUUID: queryUUID(r, "call_uuid"),
+		MinBillsec: queryInt(r, "min_billsec"), MaxBillsec: queryInt(r, "max_billsec"), SrcIP: q.Get("src_ip"), CallUUID: queryUUID(r, "call_uuid"), SIPCallID: q.Get("sip_call_id"),
 		NegativeOnly: q.Get("negative_margin") == "true"}
 	return f
 }
@@ -218,4 +220,44 @@ func (h *Handler) hangupCall(w http.ResponseWriter, r *http.Request) {
 	}
 	h.audit(r, "call.hangup", "call", id.String(), nil, nil)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// getCDRSIP godoc
+// @Summary Every captured SIP message of a call (customer and carrier legs, headers and bodies) from the HOMER capture store (D-71)
+// @Tags cdrs
+// @Produce json
+// @Param id path string true "call uuid"
+// @Success 200 {object} sipcapture.Trace
+// @Failure 503 {object} errorBody "capture store not configured or unreachable"
+// @Router /cdrs/{id}/sip [get]
+func (h *Handler) getCDRSIP(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	if h.Capture == nil || !h.Capture.Enabled() {
+		fail(w, http.StatusServiceUnavailable, "SIP capture store is not configured (SBC_HEP_DATABASE_URL); enable HEP capture and HOMER")
+		return
+	}
+	c, err := h.Store.CDRRowByUUID(r.Context(), id)
+	if err != nil {
+		failErr(w, err)
+		return
+	}
+	from := c.StartTime.Add(-30 * time.Second)
+	to := c.StartTime.Add(h.Cfg.Billing.MaxCallDuration + time.Minute)
+	if c.EndTime != nil {
+		to = c.EndTime.Add(2 * time.Minute)
+	}
+	q := sipcapture.Query{CallUUID: id.String(), CustomerIP: deref(c.SrcIP), From: from, To: to}
+	if c.SIPCallID != nil {
+		q.CustomerCallID = *c.SIPCallID
+	}
+	tr, err := h.Capture.Trace(r.Context(), q)
+	if err != nil {
+		h.Log.Warn("sip capture lookup failed", "call_uuid", id, "error", err)
+		fail(w, http.StatusServiceUnavailable, "SIP capture store unreachable: "+err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, tr)
 }

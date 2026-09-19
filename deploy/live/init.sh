@@ -22,6 +22,7 @@ SBC_ESL_PASSWORD=$(rnd 32)
 SBC_JWT_SECRET=$(rnd 64)
 POSTGRES_PASSWORD=$(rnd 32)
 GRAFANA_ADMIN_PASSWORD=$(rnd 20)
+HOMER_DB_PASSWORD=$(rnd 32)
 
 SBC_BOOTSTRAP_ADMIN_EMAIL=admin@example.com
 SBC_BOOTSTRAP_ADMIN_PASSWORD=$ADMIN_PW
@@ -95,7 +96,10 @@ SBC_FS_TLS_VERSION=tlsv1.2,tlsv1.3
 SBC_FS_INGRESS_100REL=false
 SBC_FS_EGRESS_100REL=false
 # HEP/HOMER capture (D-65): empty = off. Example: udp:homer:9060;hep=3;capture_id=100
-SBC_FS_HEP_SERVER=
+SBC_FS_HEP_SERVER=udp:172.29.0.1:9060;hep=3;capture_id=2
+# SIP capture store read by the CDR "SIP trace" viewer (D-71); retention in days
+SBC_HEP_DATABASE_URL=postgres://homer:HOMERPW@hepdb:5432/homer_data?sslmode=disable
+HOMER_KEEP_DAYS=30
 SBC_FS_RTP_START=16384
 SBC_FS_RTP_END=32768
 SBC_FS_MAX_SESSIONS=400
@@ -116,7 +120,7 @@ SBC_REDIS_PORT=26379
 SBC_PROMETHEUS_PORT=29090
 BACKUP_KEEP_DAYS=30
 ENV
-  sed -i "s|PGPW|$(grep '^POSTGRES_PASSWORD=' .env.live | cut -d= -f2)|" .env.live
+  sed -i "s|PGPW|$(grep '^POSTGRES_PASSWORD=' .env.live | cut -d= -f2)|; s|HOMERPW|$(grep '^HOMER_DB_PASSWORD=' .env.live | cut -d= -f2)|" .env.live
   chmod 600 .env.live
   echo "wrote .env.live"
   echo "==> bootstrap admin: admin@example.com / $ADMIN_PW   (shown once; change it after first login)"

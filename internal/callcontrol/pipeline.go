@@ -530,6 +530,10 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	srcIP := req.SrcIP
 	cdr := &model.CDR{CallUUID: callUUID, SrcIP: &srcIP, SrcPort: &req.SrcPort, CallerNumberRaw: req.Caller, CalledNumberRaw: req.Called,
 		CallerNumber: req.Caller, CalledNumber: req.Called, StartTime: now, SBCNode: &node}
+	if req.SIPCallID != "" {
+		cid := req.SIPCallID
+		cdr.SIPCallID = &cid
+	}
 
 	reject := func(step string, r Reject, disposition string) *SetupResponse {
 		resp.Reject = &r

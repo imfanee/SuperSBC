@@ -79,7 +79,7 @@ nginx terminates TLS on 8443 (8080 redirects), adds a strict Content-Security-Po
 * `GET /readyz` (loopback 28080 on live, or `https://<ip>:8443/readyz`): `ready` plus per dependency checks; use it for your external monitoring.
 * `GET /metrics` (Prometheus): calls by disposition, rejections by reason, per carrier attempts and ASR, PDD histograms, concurrent calls and CPS gauges, revenue and cost counters, bans, STIR results, media modes, gateway states. `make live-monitoring` starts Prometheus and Grafana with the bundled dashboard at `https://<ip>:8443/grafana/`.
 * Logs: JSON lines with `call_uuid`, `customer`, `carrier`, `step`, `code`. `make live-logs` follows all containers; `docker logs supersbc-live-api-1 | jq 'select(.call_uuid=="...")'` follows one call. FreeSWITCH logs are in the `fslogs` volume.
-* SIP capture: the built-in SIP trace (System page) for a few minutes; HOMER (`make homer-up` plus `SBC_FS_HEP_SERVER`) for permanent capture and search by Call-ID.
+* SIP capture: on live, FreeSWITCH always mirrors SIP to `heplify` which stores it in `hepdb` for `HOMER_KEEP_DAYS` (30) days; every CDR has a "SIP trace" link that shows the whole call (D-71). The HOMER web UI is optional (`$(LIVE) --profile homer up -d`, 127.0.0.1:19081, admin / sipcapture). The System page SIP trace remains for ad hoc tracing of a profile in the FreeSWITCH log.
 * Alerts worth having: `ready` false for more than a minute; any gateway `DOWN`; rejection rate above a few percent; ASR of a carrier below 30 percent; reconcile mismatches above 0; disk above 80 percent.
 
 ## 7. Backups and restore

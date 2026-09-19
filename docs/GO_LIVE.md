@@ -55,6 +55,6 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 
 * `make live-firewall` installs the SIP rate limits and the `customers`, `carriers` and `banned` sets; `make live-fwsync` installs the service that keeps them equal to the database (D-69).
 * SIP TLS listens on 5061 (customers) and 5081 (carriers, allow-listed); client certificate verification is off (`SBC_FS_TLS_VERIFY_POLICY=none`) until you have customer certificates (D-67).
-* HEP capture is on: live FreeSWITCH mirrors SIP to heplify-server on the live bridge address (`SBC_FS_HEP_SERVER=udp:172.29.0.1:9060;hep=3;capture_id=2`); `make homer-up` runs HOMER, UI at http://127.0.0.1:19080 over an ssh tunnel (admin / sipcapture, change it). Dev traffic is capture_id 1, live is 2 (D-65).
+* SIP capture is part of the live stack (`hepdb`, `heplify`): FreeSWITCH mirrors SIP to `udp:172.29.0.1:9060` and every CDR has a "SIP trace" link (D-71). The HOMER web UI is optional: `$(LIVE) --profile homer up -d`, http://127.0.0.1:19081 over an ssh tunnel (admin / sipcapture, change it).
 * Invoices, STIR/SHAKEN verification and routing windows are configured per customer, carrier and route in the UI; nothing to enable on the box.
 * A second box can be added following docs/HA.md.

@@ -31,6 +31,7 @@ import (
 	"github.com/imfanee/supersbc/internal/mail"
 	"github.com/imfanee/supersbc/internal/metrics"
 	"github.com/imfanee/supersbc/internal/reports"
+	"github.com/imfanee/supersbc/internal/sipcapture"
 	"github.com/imfanee/supersbc/internal/stir"
 	"github.com/imfanee/supersbc/internal/store"
 	"github.com/imfanee/supersbc/internal/tables"
@@ -87,6 +88,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 		Reports:  admin.NewReports(reports.New(pool), cfg.Billing.LowBalanceThreshold),
 		Trace:    trace.New(rdb, cfg.FSLogFile, sup),
 		Invoices: invoice.New(pool, log, invoice.Operator{Name: cfg.Invoice.OperatorName, Address: cfg.Invoice.OperatorAddress, Footer: cfg.Invoice.Footer}),
+		Capture:  sipcapture.New(cfg.HEPDatabaseURL),
 		Mailer:   mail.New(mail.Config{Host: cfg.SMTP.Host, Port: cfg.SMTP.Port, Username: cfg.SMTP.Username, Password: cfg.SMTP.Password, From: cfg.SMTP.From, TLS: cfg.SMTP.TLS}),
 		Ready: func(ctx context.Context) any {
 			return health.Deps{DB: pool, Redis: rdb, ESL: sup, Profiles: []string{"external-ingress", "external-egress"}, Version: version, Node: cfg.NodeName}.Check(ctx)

@@ -254,13 +254,15 @@ type CDR struct {
 	SRTPIn            bool             `json:"srtp_in" db:"srtp_in"`
 	SRTPOut           bool             `json:"srtp_out" db:"srtp_out"`
 	Privacy           bool             `json:"privacy" db:"privacy"`
-	STIRStatus        *string          `json:"stir_status" db:"stir_status"`
-	STIRAttest        *string          `json:"stir_attest" db:"stir_attest"`
-	SBCNode           *string          `json:"sbc_node" db:"sbc_node"`
-	BilledAt          *time.Time       `json:"billed_at" db:"billed_at"`
-	BilledBy          *string          `json:"billed_by" db:"billed_by"`
-	CreatedAt         time.Time        `json:"created_at" db:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at" db:"updated_at"`
+	// SIPCallID is the customer leg Call-ID (D-71).
+	SIPCallID  *string    `json:"sip_call_id" db:"sip_call_id"`
+	STIRStatus *string    `json:"stir_status" db:"stir_status"`
+	STIRAttest *string    `json:"stir_attest" db:"stir_attest"`
+	SBCNode    *string    `json:"sbc_node" db:"sbc_node"`
+	BilledAt   *time.Time `json:"billed_at" db:"billed_at"`
+	BilledBy   *string    `json:"billed_by" db:"billed_by"`
+	CreatedAt  time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at" db:"updated_at"`
 }
 
 // ActiveCall is a call with an open reservation.
