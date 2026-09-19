@@ -3274,6 +3274,16 @@
         },
         "/cdrs/export": {
             "get": {
+                "parameters": [
+                    {
+                        "description": "customer|carrier|full (default full)",
+                        "in": "query",
+                        "name": "view",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "content": {
@@ -3286,7 +3296,7 @@
                         "description": "csv"
                     }
                 },
-                "summary": "Stream CDRs as CSV with the same filters as the list",
+                "summary": "Stream CDRs as CSV with the same filters as the list; view=customer (no carrier, routing or cost columns), carrier (no customer, routing or selling columns) or full",
                 "tags": [
                     "cdrs"
                 ]

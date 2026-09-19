@@ -279,8 +279,23 @@ func TestM4_CDRsAndActiveCalls(t *testing.T) {
 		t.Fatalf("cdr detail: %v", one)
 	}
 	code, exp := a.do("GET", "/cdrs/export?disposition=answered", nil)
-	if code != 200 || !strings.HasPrefix(exp["raw"].(string), "call_uuid,start_time") {
+	if code != 200 || !strings.HasPrefix(exp["raw"].(string), "call_uuid,sip_call_id,start_time") {
 		t.Fatalf("export: %d", code)
+	}
+	// the three export views: header columns differ, rows match the filter
+	for view, mustHave, mustNot := "customer", "sell_price", "cost"; ; {
+		code, exp = a.do("GET", "/cdrs/export?disposition=answered&view="+view, nil)
+		header := strings.SplitN(exp["raw"].(string), "\n", 2)[0]
+		if code != 200 || !strings.Contains(","+header+",", ","+mustHave+",") || strings.Contains(","+header+",", ","+mustNot+",") {
+			t.Fatalf("export view %s: %d header %s", view, code, header)
+		}
+		if view == "carrier" {
+			break
+		}
+		view, mustHave, mustNot = "carrier", "cost", "sell_price"
+	}
+	if code, _ = a.do("GET", "/cdrs/export?view=bogus", nil); code != 400 {
+		t.Fatalf("bogus view: %d", code)
 	}
 	// active calls during a long call, then hang it up through the API
 	sc := scenario(t, "uac_call.xml.tmpl", map[string]string{"__TALK__": "30000"})

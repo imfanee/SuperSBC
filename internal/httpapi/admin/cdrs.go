@@ -84,27 +84,122 @@ func (h *Handler) getCDR(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, out)
 }
 
-var cdrCSVHeader = []string{"call_uuid", "start_time", "answer_time", "end_time", "customer", "carrier", "src_ip", "caller", "called", "disposition", "sip_code", "sip_reason",
-	"hangup_cause", "pdd_ms", "billsec", "duration", "sell_rate_per_min", "sell_billed_seconds", "sell_price", "sell_currency", "buy_rate_per_min", "buy_billed_seconds", "cost", "buy_currency", "margin",
-	"failover_depth", "codec_in", "codec_out", "media_mode", "sbc_node"}
+// cdrColumn is one CSV column of the CDR export.
+type cdrColumn struct {
+	name string
+	get  func(c store.CDRRow) string
+}
+
+// cdrColumns are every exportable column, in the order of the full export.
+var cdrColumns = []cdrColumn{
+	{"call_uuid", func(c store.CDRRow) string { return c.CallUUID.String() }},
+	{"sip_call_id", func(c store.CDRRow) string { return deref(c.SIPCallID) }},
+	{"start_time", func(c store.CDRRow) string { return ts(&c.StartTime) }},
+	{"answer_time", func(c store.CDRRow) string { return ts(c.AnswerTime) }},
+	{"end_time", func(c store.CDRRow) string { return ts(c.EndTime) }},
+	{"customer", func(c store.CDRRow) string { return deref(c.CustomerName) }},
+	{"carrier", func(c store.CDRRow) string { return deref(c.CarrierName) }},
+	{"src_ip", func(c store.CDRRow) string { return deref(c.SrcIP) }},
+	{"caller_raw", func(c store.CDRRow) string { return c.CallerNumberRaw }},
+	{"called_raw", func(c store.CDRRow) string { return c.CalledNumberRaw }},
+	{"caller", func(c store.CDRRow) string { return c.CallerNumber }},
+	{"called", func(c store.CDRRow) string { return c.CalledNumber }},
+	{"destination", func(c store.CDRRow) string { return deref(c.SellDestination) }},
+	{"disposition", func(c store.CDRRow) string { return c.Disposition }},
+	{"reject_reason", func(c store.CDRRow) string { return deref(c.RejectReason) }},
+	{"sip_code", func(c store.CDRRow) string { return intStr(c.SIPFinalCode) }},
+	{"sip_reason", func(c store.CDRRow) string { return deref(c.SIPFinalReason) }},
+	{"hangup_cause", func(c store.CDRRow) string { return deref(c.HangupCause) }},
+	{"pdd_ms", func(c store.CDRRow) string { return intStr(c.PDDMs) }},
+	{"billsec", func(c store.CDRRow) string { return strconv.Itoa(c.Billsec) }},
+	{"duration", func(c store.CDRRow) string { return strconv.Itoa(c.Duration) }},
+	{"sell_rate_per_min", func(c store.CDRRow) string { return decStr(c.SellRatePerMin) }},
+	{"sell_billed_seconds", func(c store.CDRRow) string { return strconv.Itoa(c.SellBilledSeconds) }},
+	{"sell_price", func(c store.CDRRow) string { return c.SellPrice.StringFixed(6) }},
+	{"sell_currency", func(c store.CDRRow) string { return deref(c.SellCurrency) }},
+	{"buy_rate_per_min", func(c store.CDRRow) string { return decStr(c.BuyRatePerMin) }},
+	{"buy_billed_seconds", func(c store.CDRRow) string { return strconv.Itoa(c.BuyBilledSeconds) }},
+	{"cost", func(c store.CDRRow) string { return c.Cost.StringFixed(6) }},
+	{"buy_currency", func(c store.CDRRow) string { return deref(c.BuyCurrency) }},
+	{"margin", func(c store.CDRRow) string { return c.Margin.StringFixed(6) }},
+	{"failover_depth", func(c store.CDRRow) string { return strconv.Itoa(c.FailoverDepth) }},
+	{"attempts", func(c store.CDRRow) string { return strconv.Itoa(len(c.Attempts)) }},
+	{"codec_in", func(c store.CDRRow) string { return deref(c.CodecIn) }},
+	{"codec_out", func(c store.CDRRow) string { return deref(c.CodecOut) }},
+	{"media_mode", func(c store.CDRRow) string { return deref(c.MediaMode) }},
+	{"transport_in", func(c store.CDRRow) string { return deref(c.TransportIn) }},
+	{"transport_out", func(c store.CDRRow) string { return deref(c.TransportOut) }},
+	{"srtp_in", func(c store.CDRRow) string { return strconv.FormatBool(c.SRTPIn) }},
+	{"srtp_out", func(c store.CDRRow) string { return strconv.FormatBool(c.SRTPOut) }},
+	{"privacy", func(c store.CDRRow) string { return strconv.FormatBool(c.Privacy) }},
+	{"stir_status", func(c store.CDRRow) string { return deref(c.STIRStatus) }},
+	{"stir_attest", func(c store.CDRRow) string { return deref(c.STIRAttest) }},
+	{"sbc_node", func(c store.CDRRow) string { return deref(c.SBCNode) }},
+}
+
+// cdrViews are the column subsets of the export: what a customer may see
+// (no carrier, routing or cost data), what a carrier may see (no customer,
+// routing or selling data), and everything.
+var cdrViews = map[string][]string{
+	"customer": {"call_uuid", "sip_call_id", "start_time", "answer_time", "end_time", "customer", "src_ip", "caller_raw", "called_raw", "caller", "called", "destination",
+		"disposition", "reject_reason", "sip_code", "sip_reason", "hangup_cause", "pdd_ms", "billsec", "duration",
+		"sell_rate_per_min", "sell_billed_seconds", "sell_price", "sell_currency", "codec_in", "transport_in", "srtp_in", "privacy", "stir_status", "stir_attest"},
+	"carrier": {"call_uuid", "start_time", "answer_time", "end_time", "carrier", "caller", "called", "destination",
+		"disposition", "sip_code", "sip_reason", "hangup_cause", "pdd_ms", "billsec", "duration",
+		"buy_rate_per_min", "buy_billed_seconds", "cost", "buy_currency", "codec_out", "transport_out", "srtp_out"},
+}
+
+// cdrColumnsFor returns the columns of a view ("customer", "carrier", "full" or empty).
+func cdrColumnsFor(view string) ([]cdrColumn, bool) {
+	names, ok := cdrViews[view]
+	if !ok {
+		if view != "" && view != "full" {
+			return nil, false
+		}
+		return cdrColumns, true
+	}
+	byName := map[string]cdrColumn{}
+	for _, c := range cdrColumns {
+		byName[c.name] = c
+	}
+	out := make([]cdrColumn, 0, len(names))
+	for _, n := range names {
+		out = append(out, byName[n])
+	}
+	return out, true
+}
 
 // exportCDRs godoc
-// @Summary Stream CDRs as CSV with the same filters as the list
+// @Summary Stream CDRs as CSV with the same filters as the list; view=customer (no carrier, routing or cost columns), carrier (no customer, routing or selling columns) or full
 // @Tags cdrs
 // @Produce text/csv
+// @Param view query string false "customer|carrier|full (default full)"
 // @Success 200 {string} string "csv"
 // @Router /cdrs/export [get]
 func (h *Handler) exportCDRs(w http.ResponseWriter, r *http.Request) {
+	view := r.URL.Query().Get("view")
+	cols, ok := cdrColumnsFor(view)
+	if !ok {
+		fail(w, http.StatusBadRequest, "view must be customer, carrier or full")
+		return
+	}
+	if view == "" {
+		view = "full"
+	}
 	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", "cdrs-"+time.Now().UTC().Format("20060102-150405")+".csv"))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", "cdrs-"+view+"-"+time.Now().UTC().Format("20060102-150405")+".csv"))
 	cw := csv.NewWriter(w)
-	_ = cw.Write(cdrCSVHeader)
+	header := make([]string, len(cols))
+	for i, c := range cols {
+		header[i] = c.name
+	}
+	_ = cw.Write(header)
 	n := 0
+	rec := make([]string, len(cols))
 	err := h.Store.StreamCDRs(r.Context(), cdrFilter(r), func(c store.CDRRow) error {
-		rec := []string{c.CallUUID.String(), ts(&c.StartTime), ts(c.AnswerTime), ts(c.EndTime), deref(c.CustomerName), deref(c.CarrierName), deref(c.SrcIP), c.CallerNumber, c.CalledNumber,
-			c.Disposition, intStr(c.SIPFinalCode), deref(c.SIPFinalReason), deref(c.HangupCause), intStr(c.PDDMs), strconv.Itoa(c.Billsec), strconv.Itoa(c.Duration),
-			decStr(c.SellRatePerMin), strconv.Itoa(c.SellBilledSeconds), c.SellPrice.StringFixed(6), deref(c.SellCurrency), decStr(c.BuyRatePerMin), strconv.Itoa(c.BuyBilledSeconds), c.Cost.StringFixed(6), deref(c.BuyCurrency),
-			c.Margin.StringFixed(6), strconv.Itoa(c.FailoverDepth), deref(c.CodecIn), deref(c.CodecOut), deref(c.MediaMode), deref(c.SBCNode)}
+		for i, col := range cols {
+			rec[i] = col.get(c)
+		}
 		n++
 		if n%500 == 0 {
 			cw.Flush()

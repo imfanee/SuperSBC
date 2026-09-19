@@ -150,7 +150,7 @@ Calls > Live: every call in progress with customer, carrier, numbers, state, dur
 
 ### 6.2 CDRs
 
-CDRs lists every attempted call, including rejections. Filter by time, customer, carrier, disposition, number, SIP code or Call-ID; export the current filter as CSV. Click a row for the detail: the attempts timeline (each carrier tried, its response, classification, PDD, buy rate and any attempt fee), media (codecs, media mode, RTP statistics: jitter, packet loss, MOS), transport and SRTP per leg, privacy and STIR/SHAKEN result, and the money: selling rate, billed seconds, price, cost, margin, reserved and charged amounts.
+CDRs lists every attempted call, including rejections. Filter by time, customer, carrier, disposition, number, SIP code or Call-ID; export the current filter as CSV in one of three shapes: **for the customer** (no carrier, routing or cost columns, safe to send with an invoice), **for the carrier** (no customer, routing or selling columns, for disputes), or **full** (every column including margin, attempts, transports, SRTP, privacy and STIR results). Click a row for the detail: the attempts timeline (each carrier tried, its response, classification, PDD, buy rate and any attempt fee), media (codecs, media mode, RTP statistics: jitter, packet loss, MOS), transport and SRTP per leg, privacy and STIR/SHAKEN result, and the money: selling rate, billed seconds, price, cost, margin, reserved and charged amounts.
 
 Dispositions: `answered`, `no_answer`, `busy`, `failed` (carrier or network fault), `cancelled` (the customer gave up), `rejected_auth` (address, status, TLS/SRTP/STIR policy), `rejected_balance`, `rejected_route` (no route, blocked, invalid number).
 

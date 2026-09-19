@@ -8,6 +8,12 @@ import { download, get } from "@/api/client";
 import type { CDR, Listing } from "@/api/types";
 import { Badge, stateVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataTable } from "@/components/data-table";
@@ -295,9 +301,32 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
             <Button variant="outline" size="sm" onClick={saveFilter}>
               <Save /> Save filter
             </Button>
-            <Button variant="outline" size="sm" onClick={() => download("/cdrs/export", "cdrs.csv", query)}>
-              <Download /> CSV
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" data-testid="cdr-csv-menu">
+                  <Download /> CSV
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() =>
+                    download("/cdrs/export", "cdrs-customer.csv", { ...query, view: "customer" })
+                  }
+                >
+                  For the customer (no carrier, routing or cost columns)
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => download("/cdrs/export", "cdrs-carrier.csv", { ...query, view: "carrier" })}
+                >
+                  For the carrier (no customer, routing or selling columns)
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => download("/cdrs/export", "cdrs-full.csv", { ...query, view: "full" })}
+                >
+                  Full CDRs (all columns)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       )}
