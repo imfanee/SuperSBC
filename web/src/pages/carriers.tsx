@@ -487,7 +487,7 @@ export function CarrierDetailPage() {
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="headers">Header rules</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices and payments</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
         </TabsList>
         <TabsContent value="gateway">

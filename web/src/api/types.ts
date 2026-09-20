@@ -396,5 +396,51 @@ export interface Invoice {
   calls: number;
   billed_seconds: number;
   lines: { destination: string; calls: number; billed_seconds: number; amount: string }[];
+  kind: "monthly" | "custom";
+  amount: string;
+  paid: string;
+  status: "open" | "partial" | "paid" | "overpaid" | "nothing_due";
   created_at: string;
+}
+
+export interface Allocation {
+  payment_id: string;
+  invoice_id: string;
+  invoice_number: string;
+  amount: string;
+  received_at: string;
+  reference: string;
+}
+
+export interface Payment {
+  id: string;
+  account_id: string;
+  amount: string;
+  currency: string;
+  received_at: string;
+  reference: string;
+  method: string;
+  notes: string;
+  ledger_entry_id: number | null;
+  created_by: string | null;
+  created_at: string;
+  allocations: Allocation[];
+  unallocated: string;
+}
+
+export interface InvoiceLedger {
+  account_id: string;
+  currency: string;
+  invoiced: string;
+  received: string;
+  allocated: string;
+  unallocated: string;
+  outstanding: string;
+  rows: {
+    kind: "invoice" | "payment";
+    at: string;
+    invoice?: Invoice;
+    payment?: Payment;
+    allocations: Allocation[];
+  }[];
 }

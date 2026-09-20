@@ -13,7 +13,7 @@ import (
 // PDF renders the invoice. Amounts are printed at two decimals for the
 // totals and six for the per-destination lines, straight from the stored
 // decimals (never float).
-func (s *Service) PDF(inv *Invoice) ([]byte, error) {
+func (s *Service) PDF(inv *Invoice, payments []Allocation) ([]byte, error) {
 	pdf := fpdf.New("P", "mm", "A4", "")
 	pdf.SetTitle(inv.Number, true)
 	pdf.SetAuthor(s.Op.Name, true)
@@ -46,7 +46,7 @@ func (s *Service) PDF(inv *Invoice) ([]byte, error) {
 	addr := strings.Split(strings.ReplaceAll(s.Op.Address, "|", "\n"), "\n")
 	right := []string{
 		"Number: " + inv.Number,
-		"Period: " + inv.PeriodStart.Format("2 Jan 2006") + " to " + inv.PeriodEnd.Add(-time.Second).Format("2 Jan 2006"),
+		"Period: " + inv.PeriodStart.Format("2 Jan 2006") + " to " + inv.PeriodEnd.Add(-time.Second).Format("2 Jan 2006") + periodKind(inv.Kind),
 		"Issued: " + inv.CreatedAt.UTC().Format("2 Jan 2006"),
 		"Currency: " + inv.Currency,
 	}
@@ -107,6 +107,29 @@ func (s *Service) PDF(inv *Invoice) ([]byte, error) {
 	pdf.SetTextColor(100, 100, 100)
 	pdf.CellFormat(0, 5, fmt.Sprintf("%d answered calls, %s billed", inv.Calls, hms(inv.BilledSeconds)), "", 1, "L", false, 0, "")
 	pdf.SetTextColor(20, 20, 20)
+	pdf.Ln(2)
+	// Payments applied to this invoice and what remains.
+	pdf.SetFont("Helvetica", "B", 10)
+	pdf.CellFormat(0, 6, "Payments applied to this invoice", "B", 1, "L", false, 0, "")
+	pdf.SetFont("Helvetica", "", 9)
+	paid := decimal.Zero
+	for _, p := range payments {
+		amt, _ := decimal.NewFromString(p.Amount)
+		paid = paid.Add(amt)
+		label := p.ReceivedAt.Format("2 Jan 2006")
+		if p.Reference != "" {
+			label += ", ref " + p.Reference
+		}
+		pdf.CellFormat(120, 6, label, "", 0, "L", false, 0, "")
+		pdf.CellFormat(0, 6, money(p.Amount, 2), "", 1, "R", false, 0, "")
+	}
+	if len(payments) == 0 {
+		pdf.CellFormat(0, 6, "No payments recorded against this invoice.", "", 1, "L", false, 0, "")
+	}
+	amount, _ := decimal.NewFromString(inv.Amount)
+	pdf.SetFont("Helvetica", "B", 10)
+	pdf.CellFormat(120, 7, "Balance due on this invoice", "T", 0, "L", false, 0, "")
+	pdf.CellFormat(0, 7, amount.Sub(paid).StringFixed(2), "T", 1, "R", false, 0, "")
 	pdf.Ln(4)
 
 	// Usage per destination.
@@ -157,4 +180,11 @@ func negate(s string) string {
 
 func hms(sec int64) string {
 	return fmt.Sprintf("%02d:%02d:%02d", sec/3600, sec%3600/60, sec%60)
+}
+
+func periodKind(kind string) string {
+	if kind == "custom" {
+		return " (custom period)"
+	}
+	return ""
 }

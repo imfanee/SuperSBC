@@ -60,7 +60,7 @@ A call is admitted when `balance + allowed credit - reserved` is enough for the 
 
 * **Blocked prefixes**: destinations this customer may not call (`403 Destination blocked`). The global list is in System > Global blacklist.
 * **Header rules**: shape the SIP sent to carriers (add, pass through or remove a header) and the responses sent to the customer. See section 5.3.
-* **Invoices**: monthly prepaid usage statements as PDF, generated automatically after each month and on demand for any month. Numbering `INV-YYYYMM-nnnnnn`.
+* **Invoices and payments**: the invoice ledger. Invoices are generated automatically after each month, or on demand for a month or any custom from/to period (periods never overlap); each shows the invoiced amount, what was received against it and a status (open, partial, paid). **Record payment** stores a receipt (amount, date, bank reference, method, notes) and applies it to one or several invoices, fully or partially, by hand or automatically oldest first; the remainder stays as unallocated credit. The "top up the prepaid balance" switch also posts the amount to the call ledger (Account tab) in the same step, so a prepayment is one action while the two ledgers stay separate. The PDF (`INV-YYYYMM-nnnnnn`) lists the payments applied and the balance due.
 * **CDRs** and **Trace**: the customer's recent calls and a live SIP trace filtered to its addresses.
 
 ### 3.5 Suspend or delete
@@ -164,7 +164,7 @@ Reports has tabs for traffic over time, per customer, per carrier, per destinati
 
 * **Top up** when a customer pays; **adjust** to correct mistakes (always with a description; both are audited).
 * **Low balance**: customers under `SBC_BILLING_LOW_BALANCE_THRESHOLD` appear on the dashboard and in System > Notifications.
-* **Statement**: Reports > Statement for any period, or the monthly PDF invoice on the customer's Invoices tab.
+* **Statement**: Reports > Statement for any period, or the invoices on the customer's "Invoices and payments" tab, which also show what was received against each invoice.
 * **Exchange rates**: when a customer's account currency differs from a rate deck's currency the rate is converted with System > Exchange rates; the CDR stores the rate used.
 * **Reconcile**: `make live-reconcile` (or the System > Health tab) proves that every balance equals the sum of its ledger and that every reservation matches a live call. It should always report 0 mismatches.
 

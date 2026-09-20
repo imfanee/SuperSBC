@@ -17,7 +17,8 @@ func TestPDF(t *testing.T) {
 		Adjustments: "0", Refunds: "0", Costs: "0", Closing: "67.876544", Calls: 1234, BilledSeconds: 86461, CreatedAt: end,
 		Lines: []Line{{"UK Mobile", 1000, 80000, "-40.000000"}, {"USA", 234, 6461, "-2.123456"}},
 	}
-	out, err := s.PDF(inv)
+	inv.Amount, inv.Kind = "42.123456", "custom"
+	out, err := s.PDF(inv, []Allocation{{Amount: "10.000000", ReceivedAt: end, Reference: "TRX-1"}})
 	if err != nil {
 		t.Fatal(err)
 	}

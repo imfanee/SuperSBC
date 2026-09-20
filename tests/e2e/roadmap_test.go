@@ -129,37 +129,90 @@ func TestRoadmap_FailedAttemptCharging(t *testing.T) {
 	reconcileOK(t)
 }
 
-// Invoices (D-63): generated once per account and month, listed per owner,
-// rendered as PDF.
+// Invoices (D-63) and the invoice ledger (D-72): monthly and custom periods
+// that never overlap, payments allocated to one or several invoices (full or
+// partial), optional top-up of the prepaid balance, PDF.
 func TestRoadmap_Invoices(t *testing.T) {
 	a := newAPIClient(t)
 	a.ok(a.login("admin@example.com", adminPassword(t)))
-	acme := findByName(t, a, "/customers", "acme")
-	period := time.Now().UTC().Format("2006-01")
-	code, inv := a.do("POST", "/invoices/generate", map[string]any{"owner_type": "customer", "owner_id": acme, "period": period})
-	if code != 200 && code != 201 {
-		t.Fatalf("generate: %d %v", code, inv)
+	// a fresh customer so the ledger starts empty
+	name := fmt.Sprintf("inv-%d", time.Now().UnixNano()%1e6)
+	code, cu := a.do("POST", "/customers", map[string]any{"name": name, "status": "active", "allowed_codecs": []string{"PCMA"}, "intl_prefix": "00", "currency": "USD"})
+	a.mustOK(code, cu, "create customer")
+	cid := idOf(t, cu)
+	defer a.do("DELETE", "/customers/"+cid, nil)
+	gen := func(body map[string]any) (int, map[string]any) {
+		body["owner_type"], body["owner_id"] = "customer", cid
+		return a.do("POST", "/invoices/generate", body)
 	}
-	if !strings.HasPrefix(str(inv["number"]), "INV-"+strings.ReplaceAll(period, "-", "")+"-") || inv["currency"] != "USD" {
-		t.Fatalf("invoice: %v", inv)
+	// custom period in a past month, then a monthly one for the same month must be refused (overlap)
+	code, inv := gen(map[string]any{"from": "2026-07-05", "to": "2026-07-20"})
+	if code != 201 || inv["kind"] != "custom" || inv["status"] != "nothing_due" {
+		t.Fatalf("custom invoice: %d %v", code, inv)
 	}
-	// idempotent: same invoice again
-	code2, again := a.do("POST", "/invoices/generate", map[string]any{"owner_type": "customer", "owner_id": acme, "period": period})
-	if code2 != 200 || again["id"] != inv["id"] {
-		t.Fatalf("second generate: %d %v", code2, again)
+	if code, again := gen(map[string]any{"from": "2026-07-05", "to": "2026-07-20"}); code != 200 || again["id"] != inv["id"] {
+		t.Fatalf("idempotent custom: %d", code)
 	}
-	code, _ = a.do("POST", "/invoices/generate", map[string]any{"owner_type": "customer", "owner_id": acme, "period": "2999-01"})
-	if code != 400 {
-		t.Fatalf("future period accepted: %d", code)
+	if code, _ = gen(map[string]any{"period": "2026-07"}); code != 409 {
+		t.Fatalf("overlap should be 409: %d", code)
 	}
-	code, list := a.do("GET", "/invoices?owner_type=customer&owner_id="+acme, nil)
-	a.mustOK(code, list, "list")
-	if n := len(items(list)); n < 1 {
-		t.Fatalf("list: %v", list)
+	if code, _ = gen(map[string]any{"from": "2026-07-20", "to": "2026-07-10"}); code != 400 {
+		t.Fatalf("reversed range: %d", code)
+	}
+	code, inv2 := gen(map[string]any{"period": "2026-06"})
+	if code != 201 || inv2["kind"] != "monthly" || !strings.HasPrefix(str(inv2["number"]), "INV-202606-") {
+		t.Fatalf("monthly invoice: %d %v", code, inv2)
+	}
+	code, inv3 := gen(map[string]any{"period": "2026-05"})
+	a.mustOK(code, inv3, "third invoice")
+	// give the invoices an amount to pay (the customer has no calls): set it directly
+	sqlExec(t, fmt.Sprintf(`UPDATE invoices SET amount = 30 WHERE id = '%s'`, str(inv["id"])))
+	sqlExec(t, fmt.Sprintf(`UPDATE invoices SET amount = 20 WHERE id = '%s'`, str(inv2["id"])))
+	sqlExec(t, fmt.Sprintf(`UPDATE invoices SET amount = 10 WHERE id = '%s'`, str(inv3["id"])))
+	before, _ := balance(t, name)
+	// partial payment by hand against the newest invoice, with top-up of the prepaid balance
+	code, p1 := a.do("POST", "/invoice-payments", map[string]any{"owner_type": "customer", "owner_id": cid, "amount": "12.5", "reference": "TRX-1", "method": "bank",
+		"allocations": []map[string]any{{"invoice_id": inv["id"], "amount": "12.5"}}, "topup": true})
+	if code != 201 || p1["unallocated"] != "0.000000" || p1["ledger_entry_id"] == nil {
+		t.Fatalf("partial payment: %d %v", code, p1)
+	}
+	after, _ := balance(t, name)
+	if !after.Equal(before.Add(decimal.RequireFromString("12.5"))) {
+		t.Fatalf("top-up not posted: %s -> %s", before, after)
+	}
+	// over-allocation is refused
+	if code, _ = a.do("POST", "/invoice-payments", map[string]any{"owner_type": "customer", "owner_id": cid, "amount": "100", "allocations": []map[string]any{{"invoice_id": inv["id"], "amount": "100"}}}); code != 400 {
+		t.Fatalf("over-allocation accepted: %d", code)
+	}
+	// auto allocation spreads over open invoices oldest first: 10 (May) + 20 (June) + 17.5 (July) = 47.5, 2.5 left unallocated
+	code, p2 := a.do("POST", "/invoice-payments", map[string]any{"owner_type": "customer", "owner_id": cid, "amount": "50", "reference": "TRX-2", "auto_allocate": true, "topup": false})
+	if code != 201 || p2["unallocated"] != "2.500000" || len(p2["allocations"].([]any)) != 3 {
+		t.Fatalf("auto payment: %d %v", code, p2)
+	}
+	if after2, _ := balance(t, name); !after2.Equal(after) {
+		t.Fatalf("payment without top-up changed the balance: %s -> %s", after, after2)
+	}
+	code, led := a.do("GET", "/invoice-ledger?owner_type=customer&owner_id="+cid, nil)
+	a.mustOK(code, led, "ledger")
+	if led["invoiced"] != "60.000000" || led["received"] != "62.500000" || led["outstanding"] != "0.000000" || led["unallocated"] != "2.500000" || len(led["rows"].([]any)) != 5 {
+		t.Fatalf("ledger totals: %v", led)
+	}
+	code, one := a.do("GET", "/invoices/"+str(inv["id"]), nil)
+	a.mustOK(code, one, "invoice")
+	if one["status"] != "paid" || one["paid"] != "30.000000" {
+		t.Fatalf("invoice status: %v", one)
 	}
 	code, pdf := a.do("GET", "/invoices/"+str(inv["id"])+".pdf", nil)
 	if code != 200 || !strings.HasPrefix(str(pdf["raw"]), "%PDF-") {
-		t.Fatalf("pdf: %d %.40q", code, str(pdf["raw"]))
+		t.Fatalf("pdf: %d", code)
+	}
+	code, list := a.do("GET", "/invoices?owner_type=customer&owner_id="+cid, nil)
+	a.mustOK(code, list, "list")
+	if len(items(list)) != 3 {
+		t.Fatalf("list: %d", len(items(list)))
+	}
+	if code, _ = gen(map[string]any{"period": "2999-01"}); code != 400 {
+		t.Fatalf("future period accepted: %d", code)
 	}
 }
 

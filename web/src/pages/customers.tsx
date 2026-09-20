@@ -460,7 +460,7 @@ export function CustomerDetailPage() {
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="blocks">Blocked prefixes</TabsTrigger>
           <TabsTrigger value="headers">Header rules</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices and payments</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
           <TabsTrigger value="trace">Trace</TabsTrigger>
         </TabsList>

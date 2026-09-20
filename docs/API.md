@@ -96,10 +96,13 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 
 | Method | Path | Summary |
 |---|---|---|
+| `GET` | `/invoice-ledger` | Invoice ledger of a customer or carrier: invoices and payments with allocations, totals of invoiced, received, outstanding (D-72)<br>Query: `owner_type` (required), `owner_id` (required) |
 | `GET` | `/invoices/{id}.pdf` | Download one invoice as PDF |
+| `GET` | `/invoices/{id}/allocations` | Payments applied to one invoice |
 | `GET` | `/invoices/{id}` | Get one invoice with its usage lines |
 | `GET` | `/invoices` | List invoices (newest first), optionally of one customer or carrier<br>Query: `owner_type`, `owner_id`, `limit` |
-| `POST` | `/invoices/generate` | Generate the invoice of a customer or carrier for a month (idempotent; 200 when it already exists) |
+| `POST` | `/invoice-payments` | Record a payment against invoices (full, partial or several), optionally also topping up the prepaid account |
+| `POST` | `/invoices/generate` | Generate the invoice of a customer or carrier for a month (period=YYYY-MM) or a custom range (from, to); idempotent, 200 when it already exists, 409 when another invoice overlaps |
 
 ## Rates
 

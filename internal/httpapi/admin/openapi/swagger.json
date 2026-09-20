@@ -437,6 +437,9 @@
             },
             "admin.generateInvoiceInput": {
                 "properties": {
+                    "from": {
+                        "type": "string"
+                    },
                     "owner_id": {
                         "type": "string"
                     },
@@ -448,14 +451,16 @@
                         "type": "string"
                     },
                     "period": {
-                        "description": "YYYY-MM",
+                        "description": "Period YYYY-MM for a monthly invoice, or From/To (dates, To exclusive; RFC 3339 or YYYY-MM-DD) for a custom one.",
+                        "type": "string"
+                    },
+                    "to": {
                         "type": "string"
                     }
                 },
                 "required": [
                     "owner_id",
-                    "owner_type",
-                    "period"
+                    "owner_type"
                 ],
                 "type": "object"
             },
@@ -588,6 +593,75 @@
                 },
                 "required": [
                     "password"
+                ],
+                "type": "object"
+            },
+            "admin.paymentAllocationInput": {
+                "properties": {
+                    "amount": {
+                        "type": "string"
+                    },
+                    "invoice_id": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "amount",
+                    "invoice_id"
+                ],
+                "type": "object"
+            },
+            "admin.paymentInput": {
+                "properties": {
+                    "allocations": {
+                        "items": {
+                            "$ref": "#/components/schemas/admin.paymentAllocationInput"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "amount": {
+                        "type": "string"
+                    },
+                    "auto_allocate": {
+                        "description": "AutoAllocate spreads the unallocated remainder over open invoices, oldest first.",
+                        "type": "boolean"
+                    },
+                    "method": {
+                        "maxLength": 50,
+                        "type": "string"
+                    },
+                    "notes": {
+                        "maxLength": 2000,
+                        "type": "string"
+                    },
+                    "owner_id": {
+                        "type": "string"
+                    },
+                    "owner_type": {
+                        "enum": [
+                            "customer",
+                            "carrier"
+                        ],
+                        "type": "string"
+                    },
+                    "received_at": {
+                        "description": "RFC 3339 or YYYY-MM-DD; default now",
+                        "type": "string"
+                    },
+                    "reference": {
+                        "maxLength": 200,
+                        "type": "string"
+                    },
+                    "topup": {
+                        "description": "Topup also posts the amount to the prepaid call ledger as a top-up (customer) or a payment made (carrier).",
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "amount",
+                    "owner_id",
+                    "owner_type"
                 ],
                 "type": "object"
             },
@@ -801,12 +875,39 @@
                 ],
                 "type": "object"
             },
+            "invoice.Allocation": {
+                "properties": {
+                    "amount": {
+                        "type": "string"
+                    },
+                    "invoice_id": {
+                        "type": "string"
+                    },
+                    "invoice_number": {
+                        "type": "string"
+                    },
+                    "payment_id": {
+                        "type": "string"
+                    },
+                    "received_at": {
+                        "type": "string"
+                    },
+                    "reference": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "invoice.Invoice": {
                 "properties": {
                     "account_id": {
                         "type": "string"
                     },
                     "adjustments": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "description": "Amount is the invoiced usage: charges for a customer, costs for a carrier (positive).",
                         "type": "string"
                     },
                     "billed_seconds": {
@@ -833,6 +934,10 @@
                     "id": {
                         "type": "string"
                     },
+                    "kind": {
+                        "description": "Kind is \"monthly\" (worker or a YYYY-MM request) or \"custom\" (from/to dates).",
+                        "type": "string"
+                    },
                     "lines": {
                         "items": {
                             "$ref": "#/components/schemas/invoice.Line"
@@ -855,6 +960,10 @@
                     "owner_type": {
                         "type": "string"
                     },
+                    "paid": {
+                        "description": "Paid is the sum of payment allocations; Status derives from Amount and Paid.",
+                        "type": "string"
+                    },
                     "period_end": {
                         "type": "string"
                     },
@@ -864,8 +973,70 @@
                     "refunds": {
                         "type": "string"
                     },
+                    "status": {
+                        "type": "string"
+                    },
                     "topups": {
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "invoice.Ledger": {
+                "properties": {
+                    "account_id": {
+                        "type": "string"
+                    },
+                    "allocated": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "invoiced": {
+                        "type": "string"
+                    },
+                    "outstanding": {
+                        "description": "invoiced minus allocated",
+                        "type": "string"
+                    },
+                    "received": {
+                        "type": "string"
+                    },
+                    "rows": {
+                        "items": {
+                            "$ref": "#/components/schemas/invoice.LedgerRow"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "unallocated": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "invoice.LedgerRow": {
+                "properties": {
+                    "allocations": {
+                        "items": {
+                            "$ref": "#/components/schemas/invoice.Allocation"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "at": {
+                        "type": "string"
+                    },
+                    "invoice": {
+                        "$ref": "#/components/schemas/invoice.Invoice"
+                    },
+                    "kind": {
+                        "description": "invoice | payment",
+                        "type": "string"
+                    },
+                    "payment": {
+                        "$ref": "#/components/schemas/invoice.Payment"
                     }
                 },
                 "type": "object"
@@ -882,6 +1053,55 @@
                         "type": "integer"
                     },
                     "destination": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "invoice.Payment": {
+                "properties": {
+                    "account_id": {
+                        "type": "string"
+                    },
+                    "allocations": {
+                        "items": {
+                            "$ref": "#/components/schemas/invoice.Allocation"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "amount": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "created_by": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "ledger_entry_id": {
+                        "type": "integer"
+                    },
+                    "method": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "received_at": {
+                        "type": "string"
+                    },
+                    "reference": {
+                        "type": "string"
+                    },
+                    "unallocated": {
+                        "description": "Unallocated is the part of the payment not assigned to any invoice (credit on account).",
                         "type": "string"
                     }
                 },
@@ -4243,6 +4463,79 @@
                 ]
             }
         },
+        "/invoice-ledger": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "customer|carrier",
+                        "in": "query",
+                        "name": "owner_type",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "owner id",
+                        "in": "query",
+                        "name": "owner_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/invoice.Ledger"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Invoice ledger of a customer or carrier: invoices and payments with allocations, totals of invoiced, received, outstanding (D-72)",
+                "tags": [
+                    "invoices"
+                ]
+            }
+        },
+        "/invoice-payments": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.paymentInput",
+                                "summary": "body",
+                                "description": "payment"
+                            }
+                        }
+                    },
+                    "description": "payment",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/invoice.Payment"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Record a payment against invoices (full, partial or several), optionally also topping up the prepaid account",
+                "tags": [
+                    "invoices"
+                ]
+            }
+        },
         "/invoices": {
             "get": {
                 "parameters": [
@@ -4319,7 +4612,7 @@
                         "description": "Created"
                     }
                 },
-                "summary": "Generate the invoice of a customer or carrier for a month (idempotent; 200 when it already exists)",
+                "summary": "Generate the invoice of a customer or carrier for a month (period=YYYY-MM) or a custom range (from, to); idempotent, 200 when it already exists, 409 when another invoice overlaps",
                 "tags": [
                     "invoices"
                 ]
@@ -4382,6 +4675,40 @@
                     }
                 },
                 "summary": "Download one invoice as PDF",
+                "tags": [
+                    "invoices"
+                ]
+            }
+        },
+        "/invoices/{id}/allocations": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "invoice id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/invoice.Allocation"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Payments applied to one invoice",
                 "tags": [
                     "invoices"
                 ]

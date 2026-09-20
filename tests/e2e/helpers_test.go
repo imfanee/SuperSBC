@@ -72,6 +72,15 @@ func sql(t *testing.T, query string) []map[string]any {
 	return rows
 }
 
+// sqlExec runs a data modifying statement through psql.
+func sqlExec(t *testing.T, stmt string) {
+	t.Helper()
+	cmd := compose(t, "exec", "-T", "postgres", "psql", "-U", "supersbc", "-d", "supersbc", "-v", "ON_ERROR_STOP=1", "-tA", "-c", stmt)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("psql: %v: %s", err, out)
+	}
+}
+
 func str(v any) string {
 	if v == nil {
 		return ""
