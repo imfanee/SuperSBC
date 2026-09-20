@@ -481,13 +481,13 @@ export function CarrierDetailPage() {
           </>
         }
       />
-      <Tabs defaultValue="gateway">
+      <Tabs defaultValue="account">
         <TabsList>
-          <TabsTrigger value="gateway">Gateway</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices and payments</TabsTrigger>
+          <TabsTrigger value="gateway">Gateway</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="headers">Header rules</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices and payments</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
         </TabsList>
         <TabsContent value="gateway">

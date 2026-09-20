@@ -452,15 +452,15 @@ export function CustomerDetailPage() {
           </>
         }
       />
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue="account">
         <TabsList>
+          <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices and payments</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="ips">IPs</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="blocks">Blocked prefixes</TabsTrigger>
           <TabsTrigger value="headers">Header rules</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices and payments</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
           <TabsTrigger value="trace">Trace</TabsTrigger>
         </TabsList>

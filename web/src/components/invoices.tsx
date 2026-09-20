@@ -235,11 +235,13 @@ export function InvoicesTab({ ownerType, ownerId }: { ownerType: "customer" | "c
                     onChange={(e) => setPay({ ...pay, received_at: e.target.value })}
                   />
                 </Field>
-                <Field label="Reference" hint="bank transaction id, receipt number">
+                <Field label="Reference">
                   <Input
                     value={pay.reference}
                     onChange={(e) => setPay({ ...pay, reference: e.target.value })}
                     className="w-48"
+                    placeholder="bank transaction id, receipt no."
+                    title="Bank transaction id or receipt number"
                     data-testid="payment-reference"
                   />
                 </Field>
