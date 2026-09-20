@@ -81,6 +81,14 @@ Durations use Go syntax (`30s`, `5m`, `4h`). Booleans are `true`/`false`.
 | `SBC_MEDIA_TIMEOUT_SEC` | `300` | hang up after this long without RTP |
 | `SBC_MEDIA_HOLD_TIMEOUT_SEC` | `1800` | same while on hold |
 
+## Quality based routing
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `SBC_QUALITY_MIN_SAMPLES` | `20` | attempts a carrier needs on a prefix before its own score is used (else carrier wide, else neutral) |
+| `SBC_QUALITY_WINDOW_HOURS` | `24` | hours of history in the score (exponential decay, newest hour weighs most) |
+| `SBC_QUALITY_REFRESH` | `30s` | how often scores are recomputed from Redis into memory |
+
 ## Failover and carrier health
 
 | Variable | Default | Meaning |

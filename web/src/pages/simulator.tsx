@@ -71,6 +71,19 @@ export function SimulatorPage() {
               <CardTitle>
                 Decision path: <span data-testid="sim-result">{r.expected_sip}</span>
               </CardTitle>
+              {r.modes && (
+                <div className="text-xs text-muted-foreground">
+                  Routing modes:{" "}
+                  {[
+                    r.modes.quality && "quality",
+                    r.modes.lcr && "least cost",
+                    r.modes.lossless && "lossless",
+                    r.modes.percent && "percentage",
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "priority"}
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <ol className="space-y-2">
@@ -106,6 +119,10 @@ export function SimulatorPage() {
                       {c.negative_margin && <Badge variant="danger">negative margin</Badge>}
                       <span className="ml-auto text-xs text-muted-foreground">
                         priority {c.priority}, weight {c.weight}
+                        {c.share ? `, share ${c.share}%` : ""}
+                        {c.quality !== undefined && c.quality !== null
+                          ? `, quality ${Number(c.quality).toFixed(2)}`
+                          : ""}
                       </span>
                     </div>
                     <KV

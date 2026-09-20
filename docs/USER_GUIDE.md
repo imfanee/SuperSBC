@@ -124,13 +124,20 @@ A route group is a routing table assigned to customers. Each route is a prefix w
 Route groups > group > New route: prefix, destination name, and the carrier list. For each carrier:
 
 * **Order** (drag or arrows): the failover order in normal mode.
-* **Weight**: carriers with the same priority share traffic proportionally to weight.
+* **Weight**: carriers with the same priority share traffic proportionally to weight (in percentage mode this is the carrier's share of all calls).
 * **Window**: time of day and day of week when the carrier may be used, for example `mon-fri 08:00-18:00 Europe/London` or `sat,sun 00:00-24:00; mon-fri 18:00-24:00`. Empty means always. A closed window skips the carrier.
 * **Enabled**: temporarily remove a carrier without deleting the row.
 
-**LCR mode** on the group orders the carriers by buying rate instead of your order. The **Preview** on a route shows, for a sample number, each carrier's buy rate and the margin against a selling deck; negative margins are flagged (and blocked when `SBC_ROUTING_BLOCK_NEGATIVE_MARGIN` is on).
+**Routing modes** on the group (they combine, except percentage):
 
-The **Simulator** (menu) runs the whole decision for a customer and a number without placing a call: normalisation, block lists, selling rate, balance check, route, carriers in order with their dial strings, skipped carriers with the reason (`gateway_down`, `carrier_capacity`, `skipped_no_rate`, `outside_window`, `negative_margin_blocked`) and the SIP response the customer would get.
+* **Least cost routing**: order carriers by buying rate instead of your order.
+* **Lossless routing**: skip any carrier whose buying rate is above the customer's selling rate for that number, so a call never loses money; the simulator shows them as `lossless_skipped`.
+* **Quality based routing**: order by measured quality (answer ratio, network effectiveness and post dial delay per carrier and prefix, over the last 24 hours with recent hours weighing most), best first; with least cost on as well, the cheapest wins inside a quality tier. Carriers without enough recent calls on a prefix use their overall score, and new carriers start neutral. The route editor shows each carrier's current score.
+* **Percentage based routing**: the weight column becomes a share in percent; each call starts on a carrier drawn by share and the others remain as failover in descending share order; a share of 0 means failover only. This mode cannot be combined with the other three.
+
+The **Preview** on a route shows, for a sample number, each carrier's buy rate, the margin against a selling deck, its gateway state and quality score; negative margins are flagged (and blocked when `SBC_ROUTING_BLOCK_NEGATIVE_MARGIN` is on).
+
+The **Simulator** (menu) runs the whole decision for a customer and a number without placing a call: normalisation, block lists, selling rate, balance check, route, carriers in order with their dial strings, skipped carriers with the reason (`gateway_down`, `carrier_capacity`, `skipped_no_rate`, `outside_window`, `negative_margin_blocked`, `lossless_skipped`), the routing modes in effect, and per carrier the quality score or share and the SIP response the customer would get.
 
 ### 5.3 Header rules
 

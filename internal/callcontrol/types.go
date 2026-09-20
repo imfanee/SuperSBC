@@ -59,24 +59,28 @@ type SellRate struct {
 
 // CarrierChoice is one entry of the ordered dial list.
 type CarrierChoice struct {
-	Seq              int              `json:"seq"`
-	CarrierID        uuid.UUID        `json:"carrier_id"`
-	Name             string           `json:"name"`
-	Gateway          string           `json:"gateway"`
-	Priority         int              `json:"priority"`
-	Weight           int              `json:"weight"`
-	DialNumber       string           `json:"dial_number"`
-	CallerID         string           `json:"caller_id"`
-	DialString       string           `json:"dial_string"`
-	BuyRateID        *uuid.UUID       `json:"buy_rate_id"`
-	BuyRatePerMin    *decimal.Decimal `json:"buy_rate_per_min"`
-	BuyDestination   string           `json:"buy_destination"`
-	NegativeMargin   bool             `json:"negative_margin"`
-	FailoverSIPCodes []int            `json:"failover_sip_codes"`
-	Codecs           string           `json:"codecs"`
-	IgnoreEarlyMedia bool             `json:"ignore_early_media"`
-	Degraded         bool             `json:"degraded"`
-	MediaMode        string           `json:"media_mode"` // anchor | proxy | bypass for this pair
+	Seq            int              `json:"seq"`
+	CarrierID      uuid.UUID        `json:"carrier_id"`
+	Name           string           `json:"name"`
+	Gateway        string           `json:"gateway"`
+	Priority       int              `json:"priority"`
+	Weight         int              `json:"weight"`
+	DialNumber     string           `json:"dial_number"`
+	CallerID       string           `json:"caller_id"`
+	DialString     string           `json:"dial_string"`
+	BuyRateID      *uuid.UUID       `json:"buy_rate_id"`
+	BuyRatePerMin  *decimal.Decimal `json:"buy_rate_per_min"`
+	BuyDestination string           `json:"buy_destination"`
+	NegativeMargin bool             `json:"negative_margin"`
+	// Quality is the score used in quality mode (0..1), QualitySamples its evidence; Share the percent in percent mode (D-73).
+	Quality          *float64 `json:"quality,omitempty"`
+	QualitySamples   int64    `json:"quality_samples,omitempty"`
+	Share            int      `json:"share,omitempty"`
+	FailoverSIPCodes []int    `json:"failover_sip_codes"`
+	Codecs           string   `json:"codecs"`
+	IgnoreEarlyMedia bool     `json:"ignore_early_media"`
+	Degraded         bool     `json:"degraded"`
+	MediaMode        string   `json:"media_mode"` // anchor | proxy | bypass for this pair
 	// Passthrough lists a-leg headers Lua copies onto this carrier's INVITE (sip_h_<name>).
 	Passthrough []string `json:"passthrough_headers"`
 }
@@ -133,6 +137,8 @@ type AttemptRequest struct {
 	EndedAt       *time.Time `json:"ended_at"`
 	BuyRateID     *uuid.UUID `json:"buy_rate_id"`
 	BuyRatePerMin *string    `json:"buy_rate_per_min"`
+	// RoutePrefix is the routing table prefix the call matched (sbc_route_prefix), for quality tracking (D-73).
+	RoutePrefix string `json:"route_prefix"`
 }
 
 // AttemptResponse tells Lua whether to continue.

@@ -30,6 +30,7 @@ import (
 	"github.com/imfanee/supersbc/internal/logging"
 	"github.com/imfanee/supersbc/internal/mail"
 	"github.com/imfanee/supersbc/internal/metrics"
+	"github.com/imfanee/supersbc/internal/quality"
 	"github.com/imfanee/supersbc/internal/reports"
 	"github.com/imfanee/supersbc/internal/sipcapture"
 	"github.com/imfanee/supersbc/internal/stir"
@@ -77,6 +78,8 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	pipe.SetBreaker(breaker)
 	gw.SetDegrader(breaker)
 	pipe.SetHealth(gw)
+	qt := quality.New(rdb, quality.Config{MinSamples: cfg.Quality.MinSamples, WindowHours: cfg.Quality.WindowHours, RefreshEvery: cfg.Quality.RefreshEvery}, log)
+	pipe.SetQuality(qt)
 	if stirV, err := stir.New(stir.Config{MaxAge: cfg.STIR.MaxAge, CAFile: cfg.STIR.CAFile, AllowHTTP: cfg.STIR.AllowHTTP}); err != nil {
 		log.Error("stir verifier disabled", "err", err)
 	} else {
@@ -89,6 +92,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 		Trace:    trace.New(rdb, cfg.FSLogFile, sup),
 		Invoices: invoice.New(pool, log, invoice.Operator{Name: cfg.Invoice.OperatorName, Address: cfg.Invoice.OperatorAddress, Footer: cfg.Invoice.Footer}),
 		Capture:  sipcapture.New(cfg.HEPDatabaseURL),
+		Quality:  qt,
 		Mailer:   mail.New(mail.Config{Host: cfg.SMTP.Host, Port: cfg.SMTP.Port, Username: cfg.SMTP.Username, Password: cfg.SMTP.Password, From: cfg.SMTP.From, TLS: cfg.SMTP.TLS}),
 		Ready: func(ctx context.Context) any {
 			return health.Deps{DB: pool, Redis: rdb, ESL: sup, Profiles: []string{"external-ingress", "external-egress"}, Version: version, Node: cfg.NodeName}.Check(ctx)
@@ -183,6 +187,7 @@ func (a *app) startWorkers(ctx context.Context) {
 	go a.expireBans(ctx)
 	go reports.NewRollup(reports.New(a.db), a.log).Run(ctx, time.Minute)
 	go a.admin.Invoices.Run(ctx, time.Hour)
+	go a.admin.Quality.Run(ctx)
 }
 
 // gaugeLoop refreshes the gauge metrics every few seconds.

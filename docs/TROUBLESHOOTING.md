@@ -24,7 +24,7 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 | `403 Destination blocked` | block lists | prefix in the global blacklist or the customer's blocked prefixes |
 | `404 No rate for destination` | rating | selling deck has no prefix for the number (import the rate) |
 | `402 Not enough funds` | balance | `balance + allowed credit - reserved` is below five minutes at the selling rate |
-| `503 No route` | routing | no route for the prefix, or every carrier skipped (simulator shows `skipped` reasons: `gateway_down`, `carrier_capacity`, `skipped_no_rate`, `outside_window`, `negative_margin_blocked`, `disabled`) |
+| `503 No route` | routing | no route for the prefix, or every carrier skipped (simulator shows `skipped` reasons: `gateway_down`, `carrier_capacity`, `skipped_no_rate`, `outside_window`, `negative_margin_blocked`, `lossless_skipped`, `disabled`) |
 | `503 All carriers failed` | bridge loop | every carrier answered with a failover code or timed out; the attempts timeline in the CDR shows each response |
 | carrier's own code (`486`, `404`, ...) | bridge loop | a non failover response passed through from the last carrier |
 | `503 SBC internal error` | Lua | the API did not answer within 2 s or answered garbage: check `readyz`, API logs, Postgres |

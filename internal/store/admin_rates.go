@@ -178,7 +178,7 @@ func (s *Store) ListRouteGroups(ctx context.Context, search string, p Page) (*Li
 	order := p.orderBy(map[string]string{"name": "g.name", "created_at": "g.created_at"}, "g.name")
 	args = append(args, p.PerPage, p.Offset())
 	items, err := many[RouteGroupRow](ctx, s.pool, `
-		SELECT g.id, g.name, g.description, g.lcr_mode, g.created_at, g.updated_at,
+		SELECT g.id, g.name, g.description, g.lcr_mode, g.lossless_mode, g.quality_mode, g.percent_mode, g.created_at, g.updated_at,
 		  (SELECT count(*) FROM routes r WHERE r.route_group_id = g.id)::int AS route_count,
 		  (SELECT count(*) FROM customers c WHERE c.route_group_id = g.id AND c.deleted_at IS NULL)::int AS customer_count
 		FROM route_groups g`+where(conds)+order+fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args)), args...)
@@ -189,15 +189,15 @@ func (s *Store) ListRouteGroups(ctx context.Context, search string, p Page) (*Li
 }
 
 // CreateRouteGroup inserts a group.
-func (s *Store) CreateRouteGroup(ctx context.Context, name, description string, lcr bool) (*model.RouteGroup, error) {
-	return one[model.RouteGroup](ctx, s.pool, `INSERT INTO route_groups (name, description, lcr_mode) VALUES ($1, $2, $3)
-		RETURNING id, name, description, lcr_mode, created_at, updated_at`, name, description, lcr)
+func (s *Store) CreateRouteGroup(ctx context.Context, name, description string, m model.RouteModes) (*model.RouteGroup, error) {
+	return one[model.RouteGroup](ctx, s.pool, `INSERT INTO route_groups (name, description, lcr_mode, lossless_mode, quality_mode, percent_mode) VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, name, description, lcr_mode, lossless_mode, quality_mode, percent_mode, created_at, updated_at`, name, description, m.LCR, m.Lossless, m.Quality, m.Percent)
 }
 
 // UpdateRouteGroup updates a group.
-func (s *Store) UpdateRouteGroup(ctx context.Context, id uuid.UUID, name, description string, lcr bool) (*model.RouteGroup, error) {
-	return one[model.RouteGroup](ctx, s.pool, `UPDATE route_groups SET name = $2, description = $3, lcr_mode = $4 WHERE id = $1 AND deleted_at IS NULL
-		RETURNING id, name, description, lcr_mode, created_at, updated_at`, id, name, description, lcr)
+func (s *Store) UpdateRouteGroup(ctx context.Context, id uuid.UUID, name, description string, m model.RouteModes) (*model.RouteGroup, error) {
+	return one[model.RouteGroup](ctx, s.pool, `UPDATE route_groups SET name = $2, description = $3, lcr_mode = $4, lossless_mode = $5, quality_mode = $6, percent_mode = $7 WHERE id = $1 AND deleted_at IS NULL
+		RETURNING id, name, description, lcr_mode, lossless_mode, quality_mode, percent_mode, created_at, updated_at`, id, name, description, m.LCR, m.Lossless, m.Quality, m.Percent)
 }
 
 // DeleteRouteGroup soft-deletes an unreferenced group.
@@ -240,7 +240,7 @@ func (s *Store) ListRoutes(ctx context.Context, groupID uuid.UUID, search string
 		args = append(args, search+"%", "%"+strings.ToLower(search)+"%")
 		conds = append(conds, fmt.Sprintf("(r.prefix LIKE $%d OR lower(r.destination) LIKE $%d)", len(args)-1, len(args)))
 	}
-	routes, err := many[model.Route](ctx, s.pool, `SELECT r.id, r.route_group_id, r.prefix, r.destination, r.enabled, g.lcr_mode, r.created_at, r.updated_at
+	routes, err := many[model.Route](ctx, s.pool, `SELECT r.id, r.route_group_id, r.prefix, r.destination, r.enabled, g.lcr_mode, g.lossless_mode, g.quality_mode, g.percent_mode, r.created_at, r.updated_at
 		FROM routes r JOIN route_groups g ON g.id = r.route_group_id`+where(conds)+` ORDER BY r.prefix`, args...)
 	if err != nil {
 		return nil, err
@@ -269,7 +269,7 @@ func (s *Store) ListRoutes(ctx context.Context, groupID uuid.UUID, search string
 
 // RouteByID loads a single route with carriers.
 func (s *Store) RouteByID(ctx context.Context, id uuid.UUID) (*RouteRow, error) {
-	r, err := one[model.Route](ctx, s.pool, `SELECT r.id, r.route_group_id, r.prefix, r.destination, r.enabled, g.lcr_mode, r.created_at, r.updated_at
+	r, err := one[model.Route](ctx, s.pool, `SELECT r.id, r.route_group_id, r.prefix, r.destination, r.enabled, g.lcr_mode, g.lossless_mode, g.quality_mode, g.percent_mode, r.created_at, r.updated_at
 		FROM routes r JOIN route_groups g ON g.id = r.route_group_id WHERE r.id = $1`, id)
 	if err != nil {
 		return nil, err
@@ -331,7 +331,7 @@ func (s *Store) ReplaceRouteCarriers(ctx context.Context, routeID uuid.UUID, spe
 				prio = i + 1
 			}
 			w := sp.Weight
-			if w <= 0 {
+			if w < 0 { // 0 is a valid share in percent mode (failover only); negative means "not set"
 				w = 100
 			}
 			if _, err := tx.Exec(ctx, `INSERT INTO route_carriers (route_id, carrier_id, priority, weight, enabled, "window") VALUES ($1, $2, $3, $4, $5, $6)`, routeID, sp.CarrierID, prio, w, sp.Enabled, strings.TrimSpace(sp.Window)); err != nil {

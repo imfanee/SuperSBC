@@ -10,12 +10,12 @@ import (
 
 // RouteGroupByName loads a route group by name.
 func (s *Store) RouteGroupByName(ctx context.Context, name string) (*model.RouteGroup, error) {
-	return one[model.RouteGroup](ctx, s.pool, `SELECT id, name, description, lcr_mode, created_at, updated_at FROM route_groups WHERE name = $1 AND deleted_at IS NULL`, name)
+	return one[model.RouteGroup](ctx, s.pool, `SELECT id, name, description, lcr_mode, lossless_mode, quality_mode, percent_mode, created_at, updated_at FROM route_groups WHERE name = $1 AND deleted_at IS NULL`, name)
 }
 
 // RouteGroupByID loads a route group.
 func (s *Store) RouteGroupByID(ctx context.Context, id uuid.UUID) (*model.RouteGroup, error) {
-	return one[model.RouteGroup](ctx, s.pool, `SELECT id, name, description, lcr_mode, created_at, updated_at FROM route_groups WHERE id = $1 AND deleted_at IS NULL`, id)
+	return one[model.RouteGroup](ctx, s.pool, `SELECT id, name, description, lcr_mode, lossless_mode, quality_mode, percent_mode, created_at, updated_at FROM route_groups WHERE id = $1 AND deleted_at IS NULL`, id)
 }
 
 // UpsertRouteGroup inserts or updates by name.
@@ -23,13 +23,13 @@ func (s *Store) UpsertRouteGroup(ctx context.Context, name, description string) 
 	return one[model.RouteGroup](ctx, s.pool, `
 		INSERT INTO route_groups (name, description) VALUES ($1, $2)
 		ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description, deleted_at = NULL
-		RETURNING id, name, description, lcr_mode, created_at, updated_at`, name, description)
+		RETURNING id, name, description, lcr_mode, lossless_mode, quality_mode, percent_mode, created_at, updated_at`, name, description)
 }
 
 // RoutesForGroup returns the enabled routes of a group with their ordered,
 // enabled carriers (the input of the route trie).
 func (s *Store) RoutesForGroup(ctx context.Context, groupID uuid.UUID) ([]model.Route, error) {
-	routes, err := many[model.Route](ctx, s.pool, `SELECT r.id, r.route_group_id, r.prefix, r.destination, r.enabled, g.lcr_mode, r.created_at, r.updated_at
+	routes, err := many[model.Route](ctx, s.pool, `SELECT r.id, r.route_group_id, r.prefix, r.destination, r.enabled, g.lcr_mode, g.lossless_mode, g.quality_mode, g.percent_mode, r.created_at, r.updated_at
 		FROM routes r JOIN route_groups g ON g.id = r.route_group_id WHERE r.route_group_id = $1 AND r.enabled ORDER BY r.prefix`, groupID)
 	if err != nil {
 		return nil, err

@@ -23,6 +23,7 @@ import (
 	"github.com/imfanee/supersbc/internal/metrics"
 	"github.com/imfanee/supersbc/internal/model"
 	"github.com/imfanee/supersbc/internal/numbering"
+	"github.com/imfanee/supersbc/internal/quality"
 	"github.com/imfanee/supersbc/internal/rating"
 	"github.com/imfanee/supersbc/internal/stir"
 	"github.com/imfanee/supersbc/internal/store"
@@ -54,7 +55,9 @@ type Pipeline struct {
 	rules  *failover.Rules
 	health CarrierHealth
 	stir   *stir.Verifier
-	now    func() time.Time
+	// quality serves the per carrier and prefix scores for quality based routing (D-73); nil disables.
+	quality *quality.Tracker
+	now     func() time.Time
 
 	breaker *Breaker
 	rndMu   sync.Mutex
@@ -76,6 +79,9 @@ func (p *Pipeline) SetBreaker(b *Breaker) { p.breaker = b }
 
 // Breaker exposes the circuit breaker (may be nil).
 func (p *Pipeline) Breaker() *Breaker { return p.breaker }
+
+// SetQuality installs the quality tracker (D-73).
+func (p *Pipeline) SetQuality(q *quality.Tracker) { p.quality = q }
 
 // SetSTIR installs the STIR/SHAKEN verifier (D-64); nil disables verification.
 func (p *Pipeline) SetSTIR(v *stir.Verifier) { p.stir = v }
@@ -301,6 +307,7 @@ func (p *Pipeline) Reserve(ctx context.Context, cust *model.Customer, rate *mode
 // RouteResult is the outcome of Route.
 type RouteResult struct {
 	Route    *model.Route
+	Modes    model.RouteModes
 	Carriers []CarrierChoice
 	Skipped  []SkippedCarrier
 }
@@ -340,7 +347,8 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 	if err != nil {
 		return nil, err
 	}
-	res := &RouteResult{Route: route}
+	res := &RouteResult{Route: route, Modes: route.Modes()}
+	modes := route.Modes()
 	type cand struct {
 		choice CarrierChoice
 		rc     model.RouteCarrier
@@ -388,6 +396,11 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "negative_margin_blocked"})
 			continue
 		}
+		// Lossless routing (D-73): the group refuses carriers that would lose money on this call.
+		if negative && modes.Lossless {
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "lossless_skipped"})
+			continue
+		}
 		dial := buildDialNumber(called, c)
 		ani := c.ANIPrefix + caller
 		rate := buy.RatePerMin
@@ -413,18 +426,32 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 		if ro.ForwardIdentity && !slices.Contains(ch.Passthrough, "Identity") {
 			ch.Passthrough = append(ch.Passthrough, "Identity")
 		}
+		if modes.Quality {
+			q, _ := p.quality.Lookup(c.ID, route.Prefix)
+			score := q.Score
+			ch.Quality = &score
+			ch.QualitySamples = q.Samples
+		}
+		if modes.Percent {
+			ch.Share = rc.Weight
+		}
 		ch.DialString = p.dialString(ch, callUUID, extra)
 		cands = append(cands, cand{choice: ch, rc: rc, buy: buy})
 	}
-	// Order: priority, then weighted random within a priority, degraded last;
-	// LCR mode orders by buy rate instead of priority (Section 7).
+	// Order by the group's routing modes (D-73): priority and weighted
+	// random by default, LCR by buy rate, quality tier first, or percent
+	// distribution; degraded carriers always last.
 	ord := make([]orderable, len(cands))
 	for i, c := range cands {
 		rate, _ := c.buy.RatePerMin.Float64()
-		ord[i] = orderable{priority: c.rc.Priority, weight: c.rc.Weight, degraded: c.choice.Degraded, buyRate: rate}
+		q := 0.5
+		if c.choice.Quality != nil {
+			q = qualityTier(*c.choice.Quality)
+		}
+		ord[i] = orderable{priority: c.rc.Priority, weight: c.rc.Weight, degraded: c.choice.Degraded, buyRate: rate, quality: q}
 	}
 	p.rndMu.Lock()
-	order := orderCandidates(ord, route.LCRMode, p.rnd)
+	order := orderCandidates(ord, modes, p.rnd)
 	p.rndMu.Unlock()
 	for seq, i := range order {
 		cands[i].choice.Seq = seq + 1
@@ -745,6 +772,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	resp.Carriers = route.Carriers
 	resp.Action = "dial"
 	resp.Vars["sbc_route_id"] = rid.String()
+	resp.Vars["sbc_route_prefix"] = route.Route.Prefix
 	if p.rdb != nil {
 		cache.Publish(ctx, p.rdb, cache.ChanCallStarted, req.CallUUID)
 	}
@@ -863,6 +891,19 @@ func (p *Pipeline) RecordAttempt(ctx context.Context, req AttemptRequest) (*Atte
 		p.adm.Leave(ctx, "carrier", req.CarrierID)
 	}
 	degraded := false
+	if p.quality != nil {
+		pdd := 0
+		if req.PDDMs != nil {
+			pdd = *req.PDDMs
+		}
+		p.quality.Record(ctx, req.CarrierID, req.RoutePrefix, quality.Outcome{
+			Answered: class == failover.Answered,
+			// NER: the network did its job when the callee side decided (answered, busy/number faults, caller gave up)
+			Reached: class == failover.Answered || class == failover.NumberFault || class == failover.Cancelled,
+			Fault:   class == failover.CarrierFault,
+			PDDMs:   pdd,
+		})
+	}
 	if p.breaker != nil {
 		degraded = p.breaker.Record(ctx, req.CarrierID, class)
 		if degraded {

@@ -44,6 +44,7 @@ type Config struct {
 	Invoice  Invoice
 	STIR     STIR
 	SMTP     SMTP
+	Quality  Quality
 	// HEPDatabaseURL is the HOMER capture database (heplify-server writes it); empty disables the SIP trace viewer (D-71).
 	HEPDatabaseURL string
 	// PublicURL is the address users open the UI at (used in e-mailed links), e.g. https://sbc.example.com:8443
@@ -60,6 +61,13 @@ type Billing struct {
 	OrphanTimeout       time.Duration
 	LowBalanceThreshold string // decimal as string, "0" disables
 	Currency            string
+}
+
+// Quality tunes quality based routing (D-73).
+type Quality struct {
+	MinSamples   int
+	WindowHours  int
+	RefreshEvery time.Duration
 }
 
 // SMTP is the outgoing mail server for password reset links (D-70); Host empty disables e-mail.
@@ -189,6 +197,11 @@ func Load() (*Config, error) {
 			Window:     getduration("SBC_BAN_WINDOW", 5*time.Minute),
 			Duration:   getduration("SBC_BAN_DURATION", time.Hour),
 			ExportFile: getenv("SBC_FIREWALL_EXPORT_FILE", getenv("SBC_BAN_EXPORT_FILE", "")),
+		},
+		Quality: Quality{
+			MinSamples:   getint("SBC_QUALITY_MIN_SAMPLES", 20),
+			WindowHours:  getint("SBC_QUALITY_WINDOW_HOURS", 24),
+			RefreshEvery: getduration("SBC_QUALITY_REFRESH", 30*time.Second),
 		},
 		SMTP: SMTP{
 			Host:     getenv("SBC_SMTP_HOST", ""),

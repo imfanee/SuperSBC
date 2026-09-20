@@ -10,7 +10,9 @@ import (
 
 	"github.com/imfanee/supersbc/internal/cache"
 	"github.com/imfanee/supersbc/internal/callcontrol"
+	"github.com/imfanee/supersbc/internal/model"
 	"github.com/imfanee/supersbc/internal/numbering"
+	"github.com/imfanee/supersbc/internal/quality"
 	"github.com/imfanee/supersbc/internal/rating"
 	"github.com/imfanee/supersbc/internal/store"
 	"github.com/imfanee/supersbc/internal/timewindow"
@@ -33,9 +35,12 @@ func (h *Handler) mountRoutes(r chi.Router) {
 }
 
 type routeGroupInput struct {
-	Name        string `json:"name" validate:"required,min=1,max=100"`
-	Description string `json:"description" validate:"max=500"`
-	LCRMode     bool   `json:"lcr_mode"`
+	Name         string `json:"name" validate:"required,min=1,max=100"`
+	Description  string `json:"description" validate:"max=500"`
+	LCRMode      bool   `json:"lcr_mode"`
+	LosslessMode bool   `json:"lossless_mode"`
+	QualityMode  bool   `json:"quality_mode"`
+	PercentMode  bool   `json:"percent_mode"`
 }
 
 // listRouteGroups godoc
@@ -66,7 +71,12 @@ func (h *Handler) createRouteGroup(w http.ResponseWriter, r *http.Request) {
 	if !h.decode(w, r, &in) {
 		return
 	}
-	out, err := h.Store.CreateRouteGroup(r.Context(), in.Name, in.Description, in.LCRMode)
+	modes := model.RouteModes{LCR: in.LCRMode, Lossless: in.LosslessMode, Quality: in.QualityMode, Percent: in.PercentMode}
+	if !modes.Valid() {
+		fail(w, http.StatusBadRequest, "percentage based routing cannot be combined with least cost, lossless or quality routing")
+		return
+	}
+	out, err := h.Store.CreateRouteGroup(r.Context(), in.Name, in.Description, modes)
 	if err != nil {
 		failErr(w, err)
 		return
@@ -118,7 +128,12 @@ func (h *Handler) updateRouteGroup(w http.ResponseWriter, r *http.Request) {
 	if !h.decode(w, r, &in) {
 		return
 	}
-	out, err := h.Store.UpdateRouteGroup(r.Context(), id, in.Name, in.Description, in.LCRMode)
+	modes := model.RouteModes{LCR: in.LCRMode, Lossless: in.LosslessMode, Quality: in.QualityMode, Percent: in.PercentMode}
+	if !modes.Valid() {
+		fail(w, http.StatusBadRequest, "percentage based routing cannot be combined with least cost, lossless or quality routing")
+		return
+	}
+	out, err := h.Store.UpdateRouteGroup(r.Context(), id, in.Name, in.Description, modes)
 	if err != nil {
 		failErr(w, err)
 		return
@@ -246,7 +261,7 @@ func normaliseSpecs(specs []store.RouteCarrierSpec) []store.RouteCarrierSpec {
 		if s.Priority <= 0 {
 			s.Priority = i + 1
 		}
-		if s.Weight <= 0 {
+		if s.Weight < 0 { // 0 is a valid share in percent mode
 			s.Weight = 100
 		}
 		out = append(out, s)
@@ -422,14 +437,19 @@ func (h *Handler) previewRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	type row struct {
 		store.RouteCarrierRow
-		BuyRate     *string `json:"buy_rate_per_min"`
-		Destination string  `json:"buy_destination"`
-		Margin      *string `json:"margin_per_min"`
-		State       string  `json:"gateway_state"`
+		BuyRate     *string        `json:"buy_rate_per_min"`
+		Destination string         `json:"buy_destination"`
+		Margin      *string        `json:"margin_per_min"`
+		State       string         `json:"gateway_state"`
+		Quality     *quality.Score `json:"quality,omitempty"`
 	}
 	out := make([]row, 0, len(route.CarrierRows))
 	for _, rc := range route.CarrierRows {
 		x := row{RouteCarrierRow: rc, State: "UNKNOWN"}
+		if h.Quality != nil {
+			q, _ := h.Quality.Lookup(rc.CarrierID, route.Prefix)
+			x.Quality = &q
+		}
 		if c, err := h.Store.CarrierByID(r.Context(), rc.CarrierID); err == nil {
 			if h.Gateways != nil {
 				x.State = h.Gateways.State(c.GatewayName()).Status
@@ -572,8 +592,9 @@ func (h *Handler) simulate(w http.ResponseWriter, r *http.Request) {
 		}
 		choices = append(choices, ch)
 	}
-	step("route", true, map[string]any{"route": route.Route, "carriers": choices, "skipped": route.Skipped})
+	step("route", true, map[string]any{"route": route.Route, "modes": route.Modes, "carriers": choices, "skipped": route.Skipped})
 	res["carriers"] = choices
+	res["modes"] = route.Modes
 	finish(200, "OK (dial "+route.Carriers[0].Name+" first)")
 }
 

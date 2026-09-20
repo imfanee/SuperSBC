@@ -120,9 +120,29 @@ type RouteGroup struct {
 	Name        string    `json:"name" db:"name"`
 	Description string    `json:"description" db:"description"`
 	LCRMode     bool      `json:"lcr_mode" db:"lcr_mode"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+	// Routing modes (D-73). Percent is exclusive; the other three combine.
+	LosslessMode bool      `json:"lossless_mode" db:"lossless_mode"`
+	QualityMode  bool      `json:"quality_mode" db:"quality_mode"`
+	PercentMode  bool      `json:"percent_mode" db:"percent_mode"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }
+
+// Modes returns the routing modes of the group.
+func (g RouteGroup) Modes() RouteModes {
+	return RouteModes{LCR: g.LCRMode, Lossless: g.LosslessMode, Quality: g.QualityMode, Percent: g.PercentMode}
+}
+
+// RouteModes is the set of routing modes in effect for a route (D-73).
+type RouteModes struct {
+	LCR      bool `json:"lcr"`
+	Lossless bool `json:"lossless"`
+	Quality  bool `json:"quality"`
+	Percent  bool `json:"percent"`
+}
+
+// Valid reports whether the combination is allowed: percent excludes the others.
+func (m RouteModes) Valid() bool { return !m.Percent || (!m.LCR && !m.Lossless && !m.Quality) }
 
 // Route is one prefix row with its ordered carriers.
 type Route struct {
@@ -132,9 +152,17 @@ type Route struct {
 	Destination  string         `json:"destination" db:"destination"`
 	Enabled      bool           `json:"enabled" db:"enabled"`
 	LCRMode      bool           `json:"lcr_mode" db:"lcr_mode"`
+	LosslessMode bool           `json:"lossless_mode" db:"lossless_mode"`
+	QualityMode  bool           `json:"quality_mode" db:"quality_mode"`
+	PercentMode  bool           `json:"percent_mode" db:"percent_mode"`
 	Carriers     []RouteCarrier `json:"carriers" db:"carriers"`
 	CreatedAt    time.Time      `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at" db:"updated_at"`
+}
+
+// Modes returns the routing modes of the route's group.
+func (r Route) Modes() RouteModes {
+	return RouteModes{LCR: r.LCRMode, Lossless: r.LosslessMode, Quality: r.QualityMode, Percent: r.PercentMode}
 }
 
 // RouteCarrier is one entry of the ordered carrier list of a route.

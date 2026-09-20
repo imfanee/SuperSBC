@@ -769,10 +769,19 @@
                     "lcr_mode": {
                         "type": "boolean"
                     },
+                    "lossless_mode": {
+                        "type": "boolean"
+                    },
                     "name": {
                         "maxLength": 100,
                         "minLength": 1,
                         "type": "string"
+                    },
+                    "percent_mode": {
+                        "type": "boolean"
+                    },
+                    "quality_mode": {
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -1668,8 +1677,18 @@
                     "lcr_mode": {
                         "type": "boolean"
                     },
+                    "lossless_mode": {
+                        "description": "Routing modes (D-73). Percent is exclusive; the other three combine.",
+                        "type": "boolean"
+                    },
                     "name": {
                         "type": "string"
+                    },
+                    "percent_mode": {
+                        "type": "boolean"
+                    },
+                    "quality_mode": {
+                        "type": "boolean"
                     },
                     "updated_at": {
                         "type": "string"
@@ -1717,6 +1736,45 @@
                     },
                     "updated_at": {
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "quality.Score": {
+                "properties": {
+                    "asr": {
+                        "type": "number"
+                    },
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "fallback": {
+                        "description": "\"carrier\" or \"neutral\" when the prefix had too few samples",
+                        "type": "string"
+                    },
+                    "faults": {
+                        "type": "integer"
+                    },
+                    "ner": {
+                        "type": "number"
+                    },
+                    "pdd_ms": {
+                        "type": "number"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    },
+                    "samples": {
+                        "description": "decayed attempts in the window",
+                        "type": "integer"
+                    },
+                    "score": {
+                        "description": "0..1",
+                        "type": "number"
+                    },
+                    "tier": {
+                        "description": "score rounded to 0.05, what routing orders by",
+                        "type": "number"
                     }
                 },
                 "type": "object"
@@ -2350,8 +2408,17 @@
                     "lcr_mode": {
                         "type": "boolean"
                     },
+                    "lossless_mode": {
+                        "type": "boolean"
+                    },
+                    "percent_mode": {
+                        "type": "boolean"
+                    },
                     "prefix": {
                         "type": "string"
+                    },
+                    "quality_mode": {
+                        "type": "boolean"
                     },
                     "route_group_id": {
                         "type": "string"
@@ -3312,6 +3379,40 @@
                     }
                 },
                 "summary": "Record a payment to the carrier (ledger type topup)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/quality": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/quality.Score"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Quality scores of a carrier per route prefix (rolling window, D-73)",
                 "tags": [
                     "carriers"
                 ]

@@ -163,8 +163,24 @@ export interface RouteGroup {
   name: string;
   description: string;
   lcr_mode: boolean;
+  lossless_mode: boolean;
+  quality_mode: boolean;
+  percent_mode: boolean;
   route_count?: number;
   customer_count?: number;
+}
+
+export interface QualityScore {
+  carrier_id: string;
+  prefix: string;
+  score: number;
+  tier: number;
+  samples: number;
+  asr: number;
+  ner: number;
+  pdd_ms: number;
+  faults: number;
+  fallback?: "carrier" | "neutral";
 }
 
 export interface RouteCarrier {
@@ -352,7 +368,11 @@ export interface Simulation {
     degraded: boolean;
     margin_per_min: string | null;
     dial_string: string;
+    quality?: number | null;
+    quality_samples?: number;
+    share?: number;
   }>;
+  modes?: { lcr: boolean; lossless: boolean; quality: boolean; percent: boolean };
 }
 
 export interface HeaderRule {

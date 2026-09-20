@@ -30,6 +30,7 @@ import (
 	"github.com/imfanee/supersbc/internal/invoice"
 	"github.com/imfanee/supersbc/internal/mail"
 	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/quality"
 	"github.com/imfanee/supersbc/internal/sipcapture"
 	"github.com/imfanee/supersbc/internal/store"
 	"github.com/imfanee/supersbc/internal/tables"
@@ -55,6 +56,7 @@ type Deps struct {
 	Invoices *invoice.Service
 	Mailer   *mail.Mailer
 	Capture  *sipcapture.Store
+	Quality  *quality.Tracker
 }
 
 // Handler is the admin API.

@@ -7,6 +7,7 @@ import (
 
 	"github.com/imfanee/supersbc/internal/cache"
 	"github.com/imfanee/supersbc/internal/model"
+	"github.com/imfanee/supersbc/internal/quality"
 )
 
 func (h *Handler) mountCarriers(r chi.Router) {
@@ -16,6 +17,7 @@ func (h *Handler) mountCarriers(r chi.Router) {
 	r.With(operators).Put("/carriers/{id}", h.updateCarrier)
 	r.With(operators).Delete("/carriers/{id}", h.deleteCarrier)
 	r.Get("/carriers/{id}/account", h.carrierAccount)
+	r.Get("/carriers/{id}/quality", h.carrierQuality)
 	r.With(admins).Post("/carriers/{id}/account/topup", h.carrierTopup)
 	r.With(admins).Post("/carriers/{id}/account/adjust", h.carrierAdjust)
 	r.Get("/carriers/{id}/account/ledger", h.carrierLedger)
@@ -396,4 +398,23 @@ func (h *Handler) allCarrierStatus(w http.ResponseWriter, r *http.Request) {
 		out = append(out, st)
 	}
 	writeJSON(w, http.StatusOK, out)
+}
+
+// carrierQuality godoc
+// @Summary Quality scores of a carrier per route prefix (rolling window, D-73)
+// @Tags carriers
+// @Produce json
+// @Param id path string true "carrier id"
+// @Success 200 {array} quality.Score
+// @Router /carriers/{id}/quality [get]
+func (h *Handler) carrierQuality(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	if h.Quality == nil {
+		writeJSON(w, http.StatusOK, []quality.Score{})
+		return
+	}
+	writeJSON(w, http.StatusOK, h.Quality.Scores(id))
 }

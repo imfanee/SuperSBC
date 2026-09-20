@@ -5,7 +5,7 @@ import { ArrowDown, ArrowUp, GripVertical, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
 import { del, get, post, put } from "@/api/client";
-import type { CarrierRow, Listing, Route, RouteCarrier, RouteGroup } from "@/api/types";
+import type { CarrierRow, Listing, QualityScore, Route, RouteCarrier, RouteGroup } from "@/api/types";
 import { Badge, stateVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,12 +31,17 @@ import { money } from "@/lib/utils";
 function GroupForm({ initial, onSaved }: { initial?: RouteGroup; onSaved: (g: RouteGroup) => void }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [lcr, setLcr] = useState(initial?.lcr_mode ?? false);
+  const [modes, setModes] = useState({
+    lcr_mode: initial?.lcr_mode ?? false,
+    lossless_mode: initial?.lossless_mode ?? false,
+    quality_mode: initial?.quality_mode ?? false,
+    percent_mode: initial?.percent_mode ?? false,
+  });
   const m = useMutation({
     mutationFn: () =>
       initial
-        ? put<RouteGroup>(`/route-groups/${initial.id}`, { name, description, lcr_mode: lcr })
-        : post<RouteGroup>("/route-groups", { name, description, lcr_mode: lcr }),
+        ? put<RouteGroup>(`/route-groups/${initial.id}`, { name, description, ...modes })
+        : post<RouteGroup>("/route-groups", { name, description, ...modes }),
     onSuccess: (g) => (toast.success("Saved"), onSaved(g)),
     onError: (e) => toast.error(e.message),
   });
@@ -48,11 +53,60 @@ function GroupForm({ initial, onSaved }: { initial?: RouteGroup; onSaved: (g: Ro
       <Field label="Description">
         <Input value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
-      <div className="flex items-center gap-2">
-        <Switch checked={lcr} onCheckedChange={setLcr} id="lcr" />
-        <label htmlFor="lcr" className="text-sm">
-          Least cost routing (order carriers by buy rate instead of priority)
-        </label>
+      <div className="space-y-2 rounded-md border p-3">
+        <div className="text-xs font-medium text-muted-foreground">
+          Routing modes (least cost, lossless and quality combine; percentage is exclusive)
+        </div>
+        {(
+          [
+            ["lcr_mode", "Least cost routing", "order carriers by buy rate; priority breaks ties"],
+            [
+              "lossless_mode",
+              "Lossless routing",
+              "skip carriers whose buy rate is above the customer's sell rate for the number",
+            ],
+            [
+              "quality_mode",
+              "Quality based routing",
+              "order by measured quality (ASR, NER, PDD per carrier and prefix), best first; least cost then decides inside a quality tier",
+            ],
+            [
+              "percent_mode",
+              "Percentage based routing",
+              "distribute calls by each carrier's share (the weight field, in percent); the other carriers remain as failover",
+            ],
+          ] as const
+        ).map(([key, label, hint]) => {
+          const exclusive =
+            key === "percent_mode"
+              ? modes.lcr_mode || modes.lossless_mode || modes.quality_mode
+              : modes.percent_mode;
+          return (
+            <div key={key} className="flex items-start gap-2">
+              <Switch
+                checked={modes[key]}
+                disabled={exclusive && !modes[key]}
+                onCheckedChange={(v) => setModes({ ...modes, [key]: v })}
+                id={key}
+                data-testid={`mode-${key}`}
+              />
+              <label
+                htmlFor={key}
+                className={"text-sm" + (exclusive && !modes[key] ? " text-muted-foreground" : "")}
+              >
+                {label}
+                <span className="block text-xs text-muted-foreground">
+                  {hint}
+                  {exclusive &&
+                    !modes[key] &&
+                    (key === "percent_mode"
+                      ? " (turn the other modes off first)"
+                      : " (not available with percentage routing)")}
+                </span>
+              </label>
+            </div>
+          );
+        })}
       </div>
       <DialogFooter>
         <Button type="submit" disabled={!name || m.isPending} data-testid="route-group-submit">
@@ -81,12 +135,26 @@ export function RouteGroupsPage() {
       },
       {
         header: "Mode",
-        cell: ({ row }) =>
-          row.original.lcr_mode ? (
-            <Badge variant="info">LCR</Badge>
+        cell: ({ row }) => {
+          const g = row.original;
+          const tags = [
+            g.lcr_mode && "LCR",
+            g.lossless_mode && "lossless",
+            g.quality_mode && "quality",
+            g.percent_mode && "percent",
+          ].filter(Boolean) as string[];
+          return tags.length ? (
+            <span className="flex flex-wrap gap-1">
+              {tags.map((t) => (
+                <Badge key={t} variant="info">
+                  {t}
+                </Badge>
+              ))}
+            </span>
           ) : (
             <Badge variant="secondary">priority</Badge>
-          ),
+          );
+        },
       },
       { header: "Routes", accessorKey: "route_count" },
       { header: "Customers", accessorKey: "customer_count" },
@@ -137,10 +205,23 @@ interface PreviewCarrier extends RouteCarrier {
   buy_destination: string;
   margin_per_min: string | null;
   gateway_state: string;
+  quality?: QualityScore;
 }
 
 /** Route drawer: prefix, destination, and the ordered carrier list with drag and drop. */
-function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Route; onSaved: () => void }) {
+function RouteEditor({
+  groupId,
+  route,
+  onSaved,
+  percent,
+  quality,
+}: {
+  groupId: string;
+  route?: Route;
+  onSaved: () => void;
+  percent?: boolean;
+  quality?: boolean;
+}) {
   const [prefix, setPrefix] = useState(route?.prefix ?? "");
   const [destination, setDestination] = useState(route?.destination ?? "");
   const [enabled, setEnabled] = useState(route?.enabled ?? true);
@@ -182,7 +263,7 @@ function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Rou
         carriers: carriers.map((c, i) => ({
           carrier_id: c.carrier_id,
           priority: i + 1,
-          weight: c.weight || 100,
+          weight: c.weight ?? 100,
           enabled: c.enabled,
           window: c.window ?? "",
         })),
@@ -253,6 +334,19 @@ function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Rou
                 {pv && !pv.buy_rate_per_min && (
                   <span className="text-xs text-warning">no buy rate: skipped</span>
                 )}
+                {quality && pv?.quality && (
+                  <span
+                    className="text-xs text-muted-foreground"
+                    title={`ASR ${(pv.quality.asr * 100).toFixed(0)}%, NER ${(pv.quality.ner * 100).toFixed(0)}%, PDD ${pv.quality.pdd_ms} ms, ${pv.quality.samples} attempts${pv.quality.fallback ? ", fallback: " + pv.quality.fallback : ""}`}
+                  >
+                    quality {pv.quality.score.toFixed(2)}
+                    {pv.quality.fallback === "neutral"
+                      ? " (no data)"
+                      : pv.quality.fallback === "carrier"
+                        ? " (carrier wide)"
+                        : ""}
+                  </span>
+                )}
                 <span className="ml-auto flex items-center gap-1">
                   <label className="text-xs text-muted-foreground">window</label>
                   <Input
@@ -264,13 +358,15 @@ function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Rou
                       setCarriers((cs) => cs.map((x, j) => (j === i ? { ...x, window: e.target.value } : x)))
                     }
                   />
-                  <label className="text-xs text-muted-foreground">weight</label>
+                  <label className="text-xs text-muted-foreground">{percent ? "share %" : "weight"}</label>
                   <Input
                     className="h-7 w-16 text-xs"
                     value={c.weight}
                     onChange={(e) =>
                       setCarriers((cs) =>
-                        cs.map((x, j) => (j === i ? { ...x, weight: Number(e.target.value) || 100 } : x)),
+                        cs.map((x, j) =>
+                          j === i ? { ...x, weight: Math.max(0, Number(e.target.value) || 0) } : x,
+                        ),
                       )
                     }
                   />
@@ -305,6 +401,19 @@ function RouteEditor({ groupId, route, onSaved }: { groupId: string; route?: Rou
             </li>
           )}
         </ul>
+        {percent && carriers.length > 0 && (
+          <div
+            className={
+              "mt-1 text-xs " +
+              (carriers.reduce((s, c) => s + (c.weight || 0), 0) === 100
+                ? "text-muted-foreground"
+                : "text-warning")
+            }
+          >
+            Shares total {carriers.reduce((s, c) => s + (c.weight || 0), 0)}% (calls are distributed
+            proportionally; 100% keeps the numbers readable).
+          </div>
+        )}
         <div className="mt-2 flex items-end gap-2">
           <div className="w-64">
             <CarrierSelect value={addId} onChange={setAddId} allowNone={false} testId="route-add-carrier" />
@@ -417,7 +526,17 @@ export function RouteGroupDetailPage() {
     <div>
       <PageHeader
         title={g?.name ?? "Route group"}
-        description={g ? `${g.lcr_mode ? "Least cost routing" : "Priority routing"}. ${g.description}` : ""}
+        description={
+          g
+            ? `${
+                g.percent_mode
+                  ? "Percentage based routing"
+                  : [g.quality_mode && "quality", g.lcr_mode && "least cost", g.lossless_mode && "lossless"]
+                      .filter(Boolean)
+                      .join(", ") || "Priority routing"
+              }. ${g.description}`
+            : ""
+        }
         actions={
           can("write") && (
             <>
@@ -476,7 +595,13 @@ export function RouteGroupDetailPage() {
             </DialogTitle>
           </DialogHeader>
           {editing !== null && (
-            <RouteEditor groupId={id} route={editing === "new" ? undefined : editing} onSaved={refresh} />
+            <RouteEditor
+              groupId={id}
+              route={editing === "new" ? undefined : editing}
+              onSaved={refresh}
+              percent={g?.percent_mode}
+              quality={g?.quality_mode}
+            />
           )}
           {editing !== "new" && editing && (
             <Card className="mt-2">
