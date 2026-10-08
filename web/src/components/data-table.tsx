@@ -28,6 +28,8 @@ export interface DataTableProps<T> {
   renderExpanded?: (row: T) => ReactNode;
   /** Hidden columns by id; omit for "every column visible". */
   columnVisibility?: VisibilityState;
+  /** Column ids in display order; ids left out keep their declared order after them. */
+  columnOrder?: string[];
   expandedId?: string | null;
   rowId?: (row: T) => string;
   /** Under 640 px rows render as cards using the column headers as labels. */
@@ -51,13 +53,18 @@ export function DataTable<T>({
   rowId,
   cardBreakpoint = true,
   columnVisibility,
+  columnOrder,
 }: DataTableProps<T>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
-    state: { sorting: sorting ?? [], columnVisibility: columnVisibility ?? {} },
+    state: {
+      sorting: sorting ?? [],
+      columnVisibility: columnVisibility ?? {},
+      columnOrder: columnOrder ?? [],
+    },
     onSortingChange: (u) => onSortingChange?.(typeof u === "function" ? u(sorting ?? []) : u),
   });
   const pages = total !== undefined ? Math.max(1, Math.ceil(total / perPage)) : undefined;
