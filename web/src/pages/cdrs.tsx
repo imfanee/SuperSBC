@@ -1,17 +1,19 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
-import { Download, Save } from "lucide-react";
+import { Columns3, Download, Save } from "lucide-react";
 import { toast } from "sonner";
-import type { ColumnDef, SortingState } from "@tanstack/react-table";
+import type { ColumnDef, SortingState, VisibilityState } from "@tanstack/react-table";
 import { download, get } from "@/api/client";
 import type { CDR, Listing } from "@/api/types";
 import { Badge, stateVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -34,6 +36,8 @@ const dispositions = [
   "rejected_route",
 ];
 
+const COLUMNS_KEY = "sbc.cdr-columns";
+
 function todayRange() {
   const now = new Date();
   const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -48,6 +52,23 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
   const [page, setPage] = useState(1);
   const [sorting, setSorting] = useState<SortingState>([{ id: "start_time", desc: true }]);
   const [expanded, setExpanded] = useState<string | null>(null);
+  // Hidden columns, remembered per browser (D-74).
+  const [hidden, setHidden] = useState<VisibilityState>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(COLUMNS_KEY) ?? "{}") as VisibilityState;
+    } catch {
+      return {};
+    }
+  });
+  const setColumn = (id: string, visible: boolean) => {
+    const next = { ...hidden, [id]: visible };
+    setHidden(next);
+    try {
+      localStorage.setItem(COLUMNS_KEY, JSON.stringify(next));
+    } catch {
+      /* private browsing: the choice simply does not persist */
+    }
+  };
   const query = useMemo(() => {
     const q: Record<string, string> = {};
     for (const [k, v] of Object.entries({ ...filters, ...fixed })) if (v) q[k] = v;
@@ -74,26 +95,30 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
         cell: ({ row }) => <span className="whitespace-nowrap text-xs">{dt(row.original.start_time)}</span>,
         enableSorting: true,
       },
-      { header: "Customer", accessorKey: "customer_name", enableSorting: false },
+      { id: "customer_name", header: "Customer", accessorKey: "customer_name", enableSorting: false },
       {
+        id: "caller_number",
         header: "Caller",
         accessorKey: "caller_number",
         cell: ({ row }) => <span className="font-mono text-xs">{row.original.caller_number}</span>,
         enableSorting: false,
       },
       {
+        id: "called_number",
         header: "Called",
         accessorKey: "called_number",
         cell: ({ row }) => <span className="font-mono text-xs">{row.original.called_number}</span>,
         enableSorting: false,
       },
       {
+        id: "carrier_name",
         header: "Carrier",
         accessorKey: "carrier_name",
         cell: ({ row }) => row.original.carrier_name ?? "",
         enableSorting: false,
       },
       {
+        id: "disposition",
         header: "Result",
         accessorKey: "disposition",
         cell: ({ row }) => (
@@ -146,6 +171,7 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
         enableSorting: true,
       },
       {
+        id: "failover_depth",
         header: "Hops",
         accessorKey: "failover_depth",
         cell: ({ row }) => row.original.attempts.length,
@@ -303,6 +329,53 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" data-testid="cdr-columns-menu">
+                  <Columns3 /> Columns
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="max-h-96 overflow-y-auto">
+                {columns.map((c) => {
+                  const id = String(c.id ?? (c as { accessorKey?: string }).accessorKey);
+                  const label = typeof c.header === "string" ? c.header : id;
+                  const visible = hidden[id] !== false;
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={id}
+                      checked={visible}
+                      // keep at least one column so the table never collapses
+                      disabled={
+                        visible &&
+                        columns.filter(
+                          (x) =>
+                            hidden[String(x.id ?? (x as { accessorKey?: string }).accessorKey)] !== false,
+                        ).length === 1
+                      }
+                      onCheckedChange={(v) => setColumn(id, v === true)}
+                      onSelect={(e) => e.preventDefault()}
+                      data-testid={`cdr-column-${id}`}
+                    >
+                      {label}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    setHidden({});
+                    try {
+                      localStorage.removeItem(COLUMNS_KEY);
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                  data-testid="cdr-columns-reset"
+                >
+                  Show all columns
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" data-testid="cdr-csv-menu">
                   <Download /> CSV
                 </Button>
@@ -343,6 +416,7 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
         rowId={(r) => r.call_uuid}
         expandedId={expanded}
         onRowClick={(r) => setExpanded((e) => (e === r.call_uuid ? null : r.call_uuid))}
+        columnVisibility={hidden}
         renderExpanded={(c) => <CDRDetail cdr={c} />}
         emptyText="No calls match."
       />

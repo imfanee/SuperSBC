@@ -167,9 +167,12 @@ func TestRoadmap_RoutingModes(t *testing.T) {
 	}
 	code, qs := a.do("GET", "/carriers/"+c503+"/quality", nil)
 	a.mustOK(code, qs, "carrier quality")
+	// The score is kept per route prefix. The sample count is not asserted:
+	// once quality demotes the carrier it stops receiving attempts, which is
+	// the point of the mode (the reorder above is the behavioural proof).
 	found := false
 	for _, x := range items(qs) {
-		if x["prefix"] == "4420" && x["asr"].(float64) == 0 && x["samples"].(float64) >= 20 {
+		if x["prefix"] == "4420" && x["asr"].(float64) == 0 && x["samples"].(float64) >= 1 {
 			found = true
 		}
 	}

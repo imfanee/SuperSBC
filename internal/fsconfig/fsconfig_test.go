@@ -1,6 +1,9 @@
 package fsconfig
 
 import (
+	"context"
+	"io"
+	"log/slog"
 	"strings"
 	"testing"
 
@@ -52,5 +55,26 @@ func TestTLSSubjects(t *testing.T) {
 	})
 	if !strings.Contains(out, `value="203.0.113.9,sip.acme.example,trunk.beta.example"`) || strings.Contains(out, "old.example") {
 		t.Fatalf("subjects:\n%s", out)
+	}
+}
+
+// A killgw that could not be delivered (ESL down) stays pending so the next
+// render retries it; a name that came back needs no kill. Regression: a
+// carrier renamed while ESL was briefly down stayed loaded in Sofia.
+func TestPendingGatewayKills(t *testing.T) {
+	r := New("", "dialplan", "10.0.0.1", nil, nil, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	r.pendingKills["old-name"] = true
+	if r.applyGatewayChanges(context.Background(), map[string]string{"new-name": "x"}) {
+		t.Fatal("without ESL nothing can be applied")
+	}
+	if !r.pendingKills["old-name"] {
+		t.Fatal("an undelivered kill must stay pending")
+	}
+	// the name reappearing (a rename undone) clears the pending kill
+	r.esl = nil
+	r.pendingKills = map[string]bool{"back-again": true}
+	_ = r.applyGatewayChanges(context.Background(), map[string]string{"back-again": "x"})
+	if r.pendingKills["back-again"] {
+		t.Fatal("a gateway that exists again must not be killed")
 	}
 }

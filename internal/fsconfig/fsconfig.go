@@ -36,11 +36,15 @@ type Renderer struct {
 
 	mu       sync.Mutex
 	gateways map[string]string // name -> content hash of last render
+	// pendingKills are gateways whose killgw did not reach FreeSWITCH (ESL was
+	// down); they are retried on the next render so a renamed or deleted
+	// carrier never stays loaded in Sofia.
+	pendingKills map[string]bool
 }
 
 // New creates a renderer writing into dir/gateways and dir/acl.
 func New(dir, aclMode, nodeIP string, st *store.Store, sup *esl.Supervisor, log *slog.Logger) *Renderer {
-	return &Renderer{dir: dir, aclMode: aclMode, nodeIP: nodeIP, st: st, esl: sup, log: log, gateways: map[string]string{}}
+	return &Renderer{dir: dir, aclMode: aclMode, nodeIP: nodeIP, st: st, esl: sup, log: log, gateways: map[string]string{}, pendingKills: map[string]bool{}}
 }
 
 // RenderAll renders gateways and ACLs and reloads FreeSWITCH.
@@ -102,16 +106,40 @@ func (r *Renderer) RenderGateways(ctx context.Context) error {
 		}
 		r.gateways[name] = h
 	}
-	if r.esl != nil && r.esl.Connected() {
-		for _, name := range killed {
-			_, _ = r.esl.API(ctx, "sofia profile external-egress killgw "+name)
-		}
-		if _, err := r.esl.API(ctx, "sofia profile external-egress rescan"); err != nil {
-			r.log.Warn("sofia rescan failed", "error", err)
+	for _, name := range killed {
+		r.pendingKills[name] = true
+	}
+	applied := r.applyGatewayChanges(ctx, want)
+	r.log.Info("gateways rendered", "count", len(want), "killed", killed, "pending_kills", len(r.pendingKills), "applied", applied)
+	return nil
+}
+
+// applyGatewayChanges kills the gateways that are gone (retrying the ones a
+// previous render could not deliver) and rescans the profile. It reports
+// whether FreeSWITCH accepted the changes; failures stay pending.
+func (r *Renderer) applyGatewayChanges(ctx context.Context, want map[string]string) bool {
+	// A name that exists again (a rename undone) needs no kill, whether or
+	// not FreeSWITCH is reachable right now.
+	for name := range r.pendingKills {
+		if _, ok := want[name]; ok {
+			delete(r.pendingKills, name)
 		}
 	}
-	r.log.Info("gateways rendered", "count", len(want), "killed", killed)
-	return nil
+	if r.esl == nil || !r.esl.Connected() {
+		return false
+	}
+	for name := range r.pendingKills {
+		if _, err := r.esl.API(ctx, "sofia profile external-egress killgw "+name); err != nil {
+			r.log.Warn("killgw failed, will retry", "gateway", name, "error", err)
+			return false
+		}
+		delete(r.pendingKills, name)
+	}
+	if _, err := r.esl.API(ctx, "sofia profile external-egress rescan"); err != nil {
+		r.log.Warn("sofia rescan failed", "error", err)
+		return false
+	}
+	return true
 }
 
 // RenderACLs writes acl/customers.xml and acl/carriers.xml and reloads.

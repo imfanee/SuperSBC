@@ -4,6 +4,7 @@ import {
   useReactTable,
   type ColumnDef,
   type SortingState,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,8 @@ export interface DataTableProps<T> {
   onRowClick?: (row: T) => void;
   emptyText?: string;
   renderExpanded?: (row: T) => ReactNode;
+  /** Hidden columns by id; omit for "every column visible". */
+  columnVisibility?: VisibilityState;
   expandedId?: string | null;
   rowId?: (row: T) => string;
   /** Under 640 px rows render as cards using the column headers as labels. */
@@ -47,13 +50,14 @@ export function DataTable<T>({
   expandedId,
   rowId,
   cardBreakpoint = true,
+  columnVisibility,
 }: DataTableProps<T>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
-    state: { sorting: sorting ?? [] },
+    state: { sorting: sorting ?? [], columnVisibility: columnVisibility ?? {} },
     onSortingChange: (u) => onSortingChange?.(typeof u === "function" ? u(sorting ?? []) : u),
   });
   const pages = total !== undefined ? Math.max(1, Math.ceil(total / perPage)) : undefined;
@@ -101,7 +105,7 @@ export function DataTable<T>({
             {loading && data.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {columns.map((_, j) => (
+                  {table.getVisibleLeafColumns().map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -110,7 +114,10 @@ export function DataTable<T>({
               ))
             ) : data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-20 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={table.getVisibleLeafColumns().length}
+                  className="h-20 text-center text-muted-foreground"
+                >
                   {emptyText}
                 </TableCell>
               </TableRow>
@@ -148,7 +155,7 @@ export function DataTable<T>({
                     </TableRow>
                     {expanded && (
                       <TableRow key={row.id + "-x"} className="bg-muted/30 hover:bg-muted/30">
-                        <TableCell colSpan={columns.length} className="p-3">
+                        <TableCell colSpan={table.getVisibleLeafColumns().length} className="p-3">
                           {renderExpanded(row.original)}
                         </TableCell>
                       </TableRow>
