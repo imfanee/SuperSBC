@@ -7,6 +7,7 @@ import { del, get } from "@/api/client";
 import type { ActiveCall } from "@/api/types";
 import { Badge, stateVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ColumnsMenu, useColumnPrefs } from "@/components/column-prefs";
 import { DataTable } from "@/components/data-table";
 import { Confirm } from "@/components/confirm";
 import { ErrorBox, PageHeader } from "@/components/page";
@@ -23,26 +24,31 @@ export function LiveCallsPage() {
   const columns = useMemo<ColumnDef<ActiveCall, unknown>[]>(
     () => [
       {
+        id: "started_at",
         header: "Started",
         accessorKey: "started_at",
         cell: ({ row }) => <span className="text-xs">{dt(row.original.started_at)}</span>,
       },
       {
+        id: "elapsed",
         header: "Elapsed",
         cell: ({ row }) => <span className="tabular">{duration(row.original.elapsed_seconds)}</span>,
       },
-      { header: "Customer", accessorKey: "customer_name" },
+      { id: "customer_name", header: "Customer", accessorKey: "customer_name" },
       {
+        id: "caller_number",
         header: "From",
         accessorKey: "caller_number",
         cell: ({ row }) => <span className="font-mono text-xs">{row.original.caller_number}</span>,
       },
       {
+        id: "called_number",
         header: "To",
         accessorKey: "called_number",
         cell: ({ row }) => <span className="font-mono text-xs">{row.original.called_number}</span>,
       },
       {
+        id: "carrier",
         header: "Carrier",
         cell: ({ row }) =>
           row.original.carrier_name ?? (
@@ -50,6 +56,7 @@ export function LiveCallsPage() {
           ),
       },
       {
+        id: "state",
         header: "State",
         cell: ({ row }) => (
           <span className="flex gap-1">
@@ -59,13 +66,14 @@ export function LiveCallsPage() {
         ),
       },
       {
+        id: "reserved",
         header: "Reserved",
         cell: ({ row }) => <span className="tabular">{money(row.original.reserved_amount)}</span>,
       },
-      { header: "Max", cell: ({ row }) => duration(row.original.max_call_seconds) },
+      { id: "max", header: "Max", cell: ({ row }) => duration(row.original.max_call_seconds) },
       {
         id: "actions",
-        header: "",
+        header: "Actions",
         cell: ({ row }) =>
           can("write") && (
             <Confirm
@@ -92,15 +100,19 @@ export function LiveCallsPage() {
     ],
     [can, q],
   );
+  const prefs = useColumnPrefs("sbc.live-calls", columns);
   return (
     <div>
       <PageHeader
         title="Live calls"
         description="Calls with an open reservation, refreshed every 3 seconds"
         actions={
-          <Badge variant={q.data?.freeswitch_connected ? "success" : "danger"}>
-            FreeSWITCH {q.data?.freeswitch_connected ? "connected" : "disconnected"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={q.data?.freeswitch_connected ? "success" : "danger"}>
+              FreeSWITCH {q.data?.freeswitch_connected ? "connected" : "disconnected"}
+            </Badge>
+            <ColumnsMenu prefs={prefs} testId="live-column" />
+          </div>
         }
       />
       {q.error && <ErrorBox error={q.error} />}
@@ -108,6 +120,8 @@ export function LiveCallsPage() {
         columns={columns}
         data={q.data?.items ?? []}
         loading={q.isLoading}
+        columnVisibility={prefs.hidden}
+        columnOrder={prefs.order}
         emptyText="No calls in progress."
       />
     </div>

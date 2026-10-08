@@ -153,7 +153,7 @@ Customer rules apply to all its calls; a carrier rule for the same header wins. 
 
 ### 6.1 Live calls
 
-Calls > Live: every call in progress with customer, carrier, numbers, state, duration, codecs and the FreeSWITCH channel. **Hang up** ends a call (the customer receives a BYE; the call is billed normally). The view also tells you when a reservation exists without a channel in FreeSWITCH (the reconciler cleans those up).
+Calls > Live: every call in progress with customer, carrier, numbers, state, duration, codecs and the FreeSWITCH channel. **Columns** hides, shows and reorders the columns of this table, remembered in this browser and independent of the CDR table's layout. **Hang up** ends a call (the customer receives a BYE; the call is billed normally). The view also tells you when a reservation exists without a channel in FreeSWITCH (the reconciler cleans those up).
 
 ### 6.2 CDRs
 

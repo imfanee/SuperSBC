@@ -1,24 +1,22 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowDown, ArrowUp, Columns3, Download, Save } from "lucide-react";
+import { Download, Save } from "lucide-react";
 import { toast } from "sonner";
-import type { ColumnDef, SortingState, VisibilityState } from "@tanstack/react-table";
+import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { download, get } from "@/api/client";
 import type { CDR, Listing } from "@/api/types";
 import { Badge, stateVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ColumnsMenu, useColumnPrefs } from "@/components/column-prefs";
 import { DataTable } from "@/components/data-table";
 import { KV, PageHeader } from "@/components/page";
 import { CustomerSelect, CarrierSelect } from "@/components/selects";
@@ -37,31 +35,6 @@ const dispositions = [
   "rejected_route",
 ];
 
-const COLUMNS_KEY = "sbc.cdr-columns";
-const ORDER_KEY = "sbc.cdr-column-order";
-
-/** Stable id of a column definition (explicit id, else its accessor key). */
-function colID(c: ColumnDef<CDR, unknown>): string {
-  return String(c.id ?? (c as { accessorKey?: string }).accessorKey);
-}
-
-function readStored<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch {
-    return fallback; // private browsing: preferences simply do not persist
-  }
-}
-
-function writeStored(key: string, value: unknown) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    /* ignore */
-  }
-}
-
 function todayRange() {
   const now = new Date();
   const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
@@ -76,14 +49,6 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
   const [page, setPage] = useState(1);
   const [sorting, setSorting] = useState<SortingState>([{ id: "start_time", desc: true }]);
   const [expanded, setExpanded] = useState<string | null>(null);
-  // Hidden columns and their order, remembered per browser (D-74).
-  const [hidden, setHidden] = useState<VisibilityState>(() => readStored<VisibilityState>(COLUMNS_KEY, {}));
-  const [order, setOrder] = useState<string[]>(() => readStored<string[]>(ORDER_KEY, []));
-  const setColumn = (id: string, visible: boolean) => {
-    const next = { ...hidden, [id]: visible };
-    setHidden(next);
-    writeStored(COLUMNS_KEY, next);
-  };
   const query = useMemo(() => {
     const q: Record<string, string> = {};
     for (const [k, v] of Object.entries({ ...filters, ...fixed })) if (v) q[k] = v;
@@ -195,23 +160,7 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
     ],
     [],
   );
-  // Columns in display order: the stored order first, then any column it
-  // does not mention (a column added by a later release).
-  const ordered = useMemo(() => {
-    const byId = new Map(columns.map((c) => [colID(c), c]));
-    const out = order.map((id) => byId.get(id)).filter(Boolean) as ColumnDef<CDR, unknown>[];
-    for (const c of columns) if (!order.includes(colID(c))) out.push(c);
-    return out;
-  }, [columns, order]);
-  const moveColumn = (id: string, by: number) => {
-    const ids = ordered.map(colID);
-    const i = ids.indexOf(id);
-    const j = i + by;
-    if (i < 0 || j < 0 || j >= ids.length) return;
-    [ids[i], ids[j]] = [ids[j], ids[i]];
-    setOrder(ids);
-    writeStored(ORDER_KEY, ids);
-  };
+  const prefs = useColumnPrefs("sbc.cdr", columns);
   const saveFilter = () => {
     try {
       localStorage.setItem("sbc.cdr-filter", JSON.stringify(filters));
@@ -359,78 +308,7 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
             <Button variant="outline" size="sm" onClick={saveFilter}>
               <Save /> Save filter
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" data-testid="cdr-columns-menu">
-                  <Columns3 /> Columns
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="max-h-96 overflow-y-auto">
-                <DropdownMenuLabel className="text-muted-foreground">
-                  Tick to show, arrows to reorder
-                </DropdownMenuLabel>
-                {ordered.map((c, i) => {
-                  const id = colID(c);
-                  const label = typeof c.header === "string" ? c.header : id;
-                  const visible = hidden[id] !== false;
-                  const lastVisible = ordered.filter((x) => hidden[colID(x)] !== false).length === 1;
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={id}
-                      checked={visible}
-                      // keep at least one column so the table never collapses
-                      disabled={visible && lastVisible}
-                      onCheckedChange={(v) => setColumn(id, v === true)}
-                      onSelect={(e) => e.preventDefault()}
-                      data-testid={`cdr-column-${id}`}
-                    >
-                      <span className="flex-1 pr-4">{label}</span>
-                      <span
-                        className="ml-auto flex items-center gap-0.5"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          type="button"
-                          className="rounded p-0.5 hover:bg-background disabled:opacity-30"
-                          aria-label={`Move ${label} up`}
-                          disabled={i === 0}
-                          onClick={() => moveColumn(id, -1)}
-                          data-testid={`cdr-column-up-${id}`}
-                        >
-                          <ArrowUp className="size-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          className="rounded p-0.5 hover:bg-background disabled:opacity-30"
-                          aria-label={`Move ${label} down`}
-                          disabled={i === ordered.length - 1}
-                          onClick={() => moveColumn(id, 1)}
-                          data-testid={`cdr-column-down-${id}`}
-                        >
-                          <ArrowDown className="size-3.5" />
-                        </button>
-                      </span>
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => {
-                    setHidden({});
-                    setOrder([]);
-                    try {
-                      localStorage.removeItem(COLUMNS_KEY);
-                      localStorage.removeItem(ORDER_KEY);
-                    } catch {
-                      /* ignore */
-                    }
-                  }}
-                  data-testid="cdr-columns-reset"
-                >
-                  Show all columns
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ColumnsMenu prefs={prefs} testId="cdr-column" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" data-testid="cdr-csv-menu">
@@ -473,8 +351,8 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
         rowId={(r) => r.call_uuid}
         expandedId={expanded}
         onRowClick={(r) => setExpanded((e) => (e === r.call_uuid ? null : r.call_uuid))}
-        columnVisibility={hidden}
-        columnOrder={order}
+        columnVisibility={prefs.hidden}
+        columnOrder={prefs.order}
         renderExpanded={(c) => <CDRDetail cdr={c} />}
         emptyText="No calls match."
       />
