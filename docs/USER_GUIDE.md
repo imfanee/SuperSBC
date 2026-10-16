@@ -178,7 +178,7 @@ Configuration > Area codes maps a country code plus an area code to a descriptio
 * **Add** or **Edit** one entry; **Import CSV** loads a whole deck (`country_code, area_code, description, operator, country, kind, enabled, notes`), replacing entries with the same codes, so re-importing a corrected file is safe.
 * **Test a number** shows which entry a number matches.
 * **Label existing CDRs** fills the label in on calls recorded before an entry existed. Labels are stored with the CDR, so editing the table never rewrites past records until you ask for it.
-* What ships: the DRC mobile ranges per operator and its fixed line ranges, and for India the geographic STD codes plus the mobile series. Indian mobile numbers show only "Mobile" because number portability means the series no longer identifies an operator.
+* What ships: the DRC mobile ranges per operator and its fixed line ranges; for India every geographic STD code (2,598 of them, with the state in the notes) and the mobile series; and a country level fallback for both so a call is never unlabelled. Indian mobile numbers show only "Mobile" because number portability means the series no longer identifies an operator. The India list is also in `deploy/data/india-std-codes.csv` if you want to correct it and re-import.
 
 ### 6.4 Reports
 

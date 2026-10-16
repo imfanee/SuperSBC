@@ -1,0 +1,2599 @@
+country_code,area_code,description,operator,country,kind,notes
+91,11,New Delhi,Fixed line,India,fixed,Delhi
+91,20,Pune,Fixed line,India,fixed,Maharashtra
+91,22,Mumbai,Fixed line,India,fixed,Maharashtra
+91,33,Calcutta,Fixed line,India,fixed,West Bengal
+91,40,Hyderabad East / Hyderabad Local,Fixed line,India,fixed,Telangana
+91,44,Chengalpattu / Chennai / Kanchipuram and 5 more,Fixed line,India,fixed,Tamil Nadu
+91,79,Ahmedabad Local,Fixed line,India,fixed,Gujarat
+91,80,Bangalore,Fixed line,India,fixed,Karnataka
+91,120,Ghaziabad+dadri,Fixed line,India,fixed,Uttar Pradesh
+91,121,Meerut,Fixed line,India,fixed,Uttar Pradesh
+91,122,Hapur,Fixed line,India,fixed,Uttar Pradesh
+91,124,Gurgaon,Fixed line,India,fixed,Haryana
+91,129,Faridabad,Fixed line,India,fixed,Haryana
+91,130,Sonipat,Fixed line,India,fixed,Haryana
+91,131,Muzaffarnagar,Fixed line,India,fixed,Uttar Pradesh
+91,132,Saharanpur,Fixed line,India,fixed,Uttar Pradesh
+91,135,Dehradun / Mehu Wala Mafi,Fixed line,India,fixed,Uttarakhand
+91,141,Jaipur,Fixed line,India,fixed,Rajasthan
+91,144,Alwar,Fixed line,India,fixed,Rajasthan
+91,145,Ajmer,Fixed line,India,fixed,Rajasthan
+91,151,Bikaner(s),Fixed line,India,fixed,Rajasthan
+91,154,Sriganganagar,Fixed line,India,fixed,Rajasthan
+91,160,Kharar,Fixed line,India,fixed,Punjab
+91,161,Ludhiana,Fixed line,India,fixed,Punjab
+91,164,Bhatinda,Fixed line,India,fixed,Punjab
+91,171,Ambala,Fixed line,India,fixed,Haryana
+91,172,Chandigarh,Fixed line,India,fixed,Punjab
+91,175,Patiala,Fixed line,India,fixed,Punjab
+91,177,Shimla,Fixed line,India,fixed,Himachal Pradesh
+91,180,Panipat,Fixed line,India,fixed,Haryana
+91,181,Jalandhar,Fixed line,India,fixed,Punjab
+91,183,Amritsar / Majitha,Fixed line,India,fixed,Punjab
+91,184,Karnal,Fixed line,India,fixed,Haryana
+91,186,Pathankot,Fixed line,India,fixed,Punjab
+91,191,Jammu,Fixed line,India,fixed,Jammu and Kashmir
+91,194,Srinagar,Fixed line,India,fixed,Jammu and Kashmir
+91,212,Chinchwad,Fixed line,India,fixed,Maharashtra
+91,215,Navi Mumbai,Fixed line,India,fixed,Maharashtra
+91,217,Sholapur,Fixed line,India,fixed,Maharashtra
+91,230,Khadakwasala,Fixed line,India,fixed,Maharashtra
+91,231,Kolhapur,Fixed line,India,fixed,Maharashtra
+91,233,Sangli,Fixed line,India,fixed,Maharashtra
+91,240,Aurangabad,Fixed line,India,fixed,Maharashtra
+91,241,Ahmednagar,Fixed line,India,fixed,Maharashtra
+91,250,Bassein,Fixed line,India,fixed,Maharashtra
+91,251,Kalyan,Fixed line,India,fixed,Maharashtra
+91,253,Nasikcity,Fixed line,India,fixed,Maharashtra
+91,257,Jalgaon,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,260,Vapi,Fixed line,India,fixed,Gujarat
+91,261,Surat,Fixed line,India,fixed,Gujarat
+91,265,Baroda / Vadodara,Fixed line,India,fixed,"Gujarat, Madhya Pradesh"
+91,268,Nadiad,Fixed line,India,fixed,Gujarat
+91,278,Bhavnagar,Fixed line,India,fixed,Gujarat
+91,281,Rajkot,Fixed line,India,fixed,Gujarat
+91,285,Junagarh,Fixed line,India,fixed,"Gujarat, Haryana"
+91,286,Porbander,Fixed line,India,fixed,Gujarat
+91,288,Jamnagar,Fixed line,India,fixed,"Gujarat, Haryana"
+91,291,Jodhpur(e),Fixed line,India,fixed,Rajasthan
+91,294,Girwa / Udaipur,Fixed line,India,fixed,"Rajastan, Rajasthan"
+91,326,Dhanbad,Fixed line,India,fixed,Jharkhand
+91,341,Asansol,Fixed line,India,fixed,West Bengal
+91,342,Burdwan,Fixed line,India,fixed,West Bengal
+91,343,Durgapur,Fixed line,India,fixed,West Bengal
+91,353,Siliguri,Fixed line,India,fixed,West Bengal
+91,354,Darjeeling,Fixed line,India,fixed,West Bengal
+91,361,Guwahati,Fixed line,India,fixed,Assam
+91,364,Shillong,Fixed line,India,fixed,Meghalaya
+91,368,Passighat,Fixed line,India,fixed,Arunachal Pradesh
+91,369,Mokokchung,Fixed line,India,fixed,Nagaland
+91,370,Kohima,Fixed line,India,fixed,Nagaland
+91,372,Lungleh,Fixed line,India,fixed,Mizoram
+91,374,Tinsukia,Fixed line,India,fixed,Assam
+91,376,Jorhat,Fixed line,India,fixed,Assam
+91,381,Agartala,Fixed line,India,fixed,Tripura
+91,385,Imphal,Fixed line,India,fixed,Manipur
+91,389,Aizawl-I,Fixed line,India,fixed,Mizoram
+91,413,Pondicherry,Fixed line,India,fixed,Tamil Nadu
+91,416,Vellore,Fixed line,India,fixed,Tamil Nadu
+91,421,Tirupur,Fixed line,India,fixed,Tamil Nadu
+91,422,Coimbatore,Fixed line,India,fixed,Tamil Nadu
+91,423,Ootacamund,Fixed line,India,fixed,Tamil Nadu
+91,424,Erode,Fixed line,India,fixed,Tamil Nadu
+91,427,Salem,Fixed line,India,fixed,Tamil Nadu
+91,431,Trichy,Fixed line,India,fixed,Tamil Nadu
+91,435,Kumbakonam,Fixed line,India,fixed,Tamil Nadu
+91,451,Dindigul,Fixed line,India,fixed,Tamil Nadu
+91,452,Madurai,Fixed line,India,fixed,Tamil Nadu
+91,461,Tuticorin,Fixed line,India,fixed,Tamil Nadu
+91,462,Tirunelvelli,Fixed line,India,fixed,Tamil Nadu
+91,466,Ottapalam,Fixed line,India,fixed,Tamil Nadu
+91,468,Pathaanamthitta,Fixed line,India,fixed,Kerala
+91,469,Tiruvalla,Fixed line,India,fixed,Kerala
+91,470,Attingal,Fixed line,India,fixed,Kerala
+91,471,Thiruvananthapuram,Fixed line,India,fixed,Kerala
+91,474,Quilon,Fixed line,India,fixed,Kerala
+91,475,Punalur,Fixed line,India,fixed,Kerala
+91,476,Karungapally,Fixed line,India,fixed,Kerala
+91,477,Alleppy,Fixed line,India,fixed,Kerala
+91,478,Shertallai,Fixed line,India,fixed,Kerala
+91,479,Haripad / Mavelikkara,Fixed line,India,fixed,Kerala
+91,480,Irinjalakuda,Fixed line,India,fixed,Kerala
+91,481,Kottayam,Fixed line,India,fixed,Kerala
+91,483,Manjeri,Fixed line,India,fixed,Kerala
+91,484,Cochin / Ernakulam,Fixed line,India,fixed,Kerala
+91,485,Muvattupuzha,Fixed line,India,fixed,Kerala
+91,487,Trichur,Fixed line,India,fixed,Kerala
+91,490,Tellicherry,Fixed line,India,fixed,Kerala
+91,491,Palghat,Fixed line,India,fixed,Kerala
+91,493,Wayanad,Fixed line,India,fixed,Kerala
+91,494,Tirur,Fixed line,India,fixed,Kerala
+91,495,Calicut,Fixed line,India,fixed,Kerala
+91,496,Badagara,Fixed line,India,fixed,Kerala
+91,497,Cannanore,Fixed line,India,fixed,Kerala
+91,512,Kanpur,Fixed line,India,fixed,Uttar Pradesh
+91,515,Unnao,Fixed line,India,fixed,Uttar Pradesh
+91,517,Jhansi,Fixed line,India,fixed,Uttar Pradesh
+91,522,Lucknow,Fixed line,India,fixed,Uttar Pradesh
+91,527,Faizabad,Fixed line,India,fixed,Uttar Pradesh
+91,532,Allahabad,Fixed line,India,fixed,Uttar Pradesh
+91,535,Raibareli,Fixed line,India,fixed,Uttar Pradesh
+91,542,Varanasi,Fixed line,India,fixed,Uttar Pradesh
+91,548,Ghazipur,Fixed line,India,fixed,Uttar Pradesh
+91,551,Gorakhpur,Fixed line,India,fixed,Uttar Pradesh
+91,562,Agra,Fixed line,India,fixed,Uttar Pradesh
+91,565,Mathura,Fixed line,India,fixed,Uttar Pradesh
+91,571,Aligarh,Fixed line,India,fixed,Uttar Pradesh
+91,581,Bareilly,Fixed line,India,fixed,Uttar Pradesh
+91,591,Moradabad,Fixed line,India,fixed,Uttar Pradesh
+91,595,Rampur,Fixed line,India,fixed,Uttar Pradesh
+91,612,Patna,Fixed line,India,fixed,Bihar
+91,621,Muzaffarpur,Fixed line,India,fixed,Bihar
+91,631,Gaya,Fixed line,India,fixed,Bihar
+91,641,Bhagalpur,Fixed line,India,fixed,Bihar
+91,651,Ranchi,Fixed line,India,fixed,Jharkhand
+91,657,Jamshedpur,Fixed line,India,fixed,Jharkhand
+91,661,Rourkela,Fixed line,India,fixed,Odisha
+91,663,Sambalpur,Fixed line,India,fixed,Odisha
+91,671,Cuttack,Fixed line,India,fixed,Odisha
+91,674,Bhubneshwar,Fixed line,India,fixed,Odisha
+91,680,Berhampur,Fixed line,India,fixed,Odisha
+91,712,Nagpur,Fixed line,India,fixed,Maharashtra
+91,721,Amravati,Fixed line,India,fixed,Maharashtra
+91,724,Akola,Fixed line,India,fixed,Maharashtra
+91,731,Indore,Fixed line,India,fixed,Madhya Pradesh
+91,733,Khandwa,Fixed line,India,fixed,Madhya Pradesh
+91,734,Ujjain,Fixed line,India,fixed,Madhya Pradesh
+91,744,Kota / Ladpura,Fixed line,India,fixed,"Chhattisgarh, Gujarat, Rajasthan"
+91,747,Bundi,Fixed line,India,fixed,Rajasthan
+91,751,Gwalior,Fixed line,India,fixed,Madhya Pradesh
+91,755,Bhopal,Fixed line,India,fixed,Madhya Pradesh
+91,761,Jabalpur,Fixed line,India,fixed,Madhya Pradesh
+91,771,Raipur,Fixed line,India,fixed,Chhattisgarh
+91,788,Durg,Fixed line,India,fixed,Chhattisgarh
+91,816,Tumkur,Fixed line,India,fixed,Karnataka
+91,820,Udupi,Fixed line,India,fixed,Karnataka
+91,821,Mysore,Fixed line,India,fixed,Karnataka
+91,824,Mangalore,Fixed line,India,fixed,Karnataka
+91,831,Belgaum,Fixed line,India,fixed,Karnataka
+91,832,Panjim,Fixed line,India,fixed,Goa
+91,836,Dharwad / Hubli,Fixed line,India,fixed,Karnataka
+91,861,Nellore,Fixed line,India,fixed,Andhra Pradesh
+91,863,Guntur,Fixed line,India,fixed,Andhra Pradesh
+91,866,Vijayawada,Fixed line,India,fixed,Andhra Pradesh
+91,870,Warangal,Fixed line,India,fixed,Telangana
+91,883,Rajahmundri,Fixed line,India,fixed,Andhra Pradesh
+91,884,Kakinada,Fixed line,India,fixed,Andhra Pradesh
+91,891,Visakhapatnam,Fixed line,India,fixed,Andhra Pradesh
+91,1232,Modinagar,Fixed line,India,fixed,Uttar Pradesh
+91,1233,Mawana,Fixed line,India,fixed,Uttar Pradesh
+91,1234,Baghpat-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,1237,Sardhana,Fixed line,India,fixed,Uttar Pradesh
+91,1250,Charkhidadri,Fixed line,India,fixed,Haryana
+91,1252,Loharu,Fixed line,India,fixed,Haryana
+91,1253,Tohsam,Fixed line,India,fixed,Haryana
+91,1254,Bawanikhera,Fixed line,India,fixed,Haryana
+91,1255,Siwani,Fixed line,India,fixed,Haryana
+91,1257,Meham,Fixed line,India,fixed,Haryana
+91,1258,Kalanaur,Fixed line,India,fixed,Haryana
+91,1259,Kosli,Fixed line,India,fixed,Haryana
+91,1262,Rohtak,Fixed line,India,fixed,Haryana
+91,1263,Gohana,Fixed line,India,fixed,Haryana
+91,1267,Nuh,Fixed line,India,fixed,Haryana
+91,1268,Ferojpur Jhirka,Fixed line,India,fixed,Haryana
+91,1274,Rewari,Fixed line,India,fixed,Haryana
+91,1275,Palwal,Fixed line,India,fixed,Haryana
+91,1276,Bahadurgarh,Fixed line,India,fixed,Haryana
+91,1282,Narnaul,Fixed line,India,fixed,Haryana
+91,1283,Dharuhera,Fixed line,India,fixed,Haryana
+91,1284,Bawal,Fixed line,India,fixed,Haryana
+91,1285,Mohindergarh,Fixed line,India,fixed,Haryana
+91,1331,Nakur,Fixed line,India,fixed,Uttar Pradesh
+91,1332,Roorkee-I,Fixed line,India,fixed,Uttarakhand
+91,1334,Roorkee-Ii,Fixed line,India,fixed,Uttarakhand
+91,1336,Deoband,Fixed line,India,fixed,Uttar Pradesh
+91,1341,Najibabad,Fixed line,India,fixed,Uttar Pradesh
+91,1342,Bijnore-I,Fixed line,India,fixed,Uttar Pradesh
+91,1343,Nagina,Fixed line,India,fixed,Uttar Pradesh
+91,1344,Dhampur,Fixed line,India,fixed,Uttar Pradesh
+91,1345,Bijnore-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,1346,Pauri-Ii,Fixed line,India,fixed,Uttarakhand
+91,1348,Lansdown-Iii,Fixed line,India,fixed,Uttarakhand
+91,1360,Chakrata / Herbertpur,Fixed line,India,fixed,Uttarakhand
+91,1363,Karan Prayag,Fixed line,India,fixed,Uttarakhand
+91,1364,Ukhimath,Fixed line,India,fixed,Uttarakhand
+91,1368,Pauri-I,Fixed line,India,fixed,Uttarakhand
+91,1370,Deoprayag-Ii,Fixed line,India,fixed,Uttarakhand
+91,1371,Dunda,Fixed line,India,fixed,Uttarakhand
+91,1372,Chamoli,Fixed line,India,fixed,Uttarakhand
+91,1373,Purola,Fixed line,India,fixed,Uttarakhand
+91,1374,Bhatwari-I,Fixed line,India,fixed,Uttarakhand
+91,1375,Rajgarh,Fixed line,India,fixed,Uttarakhand
+91,1376,Tehri,Fixed line,India,fixed,Uttarakhand
+91,1377,Bhatwari-Ii / Gangotri,Fixed line,India,fixed,"Uttarakhand, Uttarkhand"
+91,1378,Deoprayag-I,Fixed line,India,fixed,Uttarakhand
+91,1379,Partapnagar,Fixed line,India,fixed,Uttarakhand
+91,1381,Joshimath-Ii,Fixed line,India,fixed,Uttarakhand
+91,1382,Lansdown-Ii,Fixed line,India,fixed,Uttarakhand
+91,1386,Lansdown-I,Fixed line,India,fixed,Uttarakhand
+91,1389,Joshimath-I,Fixed line,India,fixed,Uttarakhand
+91,1392,Budhana,Fixed line,India,fixed,Uttar Pradesh
+91,1396,Jansath,Fixed line,India,fixed,Uttar Pradesh
+91,1398,Kairana,Fixed line,India,fixed,Uttar Pradesh
+91,1420,Baswa,Fixed line,India,fixed,Rajasthan
+91,1421,Kotputli,Fixed line,India,fixed,Rajasthan
+91,1422,Viratnagar,Fixed line,India,fixed,Rajasthan
+91,1423,Amber,Fixed line,India,fixed,Rajasthan
+91,1424,Phulera(e),Fixed line,India,fixed,Rajasthan
+91,1425,Phulera(w),Fixed line,India,fixed,Rajasthan
+91,1426,Jamwa-Ramgarh,Fixed line,India,fixed,Rajasthan
+91,1427,Dausa,Fixed line,India,fixed,Rajasthan
+91,1428,Dudu,Fixed line,India,fixed,Rajasthan
+91,1429,Bassi,Fixed line,India,fixed,Rajasthan
+91,1430,Phagi,Fixed line,India,fixed,Rajasthan
+91,1431,Lalsot,Fixed line,India,fixed,Rajasthan
+91,1432,Tonk(s),Fixed line,India,fixed,Rajasthan
+91,1433,Todaraisingh,Fixed line,India,fixed,Rajasthan
+91,1434,Deoli,Fixed line,India,fixed,Rajasthan
+91,1435,Tonk(n),Fixed line,India,fixed,Rajasthan
+91,1436,Uniayara,Fixed line,India,fixed,Rajasthan
+91,1437,Malpura,Fixed line,India,fixed,Rajasthan
+91,1438,Newai,Fixed line,India,fixed,Rajasthan
+91,1460,Kishangarhbas,Fixed line,India,fixed,Rajasthan
+91,1461,Bansur,Fixed line,India,fixed,Rajasthan
+91,1462,Beawar,Fixed line,India,fixed,Rajasthan
+91,1463,Kishangarh(s),Fixed line,India,fixed,Rajasthan
+91,1464,Rajgarh,Fixed line,India,fixed,Rajasthan
+91,1465,Thanaghazi,Fixed line,India,fixed,Rajasthan
+91,1466,Kekri(w),Fixed line,India,fixed,Rajasthan
+91,1467,Kekri(e),Fixed line,India,fixed,Rajasthan
+91,1468,Ramgarh,Fixed line,India,fixed,Rajasthan
+91,1469,Tijara(s),Fixed line,India,fixed,Rajasthan
+91,1470,Dungla,Fixed line,India,fixed,Rajasthan
+91,1471,Rashmi,Fixed line,India,fixed,Rajasthan
+91,1472,Chittorgarh,Fixed line,India,fixed,Rajasthan
+91,1473,Barisadri,Fixed line,India,fixed,Rajasthan
+91,1474,Begun(n),Fixed line,India,fixed,Rajasthan
+91,1475,Begun (s),Fixed line,India,fixed,Rajasthan
+91,1476,Kapasan,Fixed line,India,fixed,Rajasthan
+91,1477,Nimbahera,Fixed line,India,fixed,Rajasthan
+91,1478,Pratapgarh(n),Fixed line,India,fixed,Rajasthan
+91,1479,Pratapgarh(s),Fixed line,India,fixed,Rajasthan
+91,1480,Asind,Fixed line,India,fixed,Rajasthan
+91,1481,Raipur,Fixed line,India,fixed,Rajasthan
+91,1482,Bhilwara,Fixed line,India,fixed,Rajasthan
+91,1483,Hurda,Fixed line,India,fixed,Rajastan
+91,1484,Shahapura,Fixed line,India,fixed,Rajasthan
+91,1485,Jahazpur,Fixed line,India,fixed,Rajasthan
+91,1486,Mandal,Fixed line,India,fixed,Rajasthan
+91,1487,Banera,Fixed line,India,fixed,Rajasthan
+91,1488,Kotri,Fixed line,India,fixed,Rajasthan
+91,1489,Mandalgarh,Fixed line,India,fixed,Rajasthan
+91,1491,Nasirabad,Fixed line,India,fixed,Rajasthan
+91,1492,Laxmangarh,Fixed line,India,fixed,Rajasthan
+91,1493,Tijara(n),Fixed line,India,fixed,Rajasthan
+91,1494,Behror,Fixed line,India,fixed,Rajasthan
+91,1495,Mandawar,Fixed line,India,fixed,Rajasthan
+91,1496,Sarwar,Fixed line,India,fixed,Rajasthan
+91,1497,Kishangarh(n),Fixed line,India,fixed,Rajasthan
+91,1498,Anupgarh(e),Fixed line,India,fixed,Rajasthan
+91,1499,Sangaria,Fixed line,India,fixed,Rajasthan
+91,1501,Srikaranpur,Fixed line,India,fixed,Rajasthan
+91,1502,Nohar(w),Fixed line,India,fixed,Rajasthan
+91,1503,Sadulshahar,Fixed line,India,fixed,Rajasthan
+91,1504,Bhadra,Fixed line,India,fixed,Rajasthan
+91,1505,Padampur,Fixed line,India,fixed,Rajasthan
+91,1506,Anupgarh(w),Fixed line,India,fixed,Rajasthan
+91,1507,Raisinghnagar,Fixed line,India,fixed,Rajasthan
+91,1508,Suratgarh(n),Fixed line,India,fixed,Rajasthan
+91,1509,Suratgarh(s),Fixed line,India,fixed,Rajasthan
+91,1520,Bikaner(n),Fixed line,India,fixed,Rajasthan
+91,1521,Bikaner(c),Fixed line,India,fixed,Rajasthan
+91,1522,Bikaner(e),Fixed line,India,fixed,Rajasthan
+91,1523,Bikaner(w),Fixed line,India,fixed,Rajasthan
+91,1526,Lunkaransar-Ii,Fixed line,India,fixed,Rajasthan
+91,1527,Lunkaransar-Iii,Fixed line,India,fixed,Rajasthan
+91,1528,Lunkaransar-Iv,Fixed line,India,fixed,Rajasthan
+91,1529,Lunkaransar-I,Fixed line,India,fixed,Rajasthan
+91,1531,Nokha(e),Fixed line,India,fixed,Rajasthan
+91,1532,Nokha(w),Fixed line,India,fixed,Rajasthan
+91,1533,Kolayat-I,Fixed line,India,fixed,Rajasthan
+91,1534,Kolayat-Ii,Fixed line,India,fixed,Rajasthan
+91,1535,Kolayat-Iii,Fixed line,India,fixed,Rajasthan
+91,1536,Kolayat-Iv,Fixed line,India,fixed,Rajasthan
+91,1537,Nohar(c),Fixed line,India,fixed,Rajasthan
+91,1539,Tibbi,Fixed line,India,fixed,Rajasthan
+91,1552,Hanumangarh,Fixed line,India,fixed,Rajastan
+91,1555,Nohar(e),Fixed line,India,fixed,Rajasthan
+91,1559,Rajgarh,Fixed line,India,fixed,Rajasthan
+91,1560,Sujangarh(c),Fixed line,India,fixed,Rajasthan
+91,1561,Taranagar,Fixed line,India,fixed,Rajasthan
+91,1562,Churu,Fixed line,India,fixed,Rajasthan
+91,1563,Sardarshahar(n),Fixed line,India,fixed,Rajasthan
+91,1564,Sardarshahar(s),Fixed line,India,fixed,Rajasthan
+91,1565,Sridungargarh(n),Fixed line,India,fixed,Rajasthan
+91,1566,Sridungargarh(s),Fixed line,India,fixed,Rajasthan
+91,1567,Ratangarh,Fixed line,India,fixed,Rajasthan
+91,1568,Sujangarh(e),Fixed line,India,fixed,Rajasthan
+91,1569,Sujangarh(w),Fixed line,India,fixed,Rajasthan
+91,1570,Laxmangarh(w),Fixed line,India,fixed,Rajasthan
+91,1571,Fatehpur,Fixed line,India,fixed,Rajasthan
+91,1572,Sikar,Fixed line,India,fixed,Rajasthan
+91,1573,Laxmangarh(e),Fixed line,India,fixed,Rajasthan
+91,1574,Neem Ka Thana,Fixed line,India,fixed,Rajasthan
+91,1575,Srimadhopur,Fixed line,India,fixed,Rajasthan
+91,1576,Dantaramgarh(e),Fixed line,India,fixed,Rajasthan
+91,1577,Dantaramgarh(w),Fixed line,India,fixed,Rajasthan
+91,1580,Deedwana,Fixed line,India,fixed,Rajasthan
+91,1581,Ladnun,Fixed line,India,fixed,Rajasthan
+91,1582,Nagaur(n),Fixed line,India,fixed,Rajasthan
+91,1583,Jayal,Fixed line,India,fixed,Rajasthan
+91,1584,Nagaur(e),Fixed line,India,fixed,Rajasthan
+91,1585,Nagaur(w),Fixed line,India,fixed,Rajasthan
+91,1586,Nawa,Fixed line,India,fixed,Rajasthan
+91,1587,Degana,Fixed line,India,fixed,Rajasthan
+91,1588,Parbatsar(n),Fixed line,India,fixed,Rajasthan
+91,1589,Parbatsar(s),Fixed line,India,fixed,Rajasthan
+91,1590,Merta(e),Fixed line,India,fixed,Rajasthan
+91,1591,Merta(w),Fixed line,India,fixed,Rajasthan
+91,1592,Jhunjhunu(s),Fixed line,India,fixed,Rajasthan
+91,1593,Khetri,Fixed line,India,fixed,Rajasthan
+91,1595,Jhunjhunu(n),Fixed line,India,fixed,Rajasthan
+91,1596,Chirawa,Fixed line,India,fixed,Rajasthan
+91,1624,Jagraon,Fixed line,India,fixed,Punjab
+91,1628,Samrala,Fixed line,India,fixed,Punjab
+91,1632,Ferozepur,Fixed line,India,fixed,Punjab
+91,1633,Muktasar,Fixed line,India,fixed,Punjab
+91,1634,Abohar,Fixed line,India,fixed,Punjab
+91,1635,Kotkapura,Fixed line,India,fixed,Punjab
+91,1636,Moga,Fixed line,India,fixed,Punjab
+91,1637,Malaut,Fixed line,India,fixed,Punjab
+91,1638,Fazilka,Fixed line,India,fixed,Punjab
+91,1639,Faridkot,Fixed line,India,fixed,Punjab
+91,1651,Phulmandi,Fixed line,India,fixed,Punjab
+91,1652,Mansa,Fixed line,India,fixed,Punjab
+91,1655,Raman,Fixed line,India,fixed,Punjab
+91,1659,Sardulgarh,Fixed line,India,fixed,Punjab
+91,1662,Hissar,Fixed line,India,fixed,Haryana
+91,1663,Hansi,Fixed line,India,fixed,Haryana
+91,1664,Bhiwani,Fixed line,India,fixed,Haryana
+91,1666,Sirsa,Fixed line,India,fixed,Haryana
+91,1667,Fatehabad,Fixed line,India,fixed,Haryana
+91,1668,Dabwali,Fixed line,India,fixed,Haryana
+91,1669,Adampur Mandi,Fixed line,India,fixed,Haryana
+91,1672,Sangrur,Fixed line,India,fixed,Punjab
+91,1675,Malerkotla,Fixed line,India,fixed,Punjab
+91,1676,Lehragaga / Sunam,Fixed line,India,fixed,Punjab
+91,1679,Barnala,Fixed line,India,fixed,Punjab
+91,1682,Zira,Fixed line,India,fixed,Punjab
+91,1684,Narwana,Fixed line,India,fixed,Haryana
+91,1685,Guruharsahai,Fixed line,India,fixed,Punjab
+91,1686,Safidon,Fixed line,India,fixed,Haryana
+91,1692,Tohana,Fixed line,India,fixed,Haryana
+91,1693,Barwala,Fixed line,India,fixed,Haryana
+91,1696,Kalanwali,Fixed line,India,fixed,Haryana
+91,1697,Ratia,Fixed line,India,fixed,Haryana
+91,1698,Ellenabad,Fixed line,India,fixed,Haryana
+91,1702,Nahan,Fixed line,India,fixed,Himachal Pradesh
+91,1704,Paonta,Fixed line,India,fixed,Himachal Pradesh
+91,1731,Barara,Fixed line,India,fixed,Haryana
+91,1732,Yamunanagar,Fixed line,India,fixed,Haryana
+91,1733,Kalka,Fixed line,India,fixed,Haryana
+91,1734,Naraingarh,Fixed line,India,fixed,Haryana
+91,1735,Chhachrauli,Fixed line,India,fixed,Haryana
+91,1741,Pehowa,Fixed line,India,fixed,Haryana
+91,1743,Cheeka,Fixed line,India,fixed,Haryana
+91,1744,Kurukshetra / Ladwa,Fixed line,India,fixed,Haryana
+91,1745,Nilokheri,Fixed line,India,fixed,Haryana
+91,1746,Kaithal,Fixed line,India,fixed,Haryana
+91,1748,Gharaunda,Fixed line,India,fixed,Haryana
+91,1749,Assandh,Fixed line,India,fixed,Haryana
+91,1762,Rajpura,Fixed line,India,fixed,Punjab
+91,1763,Sarhind,Fixed line,India,fixed,Punjab
+91,1764,Samana,Fixed line,India,fixed,Punjab
+91,1765,Nabha,Fixed line,India,fixed,Punjab
+91,1781,Jubbal / Rohru,Fixed line,India,fixed,Himachal Pradesh
+91,1782,Rampur Bushahar,Fixed line,India,fixed,Himachal Pradesh
+91,1783,Theog,Fixed line,India,fixed,Himachal Pradesh
+91,1785,Pooh,Fixed line,India,fixed,Himachal Pradesh
+91,1786,Kalpa,Fixed line,India,fixed,Himachal Pradesh
+91,1792,Solan,Fixed line,India,fixed,Himachal Pradesh
+91,1795,Nalagarh,Fixed line,India,fixed,Himachal Pradesh
+91,1796,Arki,Fixed line,India,fixed,Himachal Pradesh
+91,1799,Rajgarh,Fixed line,India,fixed,Himachal Pradesh
+91,1821,Nakodar,Fixed line,India,fixed,Punjab
+91,1822,Kapurthala,Fixed line,India,fixed,Punjab
+91,1823,Nawanshahar,Fixed line,India,fixed,Punjab
+91,1824,Phagwara,Fixed line,India,fixed,Punjab
+91,1826,Phillaur,Fixed line,India,fixed,Punjab
+91,1828,Sultanpur Lodhi,Fixed line,India,fixed,Punjab
+91,1851,Patti,Fixed line,India,fixed,Punjab
+91,1852,Taran Taran,Fixed line,India,fixed,Punjab
+91,1853,Rayya,Fixed line,India,fixed,Punjab
+91,1858,Ajnala,Fixed line,India,fixed,Punjab
+91,1870,Jugial,Fixed line,India,fixed,Punjab
+91,1871,Batala,Fixed line,India,fixed,Punjab
+91,1872,Quadian,Fixed line,India,fixed,"Goa, Punjab"
+91,1874,Gurdaspur,Fixed line,India,fixed,Punjab
+91,1875,Dinanagar,Fixed line,India,fixed,Punjab
+91,1881,Ropar,Fixed line,India,fixed,Punjab
+91,1882,Hoshiarpur,Fixed line,India,fixed,Punjab
+91,1883,Dasua,Fixed line,India,fixed,Punjab
+91,1885,Balachaur,Fixed line,India,fixed,Punjab
+91,1886,Tanda Urmar,Fixed line,India,fixed,Punjab
+91,1887,Nangal,Fixed line,India,fixed,Punjab
+91,1892,Kangra,Fixed line,India,fixed,Himachal Pradesh
+91,1893,Nurpur,Fixed line,India,fixed,Himachal Pradesh
+91,1894,Palampur,Fixed line,India,fixed,Himachal Pradesh
+91,1895,Bharmour,Fixed line,India,fixed,Himachal Pradesh
+91,1896,Churah,Fixed line,India,fixed,Himachal Pradesh
+91,1897,Pangi,Fixed line,India,fixed,Himachal Pradesh
+91,1899,Chamba,Fixed line,India,fixed,Himachal Pradesh
+91,1900,Lahul,Fixed line,India,fixed,Himachal Pradesh
+91,1902,Kullu,Fixed line,India,fixed,Himachal Pradesh
+91,1903,Banjar,Fixed line,India,fixed,Himachal Pradesh
+91,1904,Nirmand,Fixed line,India,fixed,Himachal Pradesh
+91,1905,Mandi,Fixed line,India,fixed,Himachal Pradesh
+91,1906,Manali / Spiti,Fixed line,India,fixed,Himachal Pradesh
+91,1907,Sundernagar,Fixed line,India,fixed,Himachal Pradesh
+91,1908,Jogindernagar,Fixed line,India,fixed,Himachal Pradesh
+91,1909,Udaipur,Fixed line,India,fixed,Himachal Pradesh
+91,1921,Basholi,Fixed line,India,fixed,Jammu and Kashmir
+91,1922,Kathua,Fixed line,India,fixed,Jammu and Kashmir
+91,1923,Samba,Fixed line,India,fixed,Jammu and Kashmir
+91,1924,Akhnoor,Fixed line,India,fixed,Jammu and Kashmir
+91,1931,Kulgam,Fixed line,India,fixed,Jammu and Kashmir
+91,1932,Anantnag / Qazigund,Fixed line,India,fixed,Jammu and Kashmir
+91,1933,Pulwama,Fixed line,India,fixed,Jammu and Kashmir
+91,1936,Pahalgam,Fixed line,India,fixed,Jammu and Kashmir
+91,1951,Badgam / Magam,Fixed line,India,fixed,Jammu and Kashmir
+91,1952,Baramulla,Fixed line,India,fixed,Jammu and Kashmir
+91,1955,Kupwara,Fixed line,India,fixed,Jammu and Kashmir
+91,1957,Bandipur,Fixed line,India,fixed,Jammu and Kashmir
+91,1958,Karnah,Fixed line,India,fixed,Jammu and Kashmir
+91,1960,Nowshera,Fixed line,India,fixed,Jammu and Kashmir
+91,1962,Rajouri,Fixed line,India,fixed,Jammu and Kashmir
+91,1964,Kalakot,Fixed line,India,fixed,Jammu and Kashmir
+91,1965,Poonch,Fixed line,India,fixed,Jammu and Kashmir
+91,1970,Dehra Gopipur,Fixed line,India,fixed,Himachal Pradesh
+91,1972,Hamirpur,Fixed line,India,fixed,Himachal Pradesh
+91,1975,Una,Fixed line,India,fixed,Himachal Pradesh
+91,1976,Amb,Fixed line,India,fixed,Himachal Pradesh
+91,1978,Bilaspur,Fixed line,India,fixed,Himachal Pradesh
+91,1980,Nobra,Fixed line,India,fixed,Jammu and Kashmir
+91,1981,Nyoma,Fixed line,India,fixed,Jammu and Kashmir
+91,1982,Leh,Fixed line,India,fixed,Jammu and Kashmir
+91,1983,Nihalpur / Padam,Fixed line,India,fixed,Jammu and Kashmir
+91,1985,Kargil,Fixed line,India,fixed,Jammu and Kashmir
+91,1990,Ramnagar,Fixed line,India,fixed,Jammu and Kashmir
+91,1991,Reasi,Fixed line,India,fixed,Jammu and Kashmir
+91,1995,Kishtwar,Fixed line,India,fixed,Jammu and Kashmir
+91,1996,Doda,Fixed line,India,fixed,Jammu and Kashmir
+91,1997,Bedarwah,Fixed line,India,fixed,Jammu and Kashmir
+91,1998,Ramban,Fixed line,India,fixed,Jammu and Kashmir
+91,1999,Mahore,Fixed line,India,fixed,Jammu and Kashmir
+91,2111,Indapur,Fixed line,India,fixed,Maharashtra
+91,2112,Baramati,Fixed line,India,fixed,Maharashtra
+91,2113,Bhor,Fixed line,India,fixed,Maharashtra
+91,2114,Lonavala,Fixed line,India,fixed,Maharashtra
+91,2115,Saswad,Fixed line,India,fixed,Maharashtra
+91,2117,Daund,Fixed line,India,fixed,Maharashtra
+91,2118,Walchandnagar,Fixed line,India,fixed,Maharashtra
+91,2119,Kedgaon,Fixed line,India,fixed,Maharashtra
+91,2130,Velhe,Fixed line,India,fixed,Maharashtra
+91,2132,Junnar,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,2133,Mancher,Fixed line,India,fixed,Maharashtra
+91,2135,Rajgurunagar,Fixed line,India,fixed,Maharashtra
+91,2136,Urlikanchan,Fixed line,India,fixed,Maharashtra
+91,2137,Nahavara,Fixed line,India,fixed,Maharashtra
+91,2138,Shirur,Fixed line,India,fixed,Maharashtra
+91,2139,Pirangut,Fixed line,India,fixed,Maharashtra
+91,2140,Mangaon,Fixed line,India,fixed,Maharashtra
+91,2141,Alibagh,Fixed line,India,fixed,Maharashtra
+91,2142,Pali,Fixed line,India,fixed,Maharashtra
+91,2143,Pen,Fixed line,India,fixed,Maharashtra
+91,2144,Murud,Fixed line,India,fixed,Maharashtra
+91,2145,Mahad,Fixed line,India,fixed,Maharashtra
+91,2147,Shrivardhan,Fixed line,India,fixed,Maharashtra
+91,2148,Karjat,Fixed line,India,fixed,Maharashtra
+91,2149,Mahasala,Fixed line,India,fixed,Maharashtra
+91,2160,Sakarwadi,Fixed line,India,fixed,Maharashtra
+91,2161,Vaduj,Fixed line,India,fixed,Maharashtra
+91,2162,Satara,Fixed line,India,fixed,Maharashtra
+91,2163,Koregaon,Fixed line,India,fixed,Maharashtra
+91,2164,Karad,Fixed line,India,fixed,Maharashtra
+91,2165,Dhiwadi,Fixed line,India,fixed,Maharashtra
+91,2166,Phaltan,Fixed line,India,fixed,Maharashtra
+91,2167,Wai,Fixed line,India,fixed,Maharashtra
+91,2168,Mahabaleswar,Fixed line,India,fixed,Maharashtra
+91,2169,Shirwal,Fixed line,India,fixed,Maharashtra
+91,2181,Akkalkot,Fixed line,India,fixed,Maharashtra
+91,2182,Karmala,Fixed line,India,fixed,Maharashtra
+91,2183,Madha,Fixed line,India,fixed,Maharashtra
+91,2184,Barsi,Fixed line,India,fixed,Maharashtra
+91,2185,Malsuras,Fixed line,India,fixed,Maharashtra
+91,2186,Pandharpur,Fixed line,India,fixed,Maharashtra
+91,2187,Sangola,Fixed line,India,fixed,Maharashtra
+91,2188,Mangalwedha,Fixed line,India,fixed,Maharashtra
+91,2189,Mohol,Fixed line,India,fixed,Maharashtra
+91,2191,Poladpur,Fixed line,India,fixed,Maharashtra
+91,2192,Khopoli,Fixed line,India,fixed,Maharashtra
+91,2194,Roha,Fixed line,India,fixed,Maharashtra
+91,2320,Chandgad,Fixed line,India,fixed,Maharashtra
+91,2321,Radhanagar,Fixed line,India,fixed,Maharashtra
+91,2322,Shirol,Fixed line,India,fixed,Maharashtra
+91,2323,Ajara,Fixed line,India,fixed,Maharashtra
+91,2324,Hatkangale,Fixed line,India,fixed,Maharashtra
+91,2325,Kagal,Fixed line,India,fixed,Maharashtra
+91,2326,Gaganbavada,Fixed line,India,fixed,Maharashtra
+91,2327,Gadhinglaj,Fixed line,India,fixed,Maharashtra
+91,2328,Panhala,Fixed line,India,fixed,Maharashtra
+91,2329,Shahuwadi,Fixed line,India,fixed,Maharashtra
+91,2341,Kavathemankal,Fixed line,India,fixed,Maharashtra
+91,2342,Islampur,Fixed line,India,fixed,Maharashtra
+91,2343,Atpadi,Fixed line,India,fixed,Maharashtra
+91,2344,Jath,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,2345,Shirala,Fixed line,India,fixed,Maharashtra
+91,2346,Tasgaon,Fixed line,India,fixed,Maharashtra
+91,2347,Vita,Fixed line,India,fixed,Maharashtra
+91,2350,Madangad,Fixed line,India,fixed,Maharashtra
+91,2351,Langa,Fixed line,India,fixed,Maharashtra
+91,2352,Ratnagiri,Fixed line,India,fixed,Maharashtra
+91,2353,Rajapur,Fixed line,India,fixed,Maharashtra
+91,2354,Sanganeshwar,Fixed line,India,fixed,Maharashtra
+91,2355,Chiplun,Fixed line,India,fixed,Maharashtra
+91,2356,Khed,Fixed line,India,fixed,Maharashtra
+91,2357,Malgund,Fixed line,India,fixed,Maharashtra
+91,2358,Dapoli,Fixed line,India,fixed,Maharashtra
+91,2359,Guhagar,Fixed line,India,fixed,Maharashtra
+91,2362,Kudal,Fixed line,India,fixed,Maharashtra
+91,2363,Sawantwadi,Fixed line,India,fixed,Maharashtra
+91,2364,Deogad,Fixed line,India,fixed,Maharashtra
+91,2365,Malwan,Fixed line,India,fixed,Maharashtra
+91,2366,Vengurla,Fixed line,India,fixed,Maharashtra
+91,2367,Kankavali,Fixed line,India,fixed,Maharashtra
+91,2371,Wathar,Fixed line,India,fixed,Maharashtra
+91,2372,Patan,Fixed line,India,fixed,Maharashtra
+91,2373,Mahaswad,Fixed line,India,fixed,Maharashtra
+91,2375,Pusegaon,Fixed line,India,fixed,Maharashtra
+91,2378,Mehda,Fixed line,India,fixed,Maharashtra
+91,2381,Ahmedpur,Fixed line,India,fixed,Maharashtra
+91,2382,Latur,Fixed line,India,fixed,Maharashtra
+91,2383,Ausa,Fixed line,India,fixed,Maharashtra
+91,2384,Nilanga,Fixed line,India,fixed,Maharashtra
+91,2385,Udgir,Fixed line,India,fixed,Maharashtra
+91,2421,Jamkhed,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,2422,Shri Rampur,Fixed line,India,fixed,Maharashtra
+91,2423,Kopargaon,Fixed line,India,fixed,Maharashtra
+91,2424,Akole,Fixed line,India,fixed,Maharashtra
+91,2425,Sangamner,Fixed line,India,fixed,Maharashtra
+91,2426,Rahuri,Fixed line,India,fixed,Maharashtra
+91,2427,Newasa,Fixed line,India,fixed,Maharashtra
+91,2428,Pathardi,Fixed line,India,fixed,Maharashtra
+91,2429,Shevgaon,Fixed line,India,fixed,Maharashtra
+91,2430,Sillod,Fixed line,India,fixed,Maharashtra
+91,2431,Paithan,Fixed line,India,fixed,Maharashtra
+91,2433,Gangapur,Fixed line,India,fixed,Maharashtra
+91,2435,Kannad,Fixed line,India,fixed,Maharashtra
+91,2436,Vijapur,Fixed line,India,fixed,Maharashtra
+91,2437,Khultabad,Fixed line,India,fixed,Maharashtra
+91,2438,Soyegaon,Fixed line,India,fixed,Maharashtra
+91,2439,Golegaon,Fixed line,India,fixed,Maharashtra
+91,2441,Ashti,Fixed line,India,fixed,Maharashtra
+91,2442,Bhir,Fixed line,India,fixed,Maharashtra
+91,2443,Manjalegaon,Fixed line,India,fixed,Maharashtra
+91,2444,Patoda,Fixed line,India,fixed,Maharashtra
+91,2445,Kaij,Fixed line,India,fixed,Maharashtra
+91,2446,Ambejogai,Fixed line,India,fixed,Maharashtra
+91,2447,Gevrai,Fixed line,India,fixed,Maharashtra
+91,2451,Pathari,Fixed line,India,fixed,Maharashtra
+91,2452,Parbhani,Fixed line,India,fixed,Maharashtra
+91,2453,Gangakhed,Fixed line,India,fixed,Maharashtra
+91,2454,Basmatnagar,Fixed line,India,fixed,Maharashtra
+91,2455,Kalamnuri,Fixed line,India,fixed,Maharashtra
+91,2456,Hingoli,Fixed line,India,fixed,Maharashtra
+91,2457,Jintdor,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,2460,Delhi Tanda,Fixed line,India,fixed,Maharashtra
+91,2461,Mukhed,Fixed line,India,fixed,Maharashtra
+91,2462,Nanded,Fixed line,India,fixed,Maharashtra
+91,2463,Degloor,Fixed line,India,fixed,Maharashtra
+91,2465,Billoli,Fixed line,India,fixed,Maharashtra
+91,2466,Kandhar,Fixed line,India,fixed,Maharashtra
+91,2467,Bhokar,Fixed line,India,fixed,Maharashtra
+91,2468,Hadgaon,Fixed line,India,fixed,Maharashtra
+91,2469,Kinwat,Fixed line,India,fixed,Maharashtra
+91,2471,Tuljapur,Fixed line,India,fixed,Maharashtra
+91,2472,Osmanabad,Fixed line,India,fixed,Maharashtra
+91,2473,Kallam,Fixed line,India,fixed,Maharashtra
+91,2475,Omerga,Fixed line,India,fixed,Maharashtra
+91,2477,Paranda,Fixed line,India,fixed,Maharashtra
+91,2478,Bhoom,Fixed line,India,fixed,Maharashtra
+91,2481,Ner,Fixed line,India,fixed,Maharashtra
+91,2482,Jalna,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,2483,Ambad,Fixed line,India,fixed,Maharashtra
+91,2484,Partur,Fixed line,India,fixed,Maharashtra
+91,2485,Bhokardan,Fixed line,India,fixed,Maharashtra
+91,2487,Shrigonda,Fixed line,India,fixed,Maharashtra
+91,2488,Parner,Fixed line,India,fixed,Maharashtra
+91,2489,Karjat,Fixed line,India,fixed,Maharashtra
+91,2520,Jawahar,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,2521,Talasari,Fixed line,India,fixed,Maharashtra
+91,2522,Bhiwandi,Fixed line,India,fixed,Maharashtra
+91,2524,Murbad,Fixed line,India,fixed,Maharashtra
+91,2525,Palghar,Fixed line,India,fixed,Maharashtra
+91,2526,Wada,Fixed line,India,fixed,Maharashtra
+91,2527,Shahapur,Fixed line,India,fixed,Maharashtra
+91,2528,Dahanu,Fixed line,India,fixed,Maharashtra
+91,2529,Mokhada,Fixed line,India,fixed,Maharashtra
+91,2550,Niphad,Fixed line,India,fixed,Maharashtra
+91,2551,Sinnar,Fixed line,India,fixed,Maharashtra
+91,2552,Nandgaon,Fixed line,India,fixed,Maharashtra
+91,2553,Igatpuri,Fixed line,India,fixed,Maharashtra
+91,2554,Malegaon,Fixed line,India,fixed,Maharashtra
+91,2555,Satana,Fixed line,India,fixed,Maharashtra
+91,2556,Chanwad,Fixed line,India,fixed,Maharashtra
+91,2557,Dindori,Fixed line,India,fixed,Maharashtra
+91,2558,Peint,Fixed line,India,fixed,Maharashtra
+91,2560,Kusumba,Fixed line,India,fixed,Maharashtra
+91,2561,Pimpalner,Fixed line,India,fixed,Maharashtra
+91,2562,Dhulia,Fixed line,India,fixed,Maharashtra
+91,2563,Shirpur,Fixed line,India,fixed,Maharashtra
+91,2564,Nandurbar,Fixed line,India,fixed,Maharashtra
+91,2565,Shahada,Fixed line,India,fixed,Maharashtra
+91,2566,Sindkheda,Fixed line,India,fixed,Maharashtra
+91,2567,Taloda,Fixed line,India,fixed,Maharashtra
+91,2568,Sakri,Fixed line,India,fixed,Maharashtra
+91,2569,Navapur,Fixed line,India,fixed,Maharashtra
+91,2580,Jamner,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,2582,Bhusawal,Fixed line,India,fixed,Maharashtra
+91,2583,Edalabad,Fixed line,India,fixed,Maharashtra
+91,2584,Raver,Fixed line,India,fixed,Maharashtra
+91,2586,Chopda,Fixed line,India,fixed,Maharashtra
+91,2587,Amalner,Fixed line,India,fixed,Maharashtra
+91,2588,Erandul,Fixed line,India,fixed,Maharashtra
+91,2589,Chalisgaon,Fixed line,India,fixed,Maharashtra
+91,2591,Manmad,Fixed line,India,fixed,Maharashtra
+91,2592,Kalwan,Fixed line,India,fixed,Maharashtra
+91,2593,Surgena,Fixed line,India,fixed,Maharashtra
+91,2594,Trimbak,Fixed line,India,fixed,Maharashtra
+91,2595,Dhadgaon,Fixed line,India,fixed,Maharashtra
+91,2596,Pachora,Fixed line,India,fixed,Maharashtra
+91,2597,Parola,Fixed line,India,fixed,Maharashtra
+91,2598,Umrane,Fixed line,India,fixed,Maharashtra
+91,2599,Bhudargad,Fixed line,India,fixed,Maharashtra
+91,2621,Sayan,Fixed line,India,fixed,Gujarat
+91,2622,Bardoli,Fixed line,India,fixed,Gujarat
+91,2623,Mandvi,Fixed line,India,fixed,Gujarat
+91,2624,Fortsongadh,Fixed line,India,fixed,Gujarat
+91,2625,Valod,Fixed line,India,fixed,Gujarat
+91,2626,Vyara,Fixed line,India,fixed,Gujarat
+91,2628,Nizar,Fixed line,India,fixed,Gujarat
+91,2629,M.M.Mangrol,Fixed line,India,fixed,Gujarat
+91,2630,Bansada,Fixed line,India,fixed,Gujarat
+91,2631,Ahwa,Fixed line,India,fixed,Gujarat
+91,2632,Valsad,Fixed line,India,fixed,Gujarat
+91,2633,Dharampur,Fixed line,India,fixed,Gujarat
+91,2634,Billimora,Fixed line,India,fixed,Gujarat
+91,2637,Navasari,Fixed line,India,fixed,Gujarat
+91,2640,Rajpipla,Fixed line,India,fixed,Gujarat
+91,2641,Amod,Fixed line,India,fixed,Gujarat
+91,2642,Bharuch,Fixed line,India,fixed,Gujarat
+91,2643,Valia,Fixed line,India,fixed,Gujarat
+91,2644,Jambusar,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2645,Jhagadia,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2646,Ankaleshwar,Fixed line,India,fixed,Gujarat
+91,2649,Dediapada,Fixed line,India,fixed,Gujarat
+91,2661,Naswadi,Fixed line,India,fixed,Gujarat
+91,2662,Padra,Fixed line,India,fixed,Gujarat
+91,2663,Dabhoi,Fixed line,India,fixed,Gujarat
+91,2664,Pavijetpur,Fixed line,India,fixed,Gujarat
+91,2665,Sankheda,Fixed line,India,fixed,Gujarat
+91,2666,Miyagam,Fixed line,India,fixed,Gujarat
+91,2667,Savli,Fixed line,India,fixed,Gujarat
+91,2668,Waghodia,Fixed line,India,fixed,Gujarat
+91,2669,Chhota Udaipur,Fixed line,India,fixed,Gujarat
+91,2670,Shehra,Fixed line,India,fixed,Gujarat
+91,2672,Godhra,Fixed line,India,fixed,Gujarat
+91,2673,Dahod,Fixed line,India,fixed,Gujarat
+91,2674,Lunavada,Fixed line,India,fixed,Gujarat
+91,2675,Santrampur,Fixed line,India,fixed,Gujarat
+91,2676,Halol,Fixed line,India,fixed,Gujarat
+91,2677,Limkheda,Fixed line,India,fixed,Gujarat
+91,2678,Devgadhbaria,Fixed line,India,fixed,Gujarat
+91,2679,Jhalod,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2690,Balasinor,Fixed line,India,fixed,Gujarat
+91,2692,Anand,Fixed line,India,fixed,Gujarat
+91,2694,Mehmedabad,Fixed line,India,fixed,Gujarat
+91,2696,Borsad,Fixed line,India,fixed,Gujarat
+91,2697,Sojitra,Fixed line,India,fixed,Gujarat
+91,2699,Thasra,Fixed line,India,fixed,Gujarat
+91,2711,Barwala,Fixed line,India,fixed,Gujarat
+91,2712,Gandhi Nagar,Fixed line,India,fixed,Gujarat
+91,2713,Dhandhuka,Fixed line,India,fixed,Gujarat
+91,2714,Dholka,Fixed line,India,fixed,Gujarat
+91,2715,Viramgam,Fixed line,India,fixed,Gujarat
+91,2716,Dehgam,Fixed line,India,fixed,Gujarat
+91,2717,Sanand,Fixed line,India,fixed,Gujarat
+91,2718,Bareja,Fixed line,India,fixed,Gujarat
+91,2733,Harij,Fixed line,India,fixed,Gujarat
+91,2734,Chanasma,Fixed line,India,fixed,Gujarat
+91,2735,Deodar,Fixed line,India,fixed,Gujarat
+91,2737,Tharad,Fixed line,India,fixed,Gujarat
+91,2738,Santalpur,Fixed line,India,fixed,Gujarat
+91,2739,Vadgam,Fixed line,India,fixed,Gujarat
+91,2740,Vav,Fixed line,India,fixed,Gujarat
+91,2742,Palanpur,Fixed line,India,fixed,Gujarat
+91,2744,Deesa,Fixed line,India,fixed,Gujarat
+91,2746,Radhanpur,Fixed line,India,fixed,Gujarat
+91,2747,Thara,Fixed line,India,fixed,Gujarat
+91,2748,Dhanera,Fixed line,India,fixed,Gujarat
+91,2749,Danta,Fixed line,India,fixed,Gujarat
+91,2751,Chotila,Fixed line,India,fixed,Gujarat
+91,2752,Surendranagar,Fixed line,India,fixed,Gujarat
+91,2753,Limbdi,Fixed line,India,fixed,Gujarat
+91,2754,Dhrangadhra,Fixed line,India,fixed,Gujarat
+91,2755,Sayla,Fixed line,India,fixed,Gujarat
+91,2756,Muli,Fixed line,India,fixed,Gujarat
+91,2757,Dasada,Fixed line,India,fixed,Gujarat
+91,2758,Halvad,Fixed line,India,fixed,Gujarat
+91,2759,Lakhtar,Fixed line,India,fixed,Gujarat
+91,2762,Mehsana,Fixed line,India,fixed,Gujarat
+91,2763,Vijapur,Fixed line,India,fixed,Gujarat
+91,2765,Visnagar,Fixed line,India,fixed,Gujarat
+91,2766,Patan,Fixed line,India,fixed,Gujarat
+91,2767,Sidhpur,Fixed line,India,fixed,Gujarat
+91,2770,Prantij,Fixed line,India,fixed,Gujarat
+91,2771,Bhiloda,Fixed line,India,fixed,Gujarat
+91,2772,Himatnagar,Fixed line,India,fixed,Gujarat
+91,2773,Malpur,Fixed line,India,fixed,Gujarat
+91,2774,Modasa,Fixed line,India,fixed,Gujarat
+91,2778,Idar,Fixed line,India,fixed,Gujarat
+91,2779,Bayad,Fixed line,India,fixed,Gujarat
+91,2791,Babra,Fixed line,India,fixed,Gujarat
+91,2792,Amreli,Fixed line,India,fixed,Gujarat
+91,2793,Damnagar,Fixed line,India,fixed,Gujarat
+91,2794,Rajaula,Fixed line,India,fixed,Gujarat
+91,2797,Dhari,Fixed line,India,fixed,Gujarat
+91,2801,Ranavav,Fixed line,India,fixed,Gujarat
+91,2806,Gogodar,Fixed line,India,fixed,Gujarat
+91,2808,Sumrasar,Fixed line,India,fixed,Gujarat
+91,2820,Paddhari,Fixed line,India,fixed,Gujarat
+91,2821,Jasdan,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2822,Morvi,Fixed line,India,fixed,Gujarat
+91,2823,Jetpur,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2824,Dhoraji,Fixed line,India,fixed,Gujarat
+91,2825,Gondal,Fixed line,India,fixed,Gujarat
+91,2826,Upleta,Fixed line,India,fixed,Gujarat
+91,2828,Wankaner,Fixed line,India,fixed,Gujarat
+91,2829,Maliya Miyana,Fixed line,India,fixed,Gujarat
+91,2830,Rahpar,Fixed line,India,fixed,Gujarat
+91,2831,Nalia,Fixed line,India,fixed,Gujarat
+91,2832,Bhuj,Fixed line,India,fixed,Gujarat
+91,2835,Nakhatrana,Fixed line,India,fixed,Gujarat
+91,2836,Anjar,Fixed line,India,fixed,Gujarat
+91,2837,Bhachav,Fixed line,India,fixed,Gujarat
+91,2838,Mundra,Fixed line,India,fixed,Gujarat
+91,2839,Lakhpat,Fixed line,India,fixed,Gujarat
+91,2841,Vallabhipur,Fixed line,India,fixed,Gujarat
+91,2842,Talaja,Fixed line,India,fixed,Gujarat
+91,2843,Gariadhar,Fixed line,India,fixed,Gujarat
+91,2844,Mahuva,Fixed line,India,fixed,Gujarat
+91,2845,Savarkundla,Fixed line,India,fixed,Gujarat
+91,2846,Sihor,Fixed line,India,fixed,Gujarat
+91,2847,Gadhada,Fixed line,India,fixed,Gujarat
+91,2848,Palitana,Fixed line,India,fixed,Gujarat
+91,2849,Botad,Fixed line,India,fixed,Gujarat
+91,2870,Malia-Hatina,Fixed line,India,fixed,Gujarat
+91,2872,Vanthali,Fixed line,India,fixed,Gujarat
+91,2873,Visavadar,Fixed line,India,fixed,Gujarat
+91,2874,Manavadar,Fixed line,India,fixed,Gujarat
+91,2875,Una-Diu,Fixed line,India,fixed,Gujarat
+91,2876,Veraval,Fixed line,India,fixed,Gujarat
+91,2877,Talala,Fixed line,India,fixed,Gujarat
+91,2878,Mangrol,Fixed line,India,fixed,Gujarat
+91,2891,Jamkalyanpur,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2892,Dwaraka / Okha,Fixed line,India,fixed,Gujarat
+91,2893,Jodia,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2895,Lalpur,Fixed line,India,fixed,Gujarat
+91,2896,Bhanvad,Fixed line,India,fixed,Gujarat
+91,2897,Dhrol,Fixed line,India,fixed,Gujarat
+91,2898,Jamjodhpur,Fixed line,India,fixed,"Gujarat, Haryana"
+91,2900,Siwana(e),Fixed line,India,fixed,Rajasthan
+91,2901,Siwana(w),Fixed line,India,fixed,Rajasthan
+91,2902,Barmer(n),Fixed line,India,fixed,Rajasthan
+91,2903,Chohtan (s),Fixed line,India,fixed,Rajasthan
+91,2904,Deogarh,Fixed line,India,fixed,Rajasthan
+91,2905,Sarada,Fixed line,India,fixed,Rajasthan
+91,2906,Salumber,Fixed line,India,fixed,Rajasthan
+91,2907,Kherwara,Fixed line,India,fixed,Rajasthan
+91,2908,Amet,Fixed line,India,fixed,Rajasthan
+91,2909,Bhim(s),Fixed line,India,fixed,Rajasthan
+91,2920,Bilara(n),Fixed line,India,fixed,Rajasthan
+91,2921,Phalodi(n),Fixed line,India,fixed,Rajasthan
+91,2922,Osian(n),Fixed line,India,fixed,Rajasthan
+91,2923,Phalodi(e),Fixed line,India,fixed,Rajasthan
+91,2924,Phalodi(w),Fixed line,India,fixed,Rajasthan
+91,2925,Phalodi(s),Fixed line,India,fixed,Rajasthan
+91,2926,Osian(s),Fixed line,India,fixed,Rajasthan
+91,2927,Osian(e),Fixed line,India,fixed,Rajasthan
+91,2928,Shergarh(n),Fixed line,India,fixed,Rajasthan
+91,2929,Shergarh(s),Fixed line,India,fixed,Rajasthan
+91,2930,Bilara(s),Fixed line,India,fixed,Rajasthan
+91,2931,Jodhpur(w),Fixed line,India,fixed,Rajasthan
+91,2932,Pali(s),Fixed line,India,fixed,Rajasthan
+91,2933,Bali(n),Fixed line,India,fixed,Rajasthan
+91,2934,Desuri,Fixed line,India,fixed,Rajasthan
+91,2935,Marwar-Jn,Fixed line,India,fixed,Rajasthan
+91,2936,Pali(n),Fixed line,India,fixed,Rajasthan
+91,2937,Raipur,Fixed line,India,fixed,Rajasthan
+91,2938,Bali(s),Fixed line,India,fixed,Rajasthan
+91,2939,Jaitaran,Fixed line,India,fixed,Rajasthan
+91,2950,Dhariawad,Fixed line,India,fixed,Rajasthan
+91,2951,Bhim(n),Fixed line,India,fixed,Rajasthan
+91,2952,Rajsamand,Fixed line,India,fixed,Rajasthan
+91,2953,Nathdwara,Fixed line,India,fixed,Rajasthan
+91,2954,Kumbalgarh,Fixed line,India,fixed,Rajasthan
+91,2955,Malvi,Fixed line,India,fixed,Rajasthan
+91,2956,Gogunda,Fixed line,India,fixed,Rajastan
+91,2957,Vallabhnagar,Fixed line,India,fixed,Rajasthan
+91,2958,Kotra,Fixed line,India,fixed,Rajasthan
+91,2959,Jhadol,Fixed line,India,fixed,Rajasthan
+91,2960,Sojat,Fixed line,India,fixed,Rajasthan
+91,2961,Ghatol,Fixed line,India,fixed,Rajastan
+91,2962,Banswara,Fixed line,India,fixed,Rajasthan
+91,2963,Gerhi,Fixed line,India,fixed,Rajastan
+91,2964,Dungarpur,Fixed line,India,fixed,Rajasthan
+91,2965,Kushalgarh,Fixed line,India,fixed,Rajasthan
+91,2966,Sagwara,Fixed line,India,fixed,Rajasthan
+91,2967,Aspur,Fixed line,India,fixed,Rajasthan
+91,2968,Bagidora,Fixed line,India,fixed,Rajasthan
+91,2969,Bhinmal(n),Fixed line,India,fixed,Rajasthan
+91,2970,Sanchore(w),Fixed line,India,fixed,Rajasthan
+91,2971,Pindwara,Fixed line,India,fixed,Rajasthan
+91,2972,Sirohi,Fixed line,India,fixed,Rajasthan
+91,2973,Jalore(e),Fixed line,India,fixed,Rajasthan
+91,2974,Abu Road,Fixed line,India,fixed,Rajasthan
+91,2975,Reodar,Fixed line,India,fixed,Rajasthan
+91,2976,Sheoganj,Fixed line,India,fixed,Rajasthan
+91,2977,Jalore(w),Fixed line,India,fixed,Rajasthan
+91,2978,Ahore,Fixed line,India,fixed,Rajasthan
+91,2979,Sanchore(e),Fixed line,India,fixed,Rajasthan
+91,2980,Pachpadara(e),Fixed line,India,fixed,Rajasthan
+91,2981,Sheo(w),Fixed line,India,fixed,Rajasthan
+91,2982,Barmer(c),Fixed line,India,fixed,Rajasthan
+91,2983,Barmer(e),Fixed line,India,fixed,Rajasthan
+91,2984,Barmer(s),Fixed line,India,fixed,Rajasthan
+91,2985,Barmer(w),Fixed line,India,fixed,Rajasthan
+91,2986,Barmer(sw),Fixed line,India,fixed,Rajasthan
+91,2987,Sheo(e),Fixed line,India,fixed,Rajasthan
+91,2988,Pachpadara(w),Fixed line,India,fixed,Rajasthan
+91,2989,Chohtan(n),Fixed line,India,fixed,Rajasthan
+91,2990,Bhinmal(s),Fixed line,India,fixed,Rajasthan
+91,2991,Jaisalmer-01,Fixed line,India,fixed,Rajasthan
+91,2992,Jaisalmer-11,Fixed line,India,fixed,Rajasthan
+91,2993,Jaisalmer-12,Fixed line,India,fixed,Rajasthan
+91,2994,Pokaran-4,Fixed line,India,fixed,Rajasthan
+91,2995,Pokaran-1,Fixed line,India,fixed,Rajasthan
+91,2996,Pokaran-3,Fixed line,India,fixed,Rajasthan
+91,2997,Jaisalmer-07,Fixed line,India,fixed,Rajasthan
+91,2998,Jaisalmer-05,Fixed line,India,fixed,Rajasthan
+91,2999,Jaisalmer-03,Fixed line,India,fixed,Rajasthan
+91,3010,Jaisalmer-04,Fixed line,India,fixed,Rajasthan
+91,3011,Jaisalmer-06,Fixed line,India,fixed,Rajasthan
+91,3012,Jaisalmer-08,Fixed line,India,fixed,Rajasthan
+91,3013,Jaisalmer-09,Fixed line,India,fixed,Rajasthan
+91,3014,Jaisalmer-10,Fixed line,India,fixed,Rajasthan
+91,3015,Jaisalmer-13,Fixed line,India,fixed,Rajasthan
+91,3016,Jaisalmer-14,Fixed line,India,fixed,Rajasthan
+91,3017,Pokaran-2,Fixed line,India,fixed,Rajasthan
+91,3018,Jaisalmer-02,Fixed line,India,fixed,Rajasthan
+91,3019,Pokaran-5,Fixed line,India,fixed,Rajasthan
+91,3174,Daimond Harbour,Fixed line,India,fixed,West Bengal
+91,3192,Anndman Island,Fixed line,India,fixed,Andaman and Nicobar Islands
+91,3193,Nicobar Island,Fixed line,India,fixed,Andaman and Nicobar Islands
+91,3210,Kakdwip,Fixed line,India,fixed,West Bengal
+91,3211,Arambagh,Fixed line,India,fixed,West Bengal
+91,3212,Champadanga,Fixed line,India,fixed,West Bengal
+91,3213,Dhaniakhali,Fixed line,India,fixed,West Bengal
+91,3214,Jagatballavpur,Fixed line,India,fixed,West Bengal
+91,3215,Bongoan,Fixed line,India,fixed,West Bengal
+91,3216,Habra,Fixed line,India,fixed,West Bengal
+91,3217,Basirhat,Fixed line,India,fixed,West Bengal
+91,3218,Canning,Fixed line,India,fixed,West Bengal
+91,3220,Contai,Fixed line,India,fixed,West Bengal
+91,3221,Jhargram,Fixed line,India,fixed,West Bengal
+91,3222,Kharagpur,Fixed line,India,fixed,West Bengal
+91,3223,Nayagarh,Fixed line,India,fixed,West Bengal
+91,3224,Haldia,Fixed line,India,fixed,West Bengal
+91,3225,Ghatal,Fixed line,India,fixed,West Bengal
+91,3227,Amlagora,Fixed line,India,fixed,West Bengal
+91,3228,Tamluk,Fixed line,India,fixed,West Bengal
+91,3229,Dantan,Fixed line,India,fixed,West Bengal
+91,3241,Gangajalghati,Fixed line,India,fixed,West Bengal
+91,3242,Bankura,Fixed line,India,fixed,West Bengal
+91,3243,Khatra,Fixed line,India,fixed,West Bengal
+91,3244,Bishanpur,Fixed line,India,fixed,West Bengal
+91,3251,Adra,Fixed line,India,fixed,West Bengal
+91,3252,Purulia,Fixed line,India,fixed,West Bengal
+91,3253,Manbazar,Fixed line,India,fixed,West Bengal
+91,3254,Jhalda,Fixed line,India,fixed,West Bengal
+91,3448,Burnpur,Fixed line,India,fixed,West Bengal
+91,3451,Seharabazar,Fixed line,India,fixed,West Bengal
+91,3452,Guskara,Fixed line,India,fixed,West Bengal
+91,3453,Katwa,Fixed line,India,fixed,West Bengal
+91,3454,Kalna,Fixed line,India,fixed,West Bengal
+91,3461,Rampur Hat,Fixed line,India,fixed,West Bengal
+91,3462,Suri,Fixed line,India,fixed,West Bengal
+91,3463,Bolpur,Fixed line,India,fixed,West Bengal
+91,3465,Nalhati,Fixed line,India,fixed,West Bengal
+91,3471,Karimpur,Fixed line,India,fixed,West Bengal
+91,3472,Krishnanagar,Fixed line,India,fixed,West Bengal
+91,3473,Ranaghat,Fixed line,India,fixed,West Bengal
+91,3474,Bethuadahari,Fixed line,India,fixed,West Bengal
+91,3481,Islampur(m),Fixed line,India,fixed,West Bengal
+91,3482,Berhampur,Fixed line,India,fixed,West Bengal
+91,3483,Murshidabad,Fixed line,India,fixed,West Bengal
+91,3484,Kandi,Fixed line,India,fixed,West Bengal
+91,3485,Dhuliyan,Fixed line,India,fixed,West Bengal
+91,3511,Bulbulchandi,Fixed line,India,fixed,West Bengal
+91,3512,Malda,Fixed line,India,fixed,West Bengal
+91,3513,Harishchandrapur,Fixed line,India,fixed,West Bengal
+91,3521,Gangarampur,Fixed line,India,fixed,West Bengal
+91,3522,Balurghat,Fixed line,India,fixed,West Bengal
+91,3523,Raiganj,Fixed line,India,fixed,West Bengal
+91,3524,Harirampur,Fixed line,India,fixed,West Bengal
+91,3525,Dalkhola,Fixed line,India,fixed,West Bengal
+91,3526,Islampur(nd),Fixed line,India,fixed,West Bengal
+91,3552,Kalimpong,Fixed line,India,fixed,West Bengal
+91,3561,Jalpaiguri,Fixed line,India,fixed,West Bengal
+91,3562,Mal Bazar,Fixed line,India,fixed,West Bengal
+91,3563,Birpara,Fixed line,India,fixed,West Bengal
+91,3564,Alipurduar,Fixed line,India,fixed,West Bengal
+91,3565,Nagarakata,Fixed line,India,fixed,West Bengal
+91,3566,Kalchini,Fixed line,India,fixed,West Bengal
+91,3581,Dinhata,Fixed line,India,fixed,West Bengal
+91,3582,Coochbehar,Fixed line,India,fixed,West Bengal
+91,3583,Mathabhanga,Fixed line,India,fixed,West Bengal
+91,3584,Mekhliganj,Fixed line,India,fixed,West Bengal
+91,3592,Gangtok,Fixed line,India,fixed,Sikkim
+91,3595,Gauzing,Fixed line,India,fixed,Sikkim
+91,3621,Boko,Fixed line,India,fixed,Assam
+91,3623,Barama,Fixed line,India,fixed,Assam
+91,3624,Nalbari,Fixed line,India,fixed,Assam
+91,3637,Cherrapunjee,Fixed line,India,fixed,Meghalaya
+91,3638,Nongpoh,Fixed line,India,fixed,Meghalaya
+91,3639,Baghmara,Fixed line,India,fixed,Meghalaya
+91,3650,Dadengiri,Fixed line,India,fixed,Meghalaya
+91,3651,Tura,Fixed line,India,fixed,Meghalaya
+91,3652,Jowai,Fixed line,India,fixed,Manipur
+91,3653,Amlaren,Fixed line,India,fixed,Meghalaya
+91,3654,Nongstoin,Fixed line,India,fixed,Meghalaya
+91,3655,Khliehriat,Fixed line,India,fixed,Meghalaya
+91,3656,Mawkyrwat,Fixed line,India,fixed,Meghalaya
+91,3657,Mariang,Fixed line,India,fixed,Meghalaya
+91,3658,Williamnagar,Fixed line,India,fixed,Meghalaya
+91,3659,Resubelpara,Fixed line,India,fixed,Meghalaya
+91,3661,Kokarajhar,Fixed line,India,fixed,Assam
+91,3663,Goalpara,Fixed line,India,fixed,Assam
+91,3664,Hajo,Fixed line,India,fixed,Assam
+91,3665,Tarabarihat,Fixed line,India,fixed,Assam
+91,3666,Barpeta Road,Fixed line,India,fixed,Assam
+91,3667,Bilasipara,Fixed line,India,fixed,Assam
+91,3668,Bijni,Fixed line,India,fixed,Assam
+91,3669,Abhayapuri,Fixed line,India,fixed,Assam
+91,3670,Maibong,Fixed line,India,fixed,Assam
+91,3672,Nagaon,Fixed line,India,fixed,Assam
+91,3673,Halflong,Fixed line,India,fixed,Assam
+91,3674,Hojai / Lumding,Fixed line,India,fixed,Assam
+91,3675,Bokajan,Fixed line,India,fixed,Assam
+91,3676,Howraghat,Fixed line,India,fixed,Assam
+91,3677,Baithalangshu,Fixed line,India,fixed,Assam
+91,3678,Morigaon,Fixed line,India,fixed,Assam
+91,3711,Udalgiri,Fixed line,India,fixed,Assam
+91,3712,Tezpur,Fixed line,India,fixed,Assam
+91,3713,Mangaldoi,Fixed line,India,fixed,Assam
+91,3714,Rangapara,Fixed line,India,fixed,Assam
+91,3715,Gohpur,Fixed line,India,fixed,Assam
+91,3752,Lakhimpur / North Lakhimpur / North-Lakhipur,Fixed line,India,fixed,Assam
+91,3754,Moranhat,Fixed line,India,fixed,Assam
+91,3756,Sadiya,Fixed line,India,fixed,Assam
+91,3759,Bihupuria,Fixed line,India,fixed,Assam
+91,3771,Mariani,Fixed line,India,fixed,Assam
+91,3772,Sibsagar,Fixed line,India,fixed,Assam
+91,3774,Golaghat,Fixed line,India,fixed,Assam
+91,3775,Majuli,Fixed line,India,fixed,Assam
+91,3776,Bokakhat,Fixed line,India,fixed,Assam
+91,3777,Yiang Kiag,Fixed line,India,fixed,Arunachal Pradesh
+91,3778,Pakkekesang,Fixed line,India,fixed,Arunachal Pradesh
+91,3779,Roing-Iii,Fixed line,India,fixed,Arunachal Pradesh
+91,3780,Dirang,Fixed line,India,fixed,"Arunachal Pradesh, Assam"
+91,3781,Itanagar,Fixed line,India,fixed,Arunachal Pradesh
+91,3782,Kalaktung,Fixed line,India,fixed,Arunachal Pradesh
+91,3783,Along,Fixed line,India,fixed,Arunachal Pradesh
+91,3784,Nefra,Fixed line,India,fixed,Arunachal Pradesh
+91,3785,Bameng,Fixed line,India,fixed,Arunachal Pradesh
+91,3786,Khonsa / Longding,Fixed line,India,fixed,Arunachal Pradesh
+91,3787,Seppa,Fixed line,India,fixed,Arunachal Pradesh
+91,3788,Kolaring,Fixed line,India,fixed,Arunachal Pradesh
+91,3789,Huri,Fixed line,India,fixed,Arunachal Pradesh
+91,3790,Tali,Fixed line,India,fixed,Arunachal Pradesh
+91,3791,Taliha,Fixed line,India,fixed,Arunachal Pradesh
+91,3792,Daporizo,Fixed line,India,fixed,"Arunachal Pradesh, Assam"
+91,3793,Mechuka,Fixed line,India,fixed,Arunachal Pradesh
+91,3794,Tawang,Fixed line,India,fixed,Arunachal Pradesh
+91,3795,Basar,Fixed line,India,fixed,Arunachal Pradesh
+91,3797,Pangin,Fixed line,India,fixed,Arunachal Pradesh
+91,3798,Mariyang,Fixed line,India,fixed,Arunachal Pradesh
+91,3799,Tuting,Fixed line,India,fixed,Arunachal Pradesh
+91,3800,Jairampur,Fixed line,India,fixed,Arunachal Pradesh
+91,3801,Anini,Fixed line,India,fixed,Arunachal Pradesh
+91,3802,Roing-Ii,Fixed line,India,fixed,Arunachal Pradesh
+91,3803,Roing-I,Fixed line,India,fixed,Arunachal Pradesh
+91,3804,Tezu,Fixed line,India,fixed,Arunachal Pradesh
+91,3805,Hayuliang,Fixed line,India,fixed,Arunachal Pradesh
+91,3806,Chowkhem / Namsai,Fixed line,India,fixed,Arunachal Pradesh
+91,3807,Miao,Fixed line,India,fixed,Arunachal Pradesh
+91,3808,Changlang,Fixed line,India,fixed,Arunachal Pradesh
+91,3809,Sagalee,Fixed line,India,fixed,Arunachal Pradesh
+91,3821,R.K. Pur,Fixed line,India,fixed,Tripura
+91,3822,Dharam Nagar,Fixed line,India,fixed,Tripura
+91,3823,Belonia,Fixed line,India,fixed,Tripura
+91,3824,Kailashar,Fixed line,India,fixed,Tripura
+91,3825,Khowai,Fixed line,India,fixed,Tripura
+91,3826,Ambasa,Fixed line,India,fixed,Tripura
+91,3830,Champai-Ii,Fixed line,India,fixed,Mizoram
+91,3831,Champai-I,Fixed line,India,fixed,Mizoram
+91,3834,Demagiri,Fixed line,India,fixed,Mizoram
+91,3835,Saiha-I,Fixed line,India,fixed,Mizoram
+91,3836,Saiha-Ii,Fixed line,India,fixed,Mizoram
+91,3837,Kolasib,Fixed line,India,fixed,Mizoram
+91,3838,Aizwal-Ii,Fixed line,India,fixed,Mizoram
+91,3839,Jalukie,Fixed line,India,fixed,Nagaland
+91,3841,Udarbondh,Fixed line,India,fixed,Assam
+91,3842,Silchar,Fixed line,India,fixed,Assam
+91,3843,Karimganj,Fixed line,India,fixed,Assam
+91,3844,Hailakandi / Lala,Fixed line,India,fixed,Assam
+91,3845,Ukhrul Central,Fixed line,India,fixed,Manipur
+91,3848,Thoubal,Fixed line,India,fixed,Manipur
+91,3860,Wokha,Fixed line,India,fixed,Nagaland
+91,3861,Tuensang,Fixed line,India,fixed,Nagaland
+91,3862,Dimapur,Fixed line,India,fixed,Nagalands
+91,3863,Kiphire,Fixed line,India,fixed,Nagaland
+91,3865,Phek,Fixed line,India,fixed,Nagaland
+91,3867,Zunheboto,Fixed line,India,fixed,Nagaland
+91,3869,Mon,Fixed line,India,fixed,Nagaland
+91,3870,Ukhrul South,Fixed line,India,fixed,Manipur
+91,3871,Mao,Fixed line,India,fixed,Manipur
+91,3872,Chandel,Fixed line,India,fixed,Manipur
+91,3873,Thinghat,Fixed line,India,fixed,Manipur
+91,3874,Churchandpur,Fixed line,India,fixed,Manipur
+91,3876,Jiribam,Fixed line,India,fixed,Meghalaya
+91,3877,Tamenglong,Fixed line,India,fixed,Manipur
+91,3878,Chakpikarong,Fixed line,India,fixed,Manipur
+91,3879,Bishenupur / Moirang,Fixed line,India,fixed,Manipur
+91,3880,Sadarhills,Fixed line,India,fixed,Manipur
+91,4114,Chinglepet,Fixed line,India,fixed,Tamil Nadu
+91,4142,Cuddalore,Fixed line,India,fixed,Tamil Nadu
+91,4143,Virudhachalam,Fixed line,India,fixed,Tamil Nadu
+91,4144,Chidambaram,Fixed line,India,fixed,Tamil Nadu
+91,4145,Gingee,Fixed line,India,fixed,Tamil Nadu
+91,4146,Villupuram,Fixed line,India,fixed,Tamil Nadu
+91,4147,Tindivanam,Fixed line,India,fixed,Tamil Nadu
+91,4149,Ulundurpet,Fixed line,India,fixed,Tamil Nadu
+91,4151,Kallkurichi,Fixed line,India,fixed,Tamil Nadu
+91,4153,Arakandanallur,Fixed line,India,fixed,Tamil Nadu
+91,4171,Gudiyatham,Fixed line,India,fixed,Tamil Nadu
+91,4172,Ranipet,Fixed line,India,fixed,Tamil Nadu
+91,4173,Arni,Fixed line,India,fixed,Tamil Nadu
+91,4174,Jolarpet / Vaniyambadi,Fixed line,India,fixed,Tamil Nadu
+91,4175,Tiruvannamalai,Fixed line,India,fixed,Tamil Nadu
+91,4177,Arkonam,Fixed line,India,fixed,Tamil Nadu
+91,4179,Tirupattur,Fixed line,India,fixed,Tamil Nadu
+91,4181,Polur,Fixed line,India,fixed,Tamil Nadu
+91,4182,Tiruvettipuram,Fixed line,India,fixed,Tamil Nadu
+91,4183,Wandiwash,Fixed line,India,fixed,Tamil Nadu
+91,4188,Chengam,Fixed line,India,fixed,Tamil Nadu
+91,4202,Mulanur,Fixed line,India,fixed,Tamil Nadu
+91,4204,Kodumudi,Fixed line,India,fixed,Tamil Nadu
+91,4252,Udumalpet,Fixed line,India,fixed,Tamil Nadu
+91,4253,Anamali,Fixed line,India,fixed,Tamil Nadu
+91,4254,Mettupalayam,Fixed line,India,fixed,Tamil Nadu
+91,4255,Palladum,Fixed line,India,fixed,Tamil Nadu
+91,4256,Bhavani,Fixed line,India,fixed,Tamil Nadu
+91,4257,Kangayam,Fixed line,India,fixed,Tamil Nadu
+91,4258,Dharampuram,Fixed line,India,fixed,Tamil Nadu
+91,4259,Pollachi,Fixed line,India,fixed,Tamil Nadu
+91,4262,Gudalur,Fixed line,India,fixed,Tamil Nadu
+91,4266,Kotagiri,Fixed line,India,fixed,Tamil Nadu
+91,4268,Velur,Fixed line,India,fixed,Tamil Nadu
+91,4281,Yercaud,Fixed line,India,fixed,Tamil Nadu
+91,4282,Attur,Fixed line,India,fixed,Tamil Nadu
+91,4283,Sankagiri,Fixed line,India,fixed,Tamil Nadu
+91,4285,Gobichettipalayam,Fixed line,India,fixed,Tamil Nadu
+91,4286,Namakkal,Fixed line,India,fixed,Tamil Nadu
+91,4287,Rasipuram,Fixed line,India,fixed,Tamil Nadu
+91,4288,Tiruchengode,Fixed line,India,fixed,Tamil Nadu
+91,4290,Omalpur,Fixed line,India,fixed,Tamil Nadu
+91,4292,Valapady,Fixed line,India,fixed,Tamil Nadu
+91,4294,Perundurai,Fixed line,India,fixed,Tamil Nadu
+91,4295,Sathiyamangalam,Fixed line,India,fixed,Tamil Nadu
+91,4296,Avanashi,Fixed line,India,fixed,Tamil Nadu
+91,4298,Metturdam,Fixed line,India,fixed,Tamil Nadu
+91,4320,Aravakurichi,Fixed line,India,fixed,Tamil Nadu
+91,4322,Pudukkottai,Fixed line,India,fixed,Tamil Nadu
+91,4323,Kulithalai,Fixed line,India,fixed,Tamil Nadu
+91,4324,Karur,Fixed line,India,fixed,Tamil Nadu
+91,4326,Musiri,Fixed line,India,fixed,Tamil Nadu
+91,4327,Thuraiyure,Fixed line,India,fixed,Tamil Nadu
+91,4328,Perambalur,Fixed line,India,fixed,Tamil Nadu
+91,4329,Ariyalur,Fixed line,India,fixed,Tamil Nadu
+91,4331,Jayamkondan,Fixed line,India,fixed,Tamil Nadu
+91,4332,Manaparai,Fixed line,India,fixed,Tamil Nadu
+91,4333,Ponnamaravathi,Fixed line,India,fixed,Tamil Nadu
+91,4339,Keeranur,Fixed line,India,fixed,Tamil Nadu
+91,4341,Uthangarai,Fixed line,India,fixed,Tamil Nadu
+91,4342,Dharmapuri,Fixed line,India,fixed,Tamil Nadu
+91,4343,Krishnagiri,Fixed line,India,fixed,Tamil Nadu
+91,4344,Hosur,Fixed line,India,fixed,Tamil Nadu
+91,4346,Harur,Fixed line,India,fixed,Tamil Nadu
+91,4347,Denkanikoitah,Fixed line,India,fixed,Tamil Nadu
+91,4348,Palacode,Fixed line,India,fixed,Tamil Nadu
+91,4362,Thanjavur,Fixed line,India,fixed,Tamil Nadu
+91,4364,Mayiladutjurai,Fixed line,India,fixed,Tamil Nadu
+91,4365,Nagapattinam,Fixed line,India,fixed,Tamil Nadu
+91,4366,Tiruvarur,Fixed line,India,fixed,Tamil Nadu
+91,4367,Mannargudi,Fixed line,India,fixed,Tamil Nadu
+91,4368,Karaikal,Fixed line,India,fixed,Tamil Nadu
+91,4369,Thiruraipoondi,Fixed line,India,fixed,Tamil Nadu
+91,4371,Arantangi,Fixed line,India,fixed,Tamil Nadu
+91,4372,Orathanad,Fixed line,India,fixed,Tamil Nadu
+91,4373,Pattukottai,Fixed line,India,fixed,Tamil Nadu
+91,4374,Papanasam,Fixed line,India,fixed,Tamil Nadu
+91,4542,Kodaikanal,Fixed line,India,fixed,Tamil Nadu
+91,4543,Batlagundu,Fixed line,India,fixed,Tamil Nadu
+91,4544,Natham,Fixed line,India,fixed,Tamil Nadu
+91,4545,Palani,Fixed line,India,fixed,Tamil Nadu
+91,4546,Theni,Fixed line,India,fixed,Tamil Nadu
+91,4549,Thirumanglam,Fixed line,India,fixed,Tamil Nadu
+91,4551,Vedasandur,Fixed line,India,fixed,Tamil Nadu
+91,4552,Usiliampatti,Fixed line,India,fixed,Tamil Nadu
+91,4553,Oddanchatram,Fixed line,India,fixed,Tamil Nadu
+91,4554,Cumbum,Fixed line,India,fixed,Tamil Nadu
+91,4561,Devakottai,Fixed line,India,fixed,Tamil Nadu
+91,4562,Virudhunagar,Fixed line,India,fixed,Tamil Nadu
+91,4563,Rajapalayam,Fixed line,India,fixed,Tamil Nadu
+91,4564,Paramakudi,Fixed line,India,fixed,Tamil Nadu
+91,4565,Karaikudi,Fixed line,India,fixed,Tamil Nadu
+91,4566,Aruppukottai,Fixed line,India,fixed,Tamil Nadu
+91,4567,Ramanathpuram,Fixed line,India,fixed,Tamil Nadu
+91,4573,Rameshwaram,Fixed line,India,fixed,Tamil Nadu
+91,4574,Manamadurai,Fixed line,India,fixed,Tamil Nadu
+91,4575,Sivaganga,Fixed line,India,fixed,Tamil Nadu
+91,4576,Mudukulathur,Fixed line,India,fixed,Tamil Nadu
+91,4577,Tirupathur,Fixed line,India,fixed,Tamil Nadu
+91,4630,Srivaikundam,Fixed line,India,fixed,Tamil Nadu
+91,4632,Kovilpatti,Fixed line,India,fixed,Tamil Nadu
+91,4633,Tenkasi,Fixed line,India,fixed,Tamil Nadu
+91,4634,Ambasamudram,Fixed line,India,fixed,Tamil Nadu
+91,4635,Nanguneri,Fixed line,India,fixed,Tamil Nadu
+91,4636,Sankaran Koil,Fixed line,India,fixed,Tamil Nadu
+91,4637,Valliyoor,Fixed line,India,fixed,Tamil Nadu
+91,4638,Vilathikulam,Fixed line,India,fixed,Tamil Nadu
+91,4639,Tiruchendur,Fixed line,India,fixed,Tamil Nadu
+91,4651,Kuzhithurai,Fixed line,India,fixed,Tamil Nadu
+91,4652,Nagarcoil,Fixed line,India,fixed,Tamil Nadu
+91,4653,Kanyakumari,Fixed line,India,fixed,Tamil Nadu
+91,4728,Nedumandad,Fixed line,India,fixed,Kerala
+91,4734,Adoor,Fixed line,India,fixed,Kerala
+91,4735,Ranni,Fixed line,India,fixed,Kerala
+91,4822,Palai,Fixed line,India,fixed,Kerala
+91,4828,Kanjirapally,Fixed line,India,fixed,Kerala
+91,4829,Vikom,Fixed line,India,fixed,Kerala
+91,4862,Thodupuzha,Fixed line,India,fixed,Kerala
+91,4864,Adimaly,Fixed line,India,fixed,Kerala
+91,4865,Munnar,Fixed line,India,fixed,Kerala
+91,4868,Nedumgandam,Fixed line,India,fixed,Kerala
+91,4869,Peermedu,Fixed line,India,fixed,Kerala
+91,4884,Vadakkanchery,Fixed line,India,fixed,Kerala
+91,4885,Kunnamkulam,Fixed line,India,fixed,Kerala
+91,4889,Guruvayur,Fixed line,India,fixed,Kerala
+91,4890,Bitra,Fixed line,India,fixed,Kerala
+91,4891,Amini,Fixed line,India,fixed,Kerala
+91,4892,Minicoy,Fixed line,India,fixed,Kerala
+91,4893,Androth,Fixed line,India,fixed,Kerala
+91,4894,Agathy,Fixed line,India,fixed,Kerala
+91,4895,Kalpeni,Fixed line,India,fixed,Kerala
+91,4896,Kavarathy,Fixed line,India,fixed,Kerala
+91,4897,Kadamath,Fixed line,India,fixed,Kerala
+91,4898,Kiltan,Fixed line,India,fixed,Kerala
+91,4899,Chetlet,Fixed line,India,fixed,Kerala
+91,4922,Alathur,Fixed line,India,fixed,Kerala
+91,4923,Koduvayur,Fixed line,India,fixed,Kerala
+91,4924,Mannarghat,Fixed line,India,fixed,Kerala
+91,4926,Shoranur,Fixed line,India,fixed,Kerala
+91,4931,Nilambur,Fixed line,India,fixed,Kerala
+91,4933,Perinthalmanna,Fixed line,India,fixed,Kerala
+91,4935,Mananthodi,Fixed line,India,fixed,Kerala
+91,4936,Kalpetta,Fixed line,India,fixed,Kerala
+91,4982,Taliparamba,Fixed line,India,fixed,Kerala
+91,4985,Payyanur,Fixed line,India,fixed,Kerala
+91,4994,Kasargode,Fixed line,India,fixed,Kerala
+91,4997,Kanhangad,Fixed line,India,fixed,Kerala
+91,4998,Uppala,Fixed line,India,fixed,Kerala
+91,5111,Akbarpur,Fixed line,India,fixed,Uttar Pradesh
+91,5112,Bilhaur,Fixed line,India,fixed,Uttar Pradesh
+91,5113,Bhognipur,Fixed line,India,fixed,Uttar Pradesh
+91,5114,Derapur,Fixed line,India,fixed,Uttar Pradesh
+91,5115,Ghatampur,Fixed line,India,fixed,Uttar Pradesh
+91,5142,Purwa,Fixed line,India,fixed,Uttar Pradesh
+91,5143,Hasanganj,Fixed line,India,fixed,Uttar Pradesh
+91,5144,Safipur,Fixed line,India,fixed,Uttar Pradesh
+91,5162,Orai,Fixed line,India,fixed,Uttar Pradesh
+91,5164,Kalpi,Fixed line,India,fixed,Uttar Pradesh
+91,5165,Konch,Fixed line,India,fixed,Uttar Pradesh
+91,5168,Jalaun,Fixed line,India,fixed,Uttar Pradesh
+91,5170,Chirgaon,Fixed line,India,fixed,Uttarakhand
+91,5171,Garauth,Fixed line,India,fixed,Uttar Pradesh
+91,5172,Mehraun,Fixed line,India,fixed,Uttar Pradesh
+91,5175,Lalitpur-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5176,Lalitpur-I,Fixed line,India,fixed,Uttar Pradesh
+91,5178,Mauranipur,Fixed line,India,fixed,Uttar Pradesh
+91,5180,Fatehpur-I,Fixed line,India,fixed,Uttar Pradesh
+91,5181,Bindki,Fixed line,India,fixed,Uttar Pradesh
+91,5182,Khaga,Fixed line,India,fixed,Uttar Pradesh
+91,5183,Fatehpur-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5190,Baberu,Fixed line,India,fixed,Uttar Pradesh
+91,5191,Naraini,Fixed line,India,fixed,Uttar Pradesh
+91,5192,Banda,Fixed line,India,fixed,Uttar Pradesh
+91,5194,Karvi-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5195,Mau,Fixed line,India,fixed,Uttar Pradesh
+91,5198,Karvi-I,Fixed line,India,fixed,Uttar Pradesh
+91,5212,Malihabad,Fixed line,India,fixed,Uttar Pradesh
+91,5240,Fatehpur,Fixed line,India,fixed,Uttar Pradesh
+91,5241,Ramsanehi Ghat,Fixed line,India,fixed,Uttar Pradesh
+91,5244,Haidergarh,Fixed line,India,fixed,Uttar Pradesh
+91,5248,Barabanki / Zaidpur,Fixed line,India,fixed,Uttar Pradesh
+91,5250,Bahraich-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5251,Kaisarganj-I,Fixed line,India,fixed,Uttar Pradesh
+91,5252,Bahraich-I,Fixed line,India,fixed,Uttar Pradesh
+91,5253,Nanpara-I,Fixed line,India,fixed,Uttar Pradesh
+91,5254,Nanpara-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5255,Kaisarganj-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5260,Tarabganj-I,Fixed line,India,fixed,Uttar Pradesh
+91,5261,Tarabganj-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5262,Gonda,Fixed line,India,fixed,Uttar Pradesh
+91,5263,Balrampur-I,Fixed line,India,fixed,Uttar Pradesh
+91,5264,Balrampur-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5265,Utraula,Fixed line,India,fixed,Uttar Pradesh
+91,5270,Bikapur,Fixed line,India,fixed,Uttar Pradesh
+91,5271,Akbarpur-I,Fixed line,India,fixed,Uttar Pradesh
+91,5273,Tanda-I,Fixed line,India,fixed,Uttar Pradesh
+91,5274,Tanda-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5275,Akbarpur-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5280,Rath,Fixed line,India,fixed,Uttar Pradesh
+91,5281,Mahoba,Fixed line,India,fixed,Uttar Pradesh
+91,5282,Hamirpur,Fixed line,India,fixed,Uttar Pradesh
+91,5283,Charkhari,Fixed line,India,fixed,Uttarakhand
+91,5284,Maudaha,Fixed line,India,fixed,Uttar Pradesh
+91,5311,Salon-I,Fixed line,India,fixed,Uttar Pradesh
+91,5313,Salon-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5315,Dalmau-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5317,Dalmau-I,Fixed line,India,fixed,Uttar Pradesh
+91,5331,Bharwari,Fixed line,India,fixed,Uttar Pradesh
+91,5332,Phoolpur,Fixed line,India,fixed,Uttar Pradesh
+91,5333,Karchhana,Fixed line,India,fixed,Uttar Pradesh
+91,5334,Meja,Fixed line,India,fixed,Uttar Pradesh
+91,5335,Soraon,Fixed line,India,fixed,Uttar Pradesh
+91,5341,Kunda,Fixed line,India,fixed,Uttar Pradesh
+91,5342,Pratapgarh,Fixed line,India,fixed,Uttar Pradesh
+91,5343,Patti,Fixed line,India,fixed,Uttar Pradesh
+91,5361,Musafirkhana,Fixed line,India,fixed,Uttar Pradesh
+91,5362,Sultanpur,Fixed line,India,fixed,Uttar Pradesh
+91,5364,Kadipur,Fixed line,India,fixed,Uttar Pradesh
+91,5368,Amethi,Fixed line,India,fixed,Uttar Pradesh
+91,5412,Chandauli,Fixed line,India,fixed,Uttarakhand
+91,5413,Chakia,Fixed line,India,fixed,Uttarakhand
+91,5414,Bhadohi,Fixed line,India,fixed,Uttar Pradesh
+91,5440,Mirzapur-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5442,Mirzapur-I,Fixed line,India,fixed,Uttar Pradesh
+91,5443,Chunur,Fixed line,India,fixed,Uttarakhand
+91,5444,Robertsganj-I,Fixed line,India,fixed,Uttar Pradesh
+91,5445,Obra / Robertsganj-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5446,Dudhi-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5447,Dudhi-I,Fixed line,India,fixed,Uttar Pradesh
+91,5450,Kerakat,Fixed line,India,fixed,Uttar Pradesh
+91,5451,Mariyahu,Fixed line,India,fixed,Uttar Pradesh
+91,5452,Jaunpur,Fixed line,India,fixed,Uttar Pradesh
+91,5453,Shahganj,Fixed line,India,fixed,Uttar Pradesh
+91,5454,Machlishahar,Fixed line,India,fixed,Uttar Pradesh
+91,5460,Phulpur-I,Fixed line,India,fixed,Uttar Pradesh
+91,5461,Ghosi,Fixed line,India,fixed,Uttar Pradesh
+91,5462,Azamgarh,Fixed line,India,fixed,Uttar Pradesh
+91,5463,Lalganj,Fixed line,India,fixed,Uttar Pradesh
+91,5464,Maunathbhanjan,Fixed line,India,fixed,Uttar Pradesh
+91,5465,Phulpur-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5466,Sagri,Fixed line,India,fixed,Uttar Pradesh
+91,5491,Rasara,Fixed line,India,fixed,Uttar Pradesh
+91,5493,Mohamdabad,Fixed line,India,fixed,Uttar Pradesh
+91,5494,Bansdeeh,Fixed line,India,fixed,Uttar Pradesh
+91,5495,Saidpur,Fixed line,India,fixed,Uttar Pradesh
+91,5496,Ballia-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5497,Zamania,Fixed line,India,fixed,Uttar Pradesh
+91,5498,Ballia-I,Fixed line,India,fixed,Uttar Pradesh
+91,5521,Bansgaon-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5522,Pharenda-I,Fixed line,India,fixed,Uttar Pradesh
+91,5523,Maharajganj,Fixed line,India,fixed,Uttar Pradesh
+91,5524,Pharenda-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5525,Bansgaon-I,Fixed line,India,fixed,Uttar Pradesh
+91,5541,Domariyaganj,Fixed line,India,fixed,Uttar Pradesh
+91,5542,Basti,Fixed line,India,fixed,Uttar Pradesh
+91,5543,Naugarh-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5544,Naugarh-I,Fixed line,India,fixed,Uttar Pradesh
+91,5545,Bansi,Fixed line,India,fixed,Uttar Pradesh
+91,5546,Harraiya,Fixed line,India,fixed,Uttar Pradesh
+91,5547,Khalilabad-I,Fixed line,India,fixed,Uttar Pradesh
+91,5548,Khalilabad-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5561,Salempur-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5563,Capianganj-Ii,Fixed line,India,fixed,Uttarakhand
+91,5564,Padrauna,Fixed line,India,fixed,Uttar Pradesh
+91,5566,Salempur-I,Fixed line,India,fixed,Uttar Pradesh
+91,5568,Deoria,Fixed line,India,fixed,Uttar Pradesh
+91,5612,Ferozabad,Fixed line,India,fixed,Uttar Pradesh
+91,5613,Achhnera,Fixed line,India,fixed,Uttar Pradesh
+91,5614,Jarar,Fixed line,India,fixed,Uttar Pradesh
+91,5640,Kaman,Fixed line,India,fixed,Rajasthan
+91,5641,Deeg,Fixed line,India,fixed,Rajasthan
+91,5642,Dholpur,Fixed line,India,fixed,Rajasthan
+91,5643,Nadbai,Fixed line,India,fixed,Rajasthan
+91,5644,Bharatpur,Fixed line,India,fixed,Rajasthan
+91,5645,Rupbas,Fixed line,India,fixed,Rajasthan
+91,5646,Baseri,Fixed line,India,fixed,Rajasthan
+91,5647,Bari,Fixed line,India,fixed,Rajasthan
+91,5648,Bayana,Fixed line,India,fixed,Rajasthan
+91,5661,Sadabad,Fixed line,India,fixed,Uttar Pradesh
+91,5662,Chhata,Fixed line,India,fixed,Uttarakhand
+91,5664,Math,Fixed line,India,fixed,Uttar Pradesh
+91,5671,Jasrana,Fixed line,India,fixed,Uttar Pradesh
+91,5672,Mainpuri,Fixed line,India,fixed,Uttar Pradesh
+91,5673,Bhogaon,Fixed line,India,fixed,Uttar Pradesh
+91,5676,Shikohabad,Fixed line,India,fixed,Uttar Pradesh
+91,5677,Karhal,Fixed line,India,fixed,Uttar Pradesh
+91,5680,Bharthana,Fixed line,India,fixed,Uttar Pradesh
+91,5681,Bidhuna,Fixed line,India,fixed,Uttar Pradesh
+91,5683,Auraiya,Fixed line,India,fixed,Uttar Pradesh
+91,5688,Etawah,Fixed line,India,fixed,Uttar Pradesh
+91,5690,Kaimganj,Fixed line,India,fixed,Uttar Pradesh
+91,5692,Farrukhabad,Fixed line,India,fixed,Uttar Pradesh
+91,5694,Kannauj,Fixed line,India,fixed,Uttar Pradesh
+91,5721,Sikandra Rao,Fixed line,India,fixed,Uttar Pradesh
+91,5722,Hathras,Fixed line,India,fixed,Uttar Pradesh
+91,5723,Atrauli,Fixed line,India,fixed,Uttar Pradesh
+91,5724,Khair,Fixed line,India,fixed,Uttar Pradesh
+91,5731,Garhmukteshwar,Fixed line,India,fixed,Uttar Pradesh
+91,5732,Bulandshahar,Fixed line,India,fixed,Uttar Pradesh
+91,5733,Pahasu,Fixed line,India,fixed,Uttar Pradesh
+91,5734,Debai,Fixed line,India,fixed,Uttar Pradesh
+91,5735,Sikandrabad,Fixed line,India,fixed,Uttar Pradesh
+91,5736,Siyana,Fixed line,India,fixed,Uttar Pradesh
+91,5738,Khurja,Fixed line,India,fixed,Uttar Pradesh
+91,5740,Aliganj,Fixed line,India,fixed,Uttar Pradesh
+91,5742,Etah,Fixed line,India,fixed,Uttar Pradesh
+91,5744,Kasganj,Fixed line,India,fixed,Uttar Pradesh
+91,5745,Jalesar,Fixed line,India,fixed,Uttar Pradesh
+91,5821,Pitamberpur,Fixed line,India,fixed,Uttar Pradesh
+91,5822,Baheri,Fixed line,India,fixed,Uttar Pradesh
+91,5823,Anola-I,Fixed line,India,fixed,Uttar Pradesh
+91,5824,Anola-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5825,Nawabganj,Fixed line,India,fixed,Uttar Pradesh
+91,5831,Dataganj,Fixed line,India,fixed,Uttar Pradesh
+91,5832,Badaun,Fixed line,India,fixed,Uttar Pradesh
+91,5833,Sahaswan,Fixed line,India,fixed,Uttar Pradesh
+91,5834,Bisauli,Fixed line,India,fixed,Uttar Pradesh
+91,5836,Gunnaur,Fixed line,India,fixed,Uttar Pradesh
+91,5841,Tilhar,Fixed line,India,fixed,Uttar Pradesh
+91,5842,Sahjahanpur,Fixed line,India,fixed,Uttar Pradesh
+91,5843,Jalalabad,Fixed line,India,fixed,Uttar Pradesh
+91,5844,Powayan,Fixed line,India,fixed,Uttar Pradesh
+91,5850,Hardoi-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5851,Bilgram-I,Fixed line,India,fixed,Uttar Pradesh
+91,5852,Hardoi-I,Fixed line,India,fixed,Uttar Pradesh
+91,5853,Shahabad,Fixed line,India,fixed,Uttar Pradesh
+91,5854,Sandila,Fixed line,India,fixed,Uttar Pradesh
+91,5855,Bilgram-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5861,Misrikh-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5862,Sitapur,Fixed line,India,fixed,Uttar Pradesh
+91,5863,Biswan,Fixed line,India,fixed,Uttar Pradesh
+91,5864,Sidhauli,Fixed line,India,fixed,Uttar Pradesh
+91,5865,Misrikh-I,Fixed line,India,fixed,Uttar Pradesh
+91,5870,Kheri-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5871,Nighasan-I,Fixed line,India,fixed,Uttar Pradesh
+91,5872,Kheri-I,Fixed line,India,fixed,Uttar Pradesh
+91,5873,Nighasan-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5874,Nighasan-Iii,Fixed line,India,fixed,Uttar Pradesh
+91,5875,Mohamdi-Ii,Fixed line,India,fixed,Uttar Pradesh
+91,5876,Mohamdi-I,Fixed line,India,fixed,Uttar Pradesh
+91,5880,Puranpur,Fixed line,India,fixed,Uttar Pradesh
+91,5881,Bisalpur,Fixed line,India,fixed,Uttar Pradesh
+91,5882,Pilibhit,Fixed line,India,fixed,Uttar Pradesh
+91,5921,Bilari,Fixed line,India,fixed,Uttar Pradesh
+91,5922,Amroha,Fixed line,India,fixed,Uttar Pradesh
+91,5923,Sambhal,Fixed line,India,fixed,Uttar Pradesh
+91,5924,Hasanpur,Fixed line,India,fixed,Uttar Pradesh
+91,5942,Nainital,Fixed line,India,fixed,Uttarakhand
+91,5943,Khatima-I,Fixed line,India,fixed,Uttarakhand
+91,5944,Kichha-I,Fixed line,India,fixed,Uttarakhand
+91,5945,Haldwani-Ii,Fixed line,India,fixed,Uttarakhand
+91,5946,Haldwani-I,Fixed line,India,fixed,Uttarakhand
+91,5947,Kashipur,Fixed line,India,fixed,Uttarakhand
+91,5948,Khatima-Ii,Fixed line,India,fixed,Uttarakhand
+91,5949,Gadarpur / Kichha-Ii,Fixed line,India,fixed,"Uttarakhand, Uttarkhand"
+91,5960,Shahabad,Fixed line,India,fixed,Uttar Pradesh
+91,5961,Munsiari,Fixed line,India,fixed,Uttarakhand
+91,5962,Almora,Fixed line,India,fixed,Uttarakhand
+91,5963,Bageshwar,Fixed line,India,fixed,Uttarakhand
+91,5964,Pithoragarh,Fixed line,India,fixed,Uttarakhand
+91,5965,Champawat,Fixed line,India,fixed,Uttarakhand
+91,5966,Ranikhet,Fixed line,India,fixed,Uttarakhand
+91,5967,Dharchula,Fixed line,India,fixed,Uttarakhand
+91,6111,Hilsa,Fixed line,India,fixed,Bihar
+91,6112,Biharsharif,Fixed line,India,fixed,Bihar
+91,6114,Jahanabad,Fixed line,India,fixed,Bihar
+91,6115,Danapur,Fixed line,India,fixed,Bihar
+91,6132,Barh,Fixed line,India,fixed,Bihar
+91,6135,Bikram,Fixed line,India,fixed,Bihar
+91,6150,Hathua,Fixed line,India,fixed,Bihar
+91,6151,Sidhawalia,Fixed line,India,fixed,Bihar
+91,6152,Chapara,Fixed line,India,fixed,Bihar
+91,6153,Maharajganj,Fixed line,India,fixed,Bihar
+91,6154,Siwan,Fixed line,India,fixed,Bihar
+91,6155,Ekma,Fixed line,India,fixed,Bihar
+91,6156,Gopalganj,Fixed line,India,fixed,Bihar
+91,6157,Mairwa,Fixed line,India,fixed,Bihar
+91,6158,Sonepur,Fixed line,India,fixed,Bihar
+91,6159,Masrakh,Fixed line,India,fixed,Bihar
+91,6180,Adhaura,Fixed line,India,fixed,Bihar
+91,6181,Piro,Fixed line,India,fixed,Bihar
+91,6182,Arrah,Fixed line,India,fixed,Bihar
+91,6183,Buxer,Fixed line,India,fixed,Bihar
+91,6184,Sasaram,Fixed line,India,fixed,Bihar
+91,6185,Bikramganj,Fixed line,India,fixed,Bihar
+91,6186,Aurangabad,Fixed line,India,fixed,Bihar
+91,6187,Mohania,Fixed line,India,fixed,Bihar
+91,6188,Rohtas,Fixed line,India,fixed,Bihar
+91,6189,Bhabhua,Fixed line,India,fixed,Bihar
+91,6222,Sheohar,Fixed line,India,fixed,Bihar
+91,6223,Motipur,Fixed line,India,fixed,Bihar
+91,6224,Hajipur,Fixed line,India,fixed,Bihar
+91,6226,Sitamarhi,Fixed line,India,fixed,Bihar
+91,6227,Mahua,Fixed line,India,fixed,Bihar
+91,6228,Pupri,Fixed line,India,fixed,Bihar
+91,6229,Bidupur,Fixed line,India,fixed,Bihar
+91,6242,Benipur,Fixed line,India,fixed,Bihar
+91,6243,Begusarai,Fixed line,India,fixed,Bihar
+91,6244,Khagaria,Fixed line,India,fixed,Bihar
+91,6245,Gogri,Fixed line,India,fixed,Bihar
+91,6246,Jainagar,Fixed line,India,fixed,Bihar
+91,6247,Singhwara,Fixed line,India,fixed,Bihar
+91,6250,Dhaka,Fixed line,India,fixed,Bihar
+91,6251,Bagaha,Fixed line,India,fixed,Bihar
+91,6252,Motihari,Fixed line,India,fixed,Bihar
+91,6253,Narkatiaganj,Fixed line,India,fixed,Bihar
+91,6254,Bettiah,Fixed line,India,fixed,Bihar
+91,6255,Raxaul,Fixed line,India,fixed,Bihar
+91,6256,Ramnagar,Fixed line,India,fixed,Bihar
+91,6257,Barachakia,Fixed line,India,fixed,Bihar
+91,6258,Areraj,Fixed line,India,fixed,Bihar
+91,6259,Pakridayal,Fixed line,India,fixed,Bihar
+91,6271,Benipatti,Fixed line,India,fixed,Bihar
+91,6272,Darbhanga,Fixed line,India,fixed,Bihar
+91,6273,Jhanjharpur,Fixed line,India,fixed,Bihar
+91,6274,Samastipur,Fixed line,India,fixed,Bihar
+91,6275,Rosera,Fixed line,India,fixed,Bihar
+91,6276,Madhubani,Fixed line,India,fixed,Bihar
+91,6277,Phulparas,Fixed line,India,fixed,Bihar
+91,6278,Dalsinghsarai,Fixed line,India,fixed,Bihar
+91,6279,Barauni,Fixed line,India,fixed,Bihar
+91,6322,Wazirganj,Fixed line,India,fixed,Bihar
+91,6323,Dumraon,Fixed line,India,fixed,Bihar
+91,6324,Nawada,Fixed line,India,fixed,Bihar
+91,6325,Pakribarwan,Fixed line,India,fixed,Bihar
+91,6326,Sherghati,Fixed line,India,fixed,Bihar
+91,6327,Rafiganj,Fixed line,India,fixed,Bihar
+91,6328,Daudnagar,Fixed line,India,fixed,Bihar
+91,6331,Imamganj,Fixed line,India,fixed,Bihar
+91,6332,Nabinagar,Fixed line,India,fixed,Bihar
+91,6336,Rajauli,Fixed line,India,fixed,Bihar
+91,6337,Arwal,Fixed line,India,fixed,Bihar
+91,6341,Seikhpura,Fixed line,India,fixed,Bihar
+91,6342,H.Kharagpur,Fixed line,India,fixed,Bihar
+91,6344,Monghyr,Fixed line,India,fixed,Bihar
+91,6345,Jamui,Fixed line,India,fixed,Bihar
+91,6346,Lakhisarai,Fixed line,India,fixed,Bihar
+91,6347,Chakai,Fixed line,India,fixed,Bihar
+91,6348,Mallehpur,Fixed line,India,fixed,Bihar
+91,6349,Jhajha,Fixed line,India,fixed,Bihar
+91,6420,Amarpur,Fixed line,India,fixed,Bihar
+91,6421,Naugachia,Fixed line,India,fixed,Bihar
+91,6422,Godda,Fixed line,India,fixed,Jharkhand
+91,6423,Maheshpur Raj,Fixed line,India,fixed,Jharkhand
+91,6424,Banka,Fixed line,India,fixed,Bihar
+91,6425,Katoria,Fixed line,India,fixed,Bihar
+91,6426,Rajmahal,Fixed line,India,fixed,Jharkhand
+91,6427,Kathikund,Fixed line,India,fixed,Jharkhand
+91,6428,Nala,Fixed line,India,fixed,Jharkhand
+91,6429,Kahalgaon,Fixed line,India,fixed,Bihar
+91,6431,Jharmundi,Fixed line,India,fixed,Jharkhand
+91,6432,Deoghar,Fixed line,India,fixed,Jharkhand
+91,6433,Jamtara,Fixed line,India,fixed,Jharkhand
+91,6434,Dumka,Fixed line,India,fixed,Jharkhand
+91,6435,Pakur,Fixed line,India,fixed,Jharkhand
+91,6436,Sahibganj,Fixed line,India,fixed,Jharkhand
+91,6437,Mahagama,Fixed line,India,fixed,Jharkhand
+91,6438,Madhupur,Fixed line,India,fixed,Jharkhand
+91,6451,Barosi,Fixed line,India,fixed,Bihar
+91,6452,Katihar,Fixed line,India,fixed,Bihar
+91,6453,Araria,Fixed line,India,fixed,Bihar
+91,6454,Purena,Fixed line,India,fixed,Bihar
+91,6455,Forbesganj,Fixed line,India,fixed,Bihar
+91,6457,Korha,Fixed line,India,fixed,Bihar
+91,6459,Thakurganj,Fixed line,India,fixed,Bihar
+91,6461,Raniganj,Fixed line,India,fixed,Bihar
+91,6462,Dhamdaha,Fixed line,India,fixed,Bihar
+91,6466,Kishanganj,Fixed line,India,fixed,Bihar
+91,6467,Banmankhi,Fixed line,India,fixed,Bihar
+91,6471,Birpur,Fixed line,India,fixed,Bihar
+91,6473,Supaul,Fixed line,India,fixed,Bihar
+91,6475,S.Bakhtiarpur,Fixed line,India,fixed,Bihar
+91,6476,Madhepura,Fixed line,India,fixed,Bihar
+91,6477,Triveniganj,Fixed line,India,fixed,Bihar
+91,6478,Saharsa,Fixed line,India,fixed,Bihar
+91,6479,Udakishanganj,Fixed line,India,fixed,Bihar
+91,6522,Muri,Fixed line,India,fixed,Jharkhand
+91,6523,Ghaghra,Fixed line,India,fixed,Jharkhand
+91,6524,Gumla,Fixed line,India,fixed,Jharkhand
+91,6525,Simdega,Fixed line,India,fixed,Jharkhand
+91,6526,Lohardaga,Fixed line,India,fixed,Jharkhand
+91,6527,Kolebira,Fixed line,India,fixed,Jharkhand
+91,6528,Khunti,Fixed line,India,fixed,Jharkhand
+91,6529,Itki,Fixed line,India,fixed,Jharkhand
+91,6530,Bundu,Fixed line,India,fixed,Jharkhand
+91,6531,Mandar,Fixed line,India,fixed,Jharkhand
+91,6532,Giridih,Fixed line,India,fixed,Jharkhand
+91,6533,Basia,Fixed line,India,fixed,Jharkhand
+91,6534,Jhumaritalaiya,Fixed line,India,fixed,Jharkhand
+91,6535,Chainpur,Fixed line,India,fixed,Jharkhand
+91,6536,Palkot,Fixed line,India,fixed,Jharkhand
+91,6538,Torpa,Fixed line,India,fixed,Jharkhand
+91,6539,Bolwa,Fixed line,India,fixed,Jharkhand
+91,6540,Govindpur,Fixed line,India,fixed,Jharkhand
+91,6541,Chatra,Fixed line,India,fixed,Jharkhand
+91,6542,Bokaro,Fixed line,India,fixed,Jharkhand
+91,6543,Barhi,Fixed line,India,fixed,Jharkhand
+91,6544,Gomia,Fixed line,India,fixed,Jharkhand
+91,6545,Mandu,Fixed line,India,fixed,Jharkhand
+91,6546,Hazaribagh,Fixed line,India,fixed,Jharkhand
+91,6547,Chavparan,Fixed line,India,fixed,Jharkhand
+91,6548,Ichak,Fixed line,India,fixed,Jharkhand
+91,6549,Bermo,Fixed line,India,fixed,Jharkhand
+91,6550,Hunterganj,Fixed line,India,fixed,Jharkhand
+91,6551,Barkagaon,Fixed line,India,fixed,Jharkhand
+91,6553,Ramgarh,Fixed line,India,fixed,Jharkhand
+91,6554,Rajdhanwar,Fixed line,India,fixed,Jharkhand
+91,6556,Tisri,Fixed line,India,fixed,Jharkhand
+91,6557,Bagodar,Fixed line,India,fixed,Jharkhand
+91,6558,Dumri,Fixed line,India,fixed,Jharkhand
+91,6559,Simaria,Fixed line,India,fixed,Jharkhand
+91,6560,Patan,Fixed line,India,fixed,Jharkhand
+91,6561,Garhwa,Fixed line,India,fixed,Jharkhand
+91,6562,Daltonganj,Fixed line,India,fixed,Jharkhand
+91,6563,Bhawanathpur,Fixed line,India,fixed,Jharkhand
+91,6564,Nagarutatri,Fixed line,India,fixed,Jharkhand
+91,6565,Latehar,Fixed line,India,fixed,Jharkhand
+91,6566,Japla,Fixed line,India,fixed,Jharkhand
+91,6567,Barwadih,Fixed line,India,fixed,Jharkhand
+91,6568,Balumath,Fixed line,India,fixed,Jharkhand
+91,6569,Garu,Fixed line,India,fixed,Jharkhand
+91,6581,Bhandaria,Fixed line,India,fixed,Jharkhand
+91,6582,Chaibasa,Fixed line,India,fixed,Jharkhand
+91,6583,Kharsawa,Fixed line,India,fixed,Jharkhand
+91,6584,Bishrampur,Fixed line,India,fixed,Jharkhand
+91,6585,Ghatsila,Fixed line,India,fixed,Jharkhand
+91,6586,Chainpur,Fixed line,India,fixed,Jharkhand
+91,6587,Chakardharpur,Fixed line,India,fixed,Jharkhand
+91,6588,Jagarnathpur,Fixed line,India,fixed,Jharkhand
+91,6589,Jhinkpani,Fixed line,India,fixed,Jharkhand
+91,6591,Chandil,Fixed line,India,fixed,Jharkhand
+91,6593,Manoharpur,Fixed line,India,fixed,Jharkhand
+91,6594,Baharagora,Fixed line,India,fixed,Jharkhand
+91,6596,Noamundi,Fixed line,India,fixed,Jharkhand
+91,6597,Saraikela,Fixed line,India,fixed,Jharkhand
+91,6621,Hemgiri,Fixed line,India,fixed,Odisha
+91,6622,Sundergarh,Fixed line,India,fixed,Odisha
+91,6624,Rajgangpur,Fixed line,India,fixed,Odisha
+91,6625,Lahunipara,Fixed line,India,fixed,Odisha
+91,6626,Banaigarh,Fixed line,India,fixed,Odisha
+91,6640,Bagdihi,Fixed line,India,fixed,Odisha
+91,6641,Deodgarh,Fixed line,India,fixed,Odisha
+91,6642,Kuchinda,Fixed line,India,fixed,Odisha
+91,6643,Barkot,Fixed line,India,fixed,Odisha
+91,6644,Rairakhol,Fixed line,India,fixed,Odisha
+91,6645,Jharsuguda,Fixed line,India,fixed,Odisha
+91,6646,Bargarh,Fixed line,India,fixed,Odisha
+91,6647,Naktideul,Fixed line,India,fixed,Odisha
+91,6648,Patnagarh,Fixed line,India,fixed,Odisha
+91,6649,Jamankira,Fixed line,India,fixed,Odisha
+91,6651,Birmaharajpur,Fixed line,India,fixed,Odisha
+91,6652,Balangir,Fixed line,India,fixed,Odisha
+91,6653,Dunguripali,Fixed line,India,fixed,Odisha
+91,6654,Sonapur,Fixed line,India,fixed,Odisha
+91,6655,Titlagarh,Fixed line,India,fixed,Odisha
+91,6657,Kantabhanji,Fixed line,India,fixed,Odisha
+91,6670,Bhawanipatna,Fixed line,India,fixed,Odisha
+91,6671,Rajkhariar,Fixed line,India,fixed,Odisha
+91,6672,Dharamgarh,Fixed line,India,fixed,Odisha
+91,6673,Jayapatna / Mukhiguda,Fixed line,India,fixed,Odisha
+91,6675,T. Rampur,Fixed line,India,fixed,Odisha
+91,6676,M. Rampur,Fixed line,India,fixed,Odisha
+91,6677,Narlaroad,Fixed line,India,fixed,Odisha
+91,6678,Nowparatan,Fixed line,India,fixed,Odisha
+91,6679,Komana,Fixed line,India,fixed,Odisha
+91,6681,Jujumura,Fixed line,India,fixed,Odisha
+91,6682,Attabira,Fixed line,India,fixed,Odisha
+91,6683,Padampur,Fixed line,India,fixed,Odisha
+91,6684,Paikamal,Fixed line,India,fixed,Odisha
+91,6685,Sohela,Fixed line,India,fixed,Odisha
+91,6721,Narsinghpur,Fixed line,India,fixed,Odisha
+91,6722,Pardip,Fixed line,India,fixed,Odisha
+91,6723,Athgarh,Fixed line,India,fixed,Odisha
+91,6724,Jagatsinghpur,Fixed line,India,fixed,Odisha
+91,6725,Dhanmandal,Fixed line,India,fixed,Odisha
+91,6726,Jajpur Road,Fixed line,India,fixed,Odisha
+91,6727,Kendrapara,Fixed line,India,fixed,Odisha
+91,6728,Jajpur Town,Fixed line,India,fixed,Odisha
+91,6729,Pattamundai,Fixed line,India,fixed,Odisha
+91,6731,Anandapur,Fixed line,India,fixed,Odisha
+91,6732,Hindol,Fixed line,India,fixed,Odisha
+91,6733,Ghatgaon,Fixed line,India,fixed,Odisha
+91,6735,Telkoi,Fixed line,India,fixed,Odisha
+91,6752,Puri,Fixed line,India,fixed,Odisha
+91,6753,Nayagarh,Fixed line,India,fixed,Odisha
+91,6755,Khurda,Fixed line,India,fixed,Odisha
+91,6756,Balugaon,Fixed line,India,fixed,Odisha
+91,6757,Daspalla,Fixed line,India,fixed,Odisha
+91,6758,Nimapara,Fixed line,India,fixed,Odisha
+91,6760,Talcher,Fixed line,India,fixed,Odisha
+91,6761,Chhendipada,Fixed line,India,fixed,Odisha
+91,6762,Dhenkanal,Fixed line,India,fixed,Odisha
+91,6763,Athmallik,Fixed line,India,fixed,Odisha
+91,6764,Anugul,Fixed line,India,fixed,Odisha
+91,6765,Palla Hara,Fixed line,India,fixed,Odisha
+91,6766,Keonjhar,Fixed line,India,fixed,Odisha
+91,6767,Barbil,Fixed line,India,fixed,Odisha
+91,6768,Parajang,Fixed line,India,fixed,Odisha
+91,6769,Kamakhyanagar,Fixed line,India,fixed,Odisha
+91,6781,Basta,Fixed line,India,fixed,Odisha
+91,6782,Balasore,Fixed line,India,fixed,Odisha
+91,6784,Bhadrak,Fixed line,India,fixed,Odisha
+91,6786,Chandbali,Fixed line,India,fixed,Odisha
+91,6788,Soro,Fixed line,India,fixed,Odisha
+91,6791,Bangiriposi,Fixed line,India,fixed,Odisha
+91,6792,Baripada,Fixed line,India,fixed,Odisha
+91,6793,Betanati,Fixed line,India,fixed,Odisha
+91,6794,Rairangpur,Fixed line,India,fixed,Odisha
+91,6795,Udala,Fixed line,India,fixed,Odisha
+91,6796,Karanjia,Fixed line,India,fixed,Odisha
+91,6797,Jashipur,Fixed line,India,fixed,Odisha
+91,6810,Khalikote,Fixed line,India,fixed,Odisha
+91,6811,Chhatrapur,Fixed line,India,fixed,Odisha
+91,6814,Digapahandi,Fixed line,India,fixed,Odisha
+91,6815,Parlakhemundi,Fixed line,India,fixed,Odisha
+91,6816,Mohana,Fixed line,India,fixed,Odisha
+91,6817,R. Udayigiri,Fixed line,India,fixed,Odisha
+91,6818,Buguda,Fixed line,India,fixed,Odisha
+91,6819,Surada,Fixed line,India,fixed,Odisha
+91,6821,Bhanjanagar,Fixed line,India,fixed,Odisha
+91,6822,Aska,Fixed line,India,fixed,Odisha
+91,6840,Tumudibandha,Fixed line,India,fixed,Odisha
+91,6841,Boudh,Fixed line,India,fixed,Odisha
+91,6842,Phulbani,Fixed line,India,fixed,Odisha
+91,6843,Puruna Katak,Fixed line,India,fixed,Odisha
+91,6844,Kantamal,Fixed line,India,fixed,Odisha
+91,6845,Phiringia,Fixed line,India,fixed,Odisha
+91,6846,Baliguda,Fixed line,India,fixed,Odisha
+91,6847,G.Udayagiri,Fixed line,India,fixed,Odisha
+91,6848,Kotagarh,Fixed line,India,fixed,Odisha
+91,6849,Daringbadi,Fixed line,India,fixed,Odisha
+91,6850,Kalimela,Fixed line,India,fixed,Odisha
+91,6852,Koraput,Fixed line,India,fixed,Odisha
+91,6853,Sunabeda,Fixed line,India,fixed,Odisha
+91,6854,Jeypur,Fixed line,India,fixed,Odisha
+91,6855,Laxmipur,Fixed line,India,fixed,Odisha
+91,6856,Rayagada,Fixed line,India,fixed,Odisha
+91,6857,Gunupur,Fixed line,India,fixed,Odisha
+91,6858,Nowrangapur,Fixed line,India,fixed,Odisha
+91,6859,Motu,Fixed line,India,fixed,Odisha
+91,6860,Boriguma,Fixed line,India,fixed,Odisha
+91,6861,Malkangiri,Fixed line,India,fixed,Odisha
+91,6862,Gudari,Fixed line,India,fixed,Odisha
+91,6863,Bisam Cuttack,Fixed line,India,fixed,Odisha
+91,6864,Mathili,Fixed line,India,fixed,Odisha
+91,6865,Kashipur,Fixed line,India,fixed,Odisha
+91,6866,Umerkote,Fixed line,India,fixed,Odisha
+91,6867,Jharigan,Fixed line,India,fixed,Odisha
+91,6868,Nandapur,Fixed line,India,fixed,Odisha
+91,6869,Papadhandi,Fixed line,India,fixed,Odisha
+91,7100,Kuhi,Fixed line,India,fixed,Maharashtra
+91,7102,Parseoni,Fixed line,India,fixed,Maharashtra
+91,7103,Butibori,Fixed line,India,fixed,Maharashtra
+91,7104,Hingua,Fixed line,India,fixed,Maharashtra
+91,7105,Narkhed,Fixed line,India,fixed,Maharashtra
+91,7106,Bhiwapur,Fixed line,India,fixed,Maharashtra
+91,7109,Kamptee,Fixed line,India,fixed,Maharashtra
+91,7112,Katol,Fixed line,India,fixed,Maharashtra
+91,7113,Saoner,Fixed line,India,fixed,Maharashtra
+91,7114,Ramtek,Fixed line,India,fixed,Maharashtra
+91,7115,Mouda,Fixed line,India,fixed,Maharashtra
+91,7116,Umrer,Fixed line,India,fixed,Maharashtra
+91,7118,Kalmeshwar,Fixed line,India,fixed,Maharashtra
+91,7131,Sironcha,Fixed line,India,fixed,Maharashtra
+91,7132,Gadhchiroli,Fixed line,India,fixed,Maharashtra
+91,7133,Aheri,Fixed line,India,fixed,Maharashtra
+91,7134,Bhamregadh,Fixed line,India,fixed,Maharashtra
+91,7135,Chamorshi,Fixed line,India,fixed,Maharashtra
+91,7136,Etapalli,Fixed line,India,fixed,Maharashtra
+91,7137,Desaiganj,Fixed line,India,fixed,Maharashtra
+91,7138,Dhanora,Fixed line,India,fixed,Maharashtra
+91,7139,Kurkheda,Fixed line,India,fixed,Maharashtra
+91,7141,Betul,Fixed line,India,fixed,Madhya Pradesh
+91,7142,Bhimpur,Fixed line,India,fixed,Madhya Pradesh
+91,7143,Bhainsdehi,Fixed line,India,fixed,Madhya Pradesh
+91,7144,Atner,Fixed line,India,fixed,Madhya Pradesh
+91,7145,Chicholi,Fixed line,India,fixed,Madhya Pradesh
+91,7146,Ghorandogri,Fixed line,India,fixed,Madhya Pradesh
+91,7147,Multai,Fixed line,India,fixed,Madhya Pradesh
+91,7148,Prabhapattan,Fixed line,India,fixed,Madhya Pradesh
+91,7149,Tamia,Fixed line,India,fixed,Madhya Pradesh
+91,7151,Samudrapur,Fixed line,India,fixed,Maharashtra
+91,7152,Wardha,Fixed line,India,fixed,Maharashtra
+91,7153,Hinganghat,Fixed line,India,fixed,Maharashtra
+91,7155,Seloo,Fixed line,India,fixed,Maharashtra
+91,7156,Talegaon S.Ji Pant,Fixed line,India,fixed,Maharashtra
+91,7157,Arvi,Fixed line,India,fixed,Maharashtra
+91,7158,Deoli,Fixed line,India,fixed,Maharashtra
+91,7160,Jamai,Fixed line,India,fixed,Madhya Pradesh
+91,7161,Parasia,Fixed line,India,fixed,Madhya Pradesh
+91,7162,Chhindwara,Fixed line,India,fixed,Madhya Pradesh
+91,7164,Pandhurna,Fixed line,India,fixed,Madhya Pradesh
+91,7165,Saunsar,Fixed line,India,fixed,Madhya Pradesh
+91,7166,Chaurai,Fixed line,India,fixed,Madhya Pradesh
+91,7167,Amarwada,Fixed line,India,fixed,Madhya Pradesh
+91,7168,Harrai,Fixed line,India,fixed,Madhya Pradesh
+91,7169,Batkakhapa,Fixed line,India,fixed,Madhya Pradesh
+91,7170,Chumur,Fixed line,India,fixed,Maharashtra
+91,7171,Gondpipri,Fixed line,India,fixed,Maharashtra
+91,7172,Chandrapur,Fixed line,India,fixed,Maharashtra
+91,7173,Rajura,Fixed line,India,fixed,Maharashtra
+91,7174,Mul,Fixed line,India,fixed,Maharashtra
+91,7175,Bhadrawati,Fixed line,India,fixed,Maharashtra
+91,7176,Warora,Fixed line,India,fixed,Maharashtra
+91,7177,Brahmapuri,Fixed line,India,fixed,Maharashtra
+91,7178,Sinderwahi,Fixed line,India,fixed,Maharashtra
+91,7179,Nagbhir,Fixed line,India,fixed,Maharashtra
+91,7180,Salekasa,Fixed line,India,fixed,Maharashtra
+91,7181,Lakhandur,Fixed line,India,fixed,Maharashtra
+91,7182,Gondia,Fixed line,India,fixed,Maharashtra
+91,7183,Tumsar,Fixed line,India,fixed,Maharashtra
+91,7184,Bhandara,Fixed line,India,fixed,Maharashtra
+91,7185,Pauni,Fixed line,India,fixed,Maharashtra
+91,7186,Sakoli,Fixed line,India,fixed,Maharashtra
+91,7187,Goregaon,Fixed line,India,fixed,Maharashtra
+91,7189,Amagaon,Fixed line,India,fixed,Maharashtra
+91,7196,Arjuni Merogaon,Fixed line,India,fixed,Maharashtra
+91,7197,Mohadi,Fixed line,India,fixed,Maharashtra
+91,7198,Tirora,Fixed line,India,fixed,Maharashtra
+91,7199,Deori,Fixed line,India,fixed,Maharashtra
+91,7201,Kalamb,Fixed line,India,fixed,Maharashtra
+91,7202,Ralegaon,Fixed line,India,fixed,Maharashtra
+91,7203,Babhulgaon,Fixed line,India,fixed,Maharashtra
+91,7220,Chhikaldara,Fixed line,India,fixed,Maharashtra
+91,7222,Chandur,Fixed line,India,fixed,Maharashtra
+91,7223,Achalpur,Fixed line,India,fixed,Maharashtra
+91,7224,Daryapur,Fixed line,India,fixed,Maharashtra
+91,7225,Tiwasa,Fixed line,India,fixed,Maharashtra
+91,7226,Dharani,Fixed line,India,fixed,Maharashtra
+91,7227,Chandurbazar,Fixed line,India,fixed,Maharashtra
+91,7228,Morshi,Fixed line,India,fixed,Maharashtra
+91,7229,Warlydwarud,Fixed line,India,fixed,Maharashtra
+91,7230,Ghatanji,Fixed line,India,fixed,Maharashtra
+91,7231,Umarkhed,Fixed line,India,fixed,Maharashtra
+91,7232,Yeotmal,Fixed line,India,fixed,Maharashtra
+91,7233,Pusad,Fixed line,India,fixed,Maharashtra
+91,7234,Digras,Fixed line,India,fixed,Maharashtra
+91,7235,Pandharkawada,Fixed line,India,fixed,Maharashtra
+91,7236,Mahagaon,Fixed line,India,fixed,Maharashtra
+91,7237,Maregaon,Fixed line,India,fixed,Maharashtra
+91,7238,Darwaha,Fixed line,India,fixed,Maharashtra
+91,7239,Wani,Fixed line,India,fixed,Maharashtra
+91,7251,Risod,Fixed line,India,fixed,Maharashtra
+91,7252,Washim,Fixed line,India,fixed,Maharashtra
+91,7253,Mangrulpur,Fixed line,India,fixed,Maharashtra
+91,7254,Malgaon,Fixed line,India,fixed,Maharashtra
+91,7255,Barshi Takli,Fixed line,India,fixed,Maharashtra
+91,7256,Murtizapur,Fixed line,India,fixed,Maharashtra
+91,7257,Balapur,Fixed line,India,fixed,Maharashtra
+91,7258,Akot,Fixed line,India,fixed,Maharashtra
+91,7260,Lonar,Fixed line,India,fixed,Maharashtra
+91,7261,Deolgaonraja,Fixed line,India,fixed,Maharashtra
+91,7262,Buldhana,Fixed line,India,fixed,Maharashtra
+91,7263,Khamgaon,Fixed line,India,fixed,Maharashtra
+91,7264,Chikhali,Fixed line,India,fixed,Maharashtra
+91,7266,Jalgaonjamod,Fixed line,India,fixed,"Maharashtra, Meghalaya"
+91,7267,Malkapur,Fixed line,India,fixed,Maharashtra
+91,7268,Mekhar,Fixed line,India,fixed,Maharashtra
+91,7269,Sindkhedaraja,Fixed line,India,fixed,Maharashtra
+91,7270,Sonkatch,Fixed line,India,fixed,Madhya Pradesh
+91,7271,Bagli,Fixed line,India,fixed,Madhya Pradesh
+91,7272,Dewas,Fixed line,India,fixed,Madhya Pradesh
+91,7273,Kannod,Fixed line,India,fixed,Madhya Pradesh
+91,7274,Khategaon,Fixed line,India,fixed,Madhya Pradesh
+91,7279,Nandnva,Fixed line,India,fixed,Maharashtra
+91,7280,Barwaha,Fixed line,India,fixed,Madhya Pradesh
+91,7281,Sendhwa,Fixed line,India,fixed,Madhya Pradesh
+91,7282,Khargone,Fixed line,India,fixed,Madhya Pradesh
+91,7283,Maheshwar,Fixed line,India,fixed,Madhya Pradesh
+91,7284,Rajpur,Fixed line,India,fixed,Madhya Pradesh
+91,7285,Kasrawad,Fixed line,India,fixed,Madhya Pradesh
+91,7286,Khetia,Fixed line,India,fixed,Madhya Pradesh
+91,7287,Gogaon,Fixed line,India,fixed,Madhya Pradesh
+91,7288,Bhikangaon,Fixed line,India,fixed,Madhya Pradesh
+91,7289,Zhirnia,Fixed line,India,fixed,Madhya Pradesh
+91,7290,Badwani,Fixed line,India,fixed,Madhya Pradesh
+91,7291,Manawar,Fixed line,India,fixed,Madhya Pradesh
+91,7292,Dhar,Fixed line,India,fixed,Madhya Pradesh
+91,7294,Dharampuri,Fixed line,India,fixed,Madhya Pradesh
+91,7295,Badnawar,Fixed line,India,fixed,Madhya Pradesh
+91,7296,Sardarpur,Fixed line,India,fixed,Madhya Pradesh
+91,7297,Kukshi,Fixed line,India,fixed,Madhya Pradesh
+91,7320,Pandhana,Fixed line,India,fixed,Madhya Pradesh
+91,7321,Sanwer,Fixed line,India,fixed,Madhya Pradesh
+91,7322,Depalpur,Fixed line,India,fixed,Madhya Pradesh
+91,7323,Punasa,Fixed line,India,fixed,Madhya Pradesh
+91,7324,Mhow,Fixed line,India,fixed,Madhya Pradesh
+91,7325,Burhanpur,Fixed line,India,fixed,Madhya Pradesh
+91,7326,Baldi,Fixed line,India,fixed,Madhya Pradesh
+91,7327,Harsud,Fixed line,India,fixed,Madhya Pradesh
+91,7328,Khalwa,Fixed line,India,fixed,Madhya Pradesh
+91,7329,Khakner,Fixed line,India,fixed,Madhya Pradesh
+91,7360,Shujalpur,Fixed line,India,fixed,Madhya Pradesh
+91,7361,Susner,Fixed line,India,fixed,Madhya Pradesh
+91,7362,Agar,Fixed line,India,fixed,Madhya Pradesh
+91,7363,Berchha,Fixed line,India,fixed,Madhya Pradesh
+91,7364,Shajapur,Fixed line,India,fixed,Madhya Pradesh
+91,7365,Mahidpurcity,Fixed line,India,fixed,Madhya Pradesh
+91,7366,Khachrod,Fixed line,India,fixed,Madhya Pradesh
+91,7367,Badnagar,Fixed line,India,fixed,Madhya Pradesh
+91,7368,Ghatia,Fixed line,India,fixed,Madhya Pradesh
+91,7369,Tarana,Fixed line,India,fixed,Madhya Pradesh
+91,7370,Khilchipur,Fixed line,India,fixed,Madhya Pradesh
+91,7371,Sarangpur,Fixed line,India,fixed,Madhya Pradesh
+91,7372,Rajgarh,Fixed line,India,fixed,Madhya Pradesh
+91,7374,Biaora,Fixed line,India,fixed,Madhya Pradesh
+91,7375,Narsingarh,Fixed line,India,fixed,Madhya Pradesh
+91,7390,Thandla,Fixed line,India,fixed,Madhya Pradesh
+91,7391,Petlawad,Fixed line,India,fixed,Madhya Pradesh
+91,7392,Jhabua,Fixed line,India,fixed,Madhya Pradesh
+91,7393,Jobat,Fixed line,India,fixed,Madhya Pradesh
+91,7394,Alirajpur,Fixed line,India,fixed,Madhya Pradesh
+91,7395,Sondhwa,Fixed line,India,fixed,Madhya Pradesh
+91,7410,Alot,Fixed line,India,fixed,Madhya Pradesh
+91,7412,Ratlam,Fixed line,India,fixed,Madhya Pradesh
+91,7413,Sailana,Fixed line,India,fixed,Madhya Pradesh
+91,7414,Jaora,Fixed line,India,fixed,Madhya Pradesh
+91,7420,Jawad,Fixed line,India,fixed,Madhya Pradesh
+91,7421,Manasa,Fixed line,India,fixed,Madhya Pradesh
+91,7422,Mandsaur,Fixed line,India,fixed,Madhya Pradesh
+91,7423,Neemuch,Fixed line,India,fixed,Madhya Pradesh
+91,7424,Malhargarh,Fixed line,India,fixed,Madhya Pradesh
+91,7425,Garoth,Fixed line,India,fixed,Madhya Pradesh
+91,7426,Sitamau,Fixed line,India,fixed,Madhya Pradesh
+91,7427,Bhanpura,Fixed line,India,fixed,Madhya Pradesh
+91,7430,Khanpur,Fixed line,India,fixed,Rajasthan
+91,7431,Aklera,Fixed line,India,fixed,Rajasthan
+91,7432,Jhalawar,Fixed line,India,fixed,Rajasthan
+91,7433,Pachpahar,Fixed line,India,fixed,Rajasthan
+91,7434,Pirawa,Fixed line,India,fixed,Rajasthan
+91,7435,Gangdhar,Fixed line,India,fixed,Rajastan
+91,7436,Hindoli,Fixed line,India,fixed,Rajastan
+91,7437,Nainwa,Fixed line,India,fixed,Rajasthan
+91,7438,Keshoraipatan,Fixed line,India,fixed,Rajasthan
+91,7450,Sangod,Fixed line,India,fixed,Rajasthan
+91,7451,Atru,Fixed line,India,fixed,Rajasthan
+91,7452,Chhabra,Fixed line,India,fixed,Rajasthan
+91,7453,Baran,Fixed line,India,fixed,Rajasthan
+91,7454,Chhipaborad,Fixed line,India,fixed,Rajasthan
+91,7455,Digod,Fixed line,India,fixed,Rajasthan
+91,7456,Kishanganj,Fixed line,India,fixed,Rajasthan
+91,7457,Mangrol,Fixed line,India,fixed,Rajasthan
+91,7458,Pipalda,Fixed line,India,fixed,Rajasthan
+91,7459,Ramganj Mandi,Fixed line,India,fixed,Rajasthan
+91,7460,Sahabad,Fixed line,India,fixed,Rajasthan
+91,7461,Mahuwa,Fixed line,India,fixed,Rajasthan
+91,7462,Sawaimadhopur,Fixed line,India,fixed,Rajasthan
+91,7463,Gangapur,Fixed line,India,fixed,Rajastan
+91,7464,Karauli,Fixed line,India,fixed,Rajasthan
+91,7465,Sapotra,Fixed line,India,fixed,Rajasthan
+91,7466,Bonli,Fixed line,India,fixed,Rajasthan
+91,7467,Bamanwas,Fixed line,India,fixed,Rajasthan
+91,7468,Khandar,Fixed line,India,fixed,Rajasthan
+91,7469,Hindaun,Fixed line,India,fixed,Rajastan
+91,7480,Goharganj,Fixed line,India,fixed,Madhya Pradesh
+91,7481,Gairatganj,Fixed line,India,fixed,Madhya Pradesh
+91,7482,Raisen,Fixed line,India,fixed,Madhya Pradesh
+91,7484,Silwani,Fixed line,India,fixed,Madhya Pradesh
+91,7485,Udaipura,Fixed line,India,fixed,Madhya Pradesh
+91,7486,Bareli,Fixed line,India,fixed,Madhya Pradesh
+91,7487,Begamganj,Fixed line,India,fixed,Madhya Pradesh
+91,7490,Pohari,Fixed line,India,fixed,Madhya Pradesh
+91,7491,Narwar,Fixed line,India,fixed,Madhya Pradesh
+91,7492,Shivpuri,Fixed line,India,fixed,Madhya Pradesh
+91,7493,Karera,Fixed line,India,fixed,Madhya Pradesh
+91,7494,Kolaras,Fixed line,India,fixed,Madhya Pradesh
+91,7495,Badarwsas,Fixed line,India,fixed,Madhya Pradesh
+91,7496,Pichhore,Fixed line,India,fixed,Madhya Pradesh
+91,7497,Khaniadhana,Fixed line,India,fixed,Madhya Pradesh
+91,7521,Seondha,Fixed line,India,fixed,Madhya Pradesh
+91,7522,Datia,Fixed line,India,fixed,Madhya Pradesh
+91,7523,Bhander,Fixed line,India,fixed,Madhya Pradesh
+91,7524,Dabra,Fixed line,India,fixed,Madhya Pradesh
+91,7525,Bhitarwar,Fixed line,India,fixed,Madhya Pradesh
+91,7526,Ghatigaon,Fixed line,India,fixed,Madhya Pradesh
+91,7527,Mehgaon,Fixed line,India,fixed,Madhya Pradesh
+91,7528,Bijaypur,Fixed line,India,fixed,Madhya Pradesh
+91,7529,Laher,Fixed line,India,fixed,Madhya Pradesh
+91,7530,Sheopurkalan,Fixed line,India,fixed,Madhya Pradesh
+91,7532,Morena,Fixed line,India,fixed,Madhya Pradesh
+91,7533,Karhal,Fixed line,India,fixed,Madhya Pradesh
+91,7534,Bhind,Fixed line,India,fixed,Madhya Pradesh
+91,7535,Raghunathpur,Fixed line,India,fixed,Madhya Pradesh
+91,7536,Sabalgarh,Fixed line,India,fixed,Madhya Pradesh
+91,7537,Jora,Fixed line,India,fixed,Madhya Pradesh
+91,7538,Ambah,Fixed line,India,fixed,Madhya Pradesh
+91,7539,Gohad,Fixed line,India,fixed,Madhya Pradesh
+91,7540,Bamori,Fixed line,India,fixed,Madhya Pradesh
+91,7541,Isagarh,Fixed line,India,fixed,Madhya Pradesh
+91,7542,Guna,Fixed line,India,fixed,Madhya Pradesh
+91,7543,Ashoknagar,Fixed line,India,fixed,Madhya Pradesh
+91,7544,Raghogarh,Fixed line,India,fixed,Madhya Pradesh
+91,7545,Arone,Fixed line,India,fixed,Madhya Pradesh
+91,7546,Chachaura,Fixed line,India,fixed,Madhya Pradesh
+91,7547,Chanderi,Fixed line,India,fixed,Madhya Pradesh
+91,7548,Mungaoli,Fixed line,India,fixed,Madhya Pradesh
+91,7560,Ashta,Fixed line,India,fixed,Madhya Pradesh
+91,7561,Ichhawar,Fixed line,India,fixed,Madhya Pradesh
+91,7562,Sehore,Fixed line,India,fixed,Madhya Pradesh
+91,7563,Nasrullaganj,Fixed line,India,fixed,Madhya Pradesh
+91,7564,Budhni,Fixed line,India,fixed,Madhya Pradesh
+91,7565,Berasia,Fixed line,India,fixed,Madhya Pradesh
+91,7570,Seonimalwa,Fixed line,India,fixed,Madhya Pradesh
+91,7571,Khirkiya,Fixed line,India,fixed,Madhya Pradesh
+91,7572,Itarsi,Fixed line,India,fixed,Madhya Pradesh
+91,7573,Timarani,Fixed line,India,fixed,Madhya Pradesh
+91,7574,Hoshangabad,Fixed line,India,fixed,Madhya Pradesh
+91,7575,Sohagpur,Fixed line,India,fixed,Madhya Pradesh
+91,7576,Piparia,Fixed line,India,fixed,Madhya Pradesh
+91,7577,Harda,Fixed line,India,fixed,Madhya Pradesh
+91,7578,Pachmarhi,Fixed line,India,fixed,Madhya Pradesh
+91,7580,Bina,Fixed line,India,fixed,Madhya Pradesh
+91,7581,Khurai,Fixed line,India,fixed,Madhya Pradesh
+91,7582,Sagar,Fixed line,India,fixed,Madhya Pradesh
+91,7583,Banda,Fixed line,India,fixed,Madhya Pradesh
+91,7584,Rahatgarh,Fixed line,India,fixed,Madhya Pradesh
+91,7585,Rehli,Fixed line,India,fixed,Madhya Pradesh
+91,7586,Deori,Fixed line,India,fixed,Madhya Pradesh
+91,7590,Lateri,Fixed line,India,fixed,Madhya Pradesh
+91,7591,Sironj,Fixed line,India,fixed,Madhya Pradesh
+91,7592,Vidisha,Fixed line,India,fixed,Madhya Pradesh
+91,7593,Kurwai,Fixed line,India,fixed,Madhya Pradesh
+91,7594,Ganjbasoda,Fixed line,India,fixed,Madhya Pradesh
+91,7595,Nateran,Fixed line,India,fixed,Madhya Pradesh
+91,7596,Gyraspur,Fixed line,India,fixed,Madhya Pradesh
+91,7601,Patharia,Fixed line,India,fixed,Madhya Pradesh
+91,7603,Tendukheda,Fixed line,India,fixed,Madhya Pradesh
+91,7604,Hatta,Fixed line,India,fixed,Madhya Pradesh
+91,7605,Patera,Fixed line,India,fixed,Madhya Pradesh
+91,7606,Jabera,Fixed line,India,fixed,Madhya Pradesh
+91,7608,Bijawar,Fixed line,India,fixed,Madhya Pradesh
+91,7609,Buxwaha,Fixed line,India,fixed,Madhya Pradesh
+91,7621,Patan,Fixed line,India,fixed,Madhya Pradesh
+91,7622,Katni,Fixed line,India,fixed,Madhya Pradesh
+91,7623,Kundam,Fixed line,India,fixed,Madhya Pradesh
+91,7624,Sihora,Fixed line,India,fixed,Madhya Pradesh
+91,7625,Umariapan,Fixed line,India,fixed,Madhya Pradesh
+91,7626,Vijayraghogarh,Fixed line,India,fixed,Madhya Pradesh
+91,7627,Manpur,Fixed line,India,fixed,Madhya Pradesh
+91,7628,Karpa,Fixed line,India,fixed,Madhya Pradesh
+91,7629,Pushprajgarh,Fixed line,India,fixed,Madhya Pradesh
+91,7630,Katangi,Fixed line,India,fixed,Madhya Pradesh
+91,7632,Balaghat,Fixed line,India,fixed,Madhya Pradesh
+91,7633,Waraseoni,Fixed line,India,fixed,Madhya Pradesh
+91,7634,Lamta,Fixed line,India,fixed,Madhya Pradesh
+91,7635,Lanji,Fixed line,India,fixed,Madhya Pradesh
+91,7636,Baihar,Fixed line,India,fixed,Madhya Pradesh
+91,7637,Birsa,Fixed line,India,fixed,Madhya Pradesh
+91,7638,Damoh,Fixed line,India,fixed,Madhya Pradesh
+91,7640,Shahpur,Fixed line,India,fixed,Madhya Pradesh
+91,7641,Niwas,Fixed line,India,fixed,Madhya Pradesh
+91,7642,Mandla,Fixed line,India,fixed,Madhya Pradesh
+91,7643,Bijadandi,Fixed line,India,fixed,Madhya Pradesh
+91,7644,Dindori,Fixed line,India,fixed,Madhya Pradesh
+91,7645,Karanjia,Fixed line,India,fixed,Madhya Pradesh
+91,7646,Nainpur,Fixed line,India,fixed,Madhya Pradesh
+91,7647,Ghughari,Fixed line,India,fixed,Madhya Pradesh
+91,7648,Mawai,Fixed line,India,fixed,Madhya Pradesh
+91,7649,Kakaiya,Fixed line,India,fixed,Madhya Pradesh
+91,7650,Beohari,Fixed line,India,fixed,Madhya Pradesh
+91,7651,Jaisinghnagar,Fixed line,India,fixed,Madhya Pradesh
+91,7652,Shahdol,Fixed line,India,fixed,Madhya Pradesh
+91,7653,Bandhavgarh,Fixed line,India,fixed,Madhya Pradesh
+91,7655,Birsinghpur,Fixed line,India,fixed,Madhya Pradesh
+91,7656,Kannodi,Fixed line,India,fixed,Madhya Pradesh
+91,7657,Jaitpur,Fixed line,India,fixed,Madhya Pradesh
+91,7658,Kotma,Fixed line,India,fixed,Madhya Pradesh
+91,7659,Jaithari,Fixed line,India,fixed,Madhya Pradesh
+91,7660,Sirmour,Fixed line,India,fixed,Madhya Pradesh
+91,7661,Teonthar,Fixed line,India,fixed,Madhya Pradesh
+91,7662,Rewa,Fixed line,India,fixed,Madhya Pradesh
+91,7663,Mauganj,Fixed line,India,fixed,Madhya Pradesh
+91,7664,Hanumana,Fixed line,India,fixed,Madhya Pradesh
+91,7670,Majhagwan,Fixed line,India,fixed,Madhya Pradesh
+91,7671,Jaitwara,Fixed line,India,fixed,Madhya Pradesh
+91,7672,Satna,Fixed line,India,fixed,Madhya Pradesh
+91,7673,Nagod,Fixed line,India,fixed,Madhya Pradesh
+91,7674,Maihar,Fixed line,India,fixed,Madhya Pradesh
+91,7675,Amarpatan,Fixed line,India,fixed,Madhya Pradesh
+91,7680,Niwari,Fixed line,India,fixed,Madhya Pradesh
+91,7681,Jatara,Fixed line,India,fixed,Madhya Pradesh
+91,7682,Chhatarpur,Fixed line,India,fixed,Madhya Pradesh
+91,7683,Tikamgarh,Fixed line,India,fixed,Madhya Pradesh
+91,7684,Baldeogarh,Fixed line,India,fixed,Madhya Pradesh
+91,7685,Nowgaon,Fixed line,India,fixed,Madhya Pradesh
+91,7686,Khajuraho,Fixed line,India,fixed,Madhya Pradesh
+91,7687,Laundi,Fixed line,India,fixed,Madhya Pradesh
+91,7688,Gourihar,Fixed line,India,fixed,Madhya Pradesh
+91,7689,Badamalhera,Fixed line,India,fixed,Madhya Pradesh
+91,7690,Lakhnadon,Fixed line,India,fixed,Madhya Pradesh
+91,7691,Chhapara,Fixed line,India,fixed,Madhya Pradesh
+91,7692,Seoni,Fixed line,India,fixed,Madhya Pradesh
+91,7693,Bhilai / Ghansour,Fixed line,India,fixed,"Madhya Pradesh, Maharashtra"
+91,7694,Keolari,Fixed line,India,fixed,Madhya Pradesh
+91,7695,Gopalganj,Fixed line,India,fixed,Madhya Pradesh
+91,7700,Nagri,Fixed line,India,fixed,Chhattisgarh
+91,7701,Fingeshwar,Fixed line,India,fixed,Chhattisgarh
+91,7703,Manpur,Fixed line,India,fixed,Chhattisgarh
+91,7704,Deobhog,Fixed line,India,fixed,Chhattisgarh
+91,7705,Kurud,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7706,Gariaband,Fixed line,India,fixed,Chhattisgarh
+91,7707,Bagbahera,Fixed line,India,fixed,Chhattisgarh
+91,7720,Arang,Fixed line,India,fixed,Chhattisgarh
+91,7721,Neora,Fixed line,India,fixed,Chhattisgarh
+91,7722,Dhamtari,Fixed line,India,fixed,Chhattisgarh
+91,7723,Mahasamund,Fixed line,India,fixed,Chhattisgarh
+91,7724,Basana,Fixed line,India,fixed,Chhattisgarh
+91,7725,Saraipali,Fixed line,India,fixed,Chhattisgarh
+91,7726,Bhatapara,Fixed line,India,fixed,Chhattisgarh
+91,7727,Balodabazar,Fixed line,India,fixed,Chhattisgarh
+91,7728,Kasdol,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7729,Bhilaigarh / Bhtagoan / Bilaigarh,Fixed line,India,fixed,Chhattisgarh
+91,7730,Ajaigarh,Fixed line,India,fixed,Madhya Pradesh
+91,7731,Gunnore,Fixed line,India,fixed,Madhya Pradesh
+91,7732,Panna,Fixed line,India,fixed,Madhya Pradesh
+91,7733,Pawai,Fixed line,India,fixed,Madhya Pradesh
+91,7734,Shahnagar,Fixed line,India,fixed,Madhya Pradesh
+91,7740,Bodla,Fixed line,India,fixed,Chhattisgarh
+91,7741,Kawardha,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7743,Chuikhadan,Fixed line,India,fixed,Chhattisgarh
+91,7744,Rajandgaon,Fixed line,India,fixed,Chhattisgarh
+91,7745,Chhuriakala,Fixed line,India,fixed,Chhattisgarh
+91,7746,Manpur,Fixed line,India,fixed,Chhattisgarh
+91,7747,Mohla,Fixed line,India,fixed,Chhattisgarh
+91,7748,Dallirajhara,Fixed line,India,fixed,Chhattisgarh
+91,7749,Balod,Fixed line,India,fixed,Chhattisgarh
+91,7750,Marwahi,Fixed line,India,fixed,Chhattisgarh
+91,7751,Pendra,Fixed line,India,fixed,Chhattisgarh
+91,7752,Bilaspur / Lingiyadih,Fixed line,India,fixed,Chhattisgarh
+91,7754,Pandaria,Fixed line,India,fixed,Chhattisgarh
+91,7755,Mungeli,Fixed line,India,fixed,Chhattisgarh
+91,7756,Lormi,Fixed line,India,fixed,Chhattisgarh
+91,7757,Shakti,Fixed line,India,fixed,Chhattisgarh
+91,7758,Dabhara,Fixed line,India,fixed,Chhattisgarh
+91,7759,Korba,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7761,Tapkara,Fixed line,India,fixed,Chhattisgarh
+91,7762,Raigarh,Fixed line,India,fixed,Chhattisgarh
+91,7763,Jashpurnagar,Fixed line,India,fixed,Chhattisgarh
+91,7764,Kunkuri,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7765,Pathalgaon,Fixed line,India,fixed,Chhattisgarh
+91,7766,Dharamjaigarh,Fixed line,India,fixed,Chhattisgarh
+91,7767,Gharghoda,Fixed line,India,fixed,Chhattisgarh
+91,7768,Saranggarh,Fixed line,India,fixed,Chhattisgarh
+91,7769,Bagicha,Fixed line,India,fixed,Chhattisgarh
+91,7770,Kathdol,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7771,Manendragarh,Fixed line,India,fixed,Chhattisgarh
+91,7772,Wadrainagar,Fixed line,India,fixed,Chhattisgarh
+91,7773,Odgi,Fixed line,India,fixed,Chhattisgarh
+91,7774,Ambikapur,Fixed line,India,fixed,Chhattisgarh
+91,7775,Surajpur,Fixed line,India,fixed,Chhattisgarh
+91,7776,Premnagar,Fixed line,India,fixed,Chhattisgarh
+91,7777,Pratappur,Fixed line,India,fixed,Chhattisgarh
+91,7778,Semaria,Fixed line,India,fixed,Chhattisgarh
+91,7779,Ramchandrapur,Fixed line,India,fixed,Chhattisgarh
+91,7781,Narainpur,Fixed line,India,fixed,Chhattisgarh
+91,7782,Jagdalpur,Fixed line,India,fixed,Chhattisgarh
+91,7783,Padamkot,Fixed line,India,fixed,Chhattisgarh
+91,7784,Parasgaon,Fixed line,India,fixed,Chhattisgarh
+91,7785,Makodi,Fixed line,India,fixed,Chhattisgarh
+91,7786,Kondagaon,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7787,Jarwa,Fixed line,India,fixed,Chhattisgarh
+91,7788,Luckwada,Fixed line,India,fixed,Chhattisgarh
+91,7789,Bhairongarh,Fixed line,India,fixed,Chhattisgarh
+91,7790,Babaichichli,Fixed line,India,fixed,Madhya Pradesh
+91,7791,Gadarwara,Fixed line,India,fixed,Madhya Pradesh
+91,7792,Narsinghpur,Fixed line,India,fixed,Madhya Pradesh
+91,7793,Kareli,Fixed line,India,fixed,Madhya Pradesh
+91,7794,Gotegaon,Fixed line,India,fixed,Madhya Pradesh
+91,7801,Deosar,Fixed line,India,fixed,Madhya Pradesh
+91,7802,Churhat,Fixed line,India,fixed,Madhya Pradesh
+91,7803,Majholi,Fixed line,India,fixed,Madhya Pradesh
+91,7804,Kusmi,Fixed line,India,fixed,Madhya Pradesh
+91,7805,Singrauli,Fixed line,India,fixed,Madhya Pradesh
+91,7806,Chitrangi,Fixed line,India,fixed,Madhya Pradesh
+91,7810,Uproda,Fixed line,India,fixed,Chhattisgarh
+91,7811,Pasan,Fixed line,India,fixed,Chhattisgarh
+91,7812,Damoh,Fixed line,India,fixed,Madhya Pradesh
+91,7813,Barpalli,Fixed line,India,fixed,Chhattisgarh
+91,7815,Kathghora,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7816,Pali,Fixed line,India,fixed,Chhattisgarh
+91,7817,Janjgir,Fixed line,India,fixed,Chhattisgarh
+91,7818,Chandipara,Fixed line,India,fixed,Chhattisgarh
+91,7819,Pandishankar,Fixed line,India,fixed,Chhattisgarh
+91,7820,Khairgarh,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7821,Dhamda,Fixed line,India,fixed,Chhattisgarh
+91,7822,Sidhi,Fixed line,India,fixed,Madhya Pradesh
+91,7823,Dongargarh,Fixed line,India,fixed,Chhattisgarh
+91,7824,Bemetara,Fixed line,India,fixed,Chhattisgarh
+91,7825,Berla,Fixed line,India,fixed,Chhattisgarh
+91,7826,Patan,Fixed line,India,fixed,Chhattisgarh
+91,7831,Balrampur,Fixed line,India,fixed,Chhattisgarh
+91,7832,Rajpur,Fixed line,India,fixed,Chhattisgarh
+91,7833,Udaipur,Fixed line,India,fixed,Chhattisgarh
+91,7834,Sitapur,Fixed line,India,fixed,Chhattisgarh
+91,7835,Bharathpur,Fixed line,India,fixed,Chhattisgarh
+91,7836,Baikunthpur,Fixed line,India,fixed,Chhattisgarh
+91,7840,Koyelibeda,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7841,Sarona,Fixed line,India,fixed,Chhattisgarh
+91,7843,Durgakondal,Fixed line,India,fixed,Chhattisgarh
+91,7844,Pakhanjur,Fixed line,India,fixed,Chhattisgarh
+91,7846,Garpa,Fixed line,India,fixed,Chhattisgarh
+91,7847,Antagarh,Fixed line,India,fixed,Chhattisgarh
+91,7848,Keskal,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7849,Bderajpur,Fixed line,India,fixed,Chhattisgarh
+91,7850,Bhanupratappur,Fixed line,India,fixed,Chhattisgarh
+91,7851,Bhopalpatnam,Fixed line,India,fixed,Chhattisgarh
+91,7852,Toynar,Fixed line,India,fixed,Chhattisgarh
+91,7853,Bijapur,Fixed line,India,fixed,Chhattisgarh
+91,7854,Ilamidi,Fixed line,India,fixed,Chhattisgarh
+91,7855,Chingmut,Fixed line,India,fixed,Chhattisgarh
+91,7856,Dantewada,Fixed line,India,fixed,Chhattisgarh
+91,7857,Bacheli,Fixed line,India,fixed,Chhattisgarh
+91,7858,Kuakunda,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7859,Lohadigundah,Fixed line,India,fixed,Chhattisgarh
+91,7861,Netanar,Fixed line,India,fixed,Chhattisgarh
+91,7862,Bastanar,Fixed line,India,fixed,Chhattisgarh
+91,7863,Chhinagarh,Fixed line,India,fixed,Chhattisgarh
+91,7864,Sukma,Fixed line,India,fixed,Chhattisgarh
+91,7865,Gogunda,Fixed line,India,fixed,Chhattisgarh
+91,7866,Konta,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,7867,Bokaband,Fixed line,India,fixed,Chhattisgarh
+91,7868,Kanker,Fixed line,India,fixed,"Chhattisgarh, Gujarat"
+91,8110,Anekal,Fixed line,India,fixed,Karnataka
+91,8111,Hosakote,Fixed line,India,fixed,Karnataka
+91,8113,Channapatna,Fixed line,India,fixed,Karnataka
+91,8117,Kanakapura,Fixed line,India,fixed,Karnataka
+91,8118,Nelamangala,Fixed line,India,fixed,Karnataka
+91,8119,Doddaballapur,Fixed line,India,fixed,Karnataka
+91,8131,Gubbi,Fixed line,India,fixed,Karnataka
+91,8132,Kunigal,Fixed line,India,fixed,Karnataka
+91,8133,Chikkanayakanahalli,Fixed line,India,fixed,Karnataka
+91,8134,Tiptur,Fixed line,India,fixed,Karnataka
+91,8135,Sira,Fixed line,India,fixed,Karnataka
+91,8136,Pavagada,Fixed line,India,fixed,Karnataka
+91,8137,Madugiri,Fixed line,India,fixed,Karnataka
+91,8138,Koratageri,Fixed line,India,fixed,Karnataka
+91,8139,Turuvekere,Fixed line,India,fixed,Karnataka
+91,8150,Bagepalli,Fixed line,India,fixed,Karnataka
+91,8151,Malur,Fixed line,India,fixed,Karnataka
+91,8152,Kolar,Fixed line,India,fixed,Karnataka
+91,8153,Bangarpet,Fixed line,India,fixed,Karnataka
+91,8154,Chintamani,Fixed line,India,fixed,Karnataka
+91,8155,Gowribdanpur,Fixed line,India,fixed,Karnataka
+91,8156,Chikkaballapur,Fixed line,India,fixed,Karnataka
+91,8157,Sriniwaspur,Fixed line,India,fixed,Karnataka
+91,8158,Sidlaghatta,Fixed line,India,fixed,Karnataka
+91,8159,Mulbagal,Fixed line,India,fixed,Karnataka
+91,8170,Alur,Fixed line,India,fixed,Karnataka
+91,8172,Hassan,Fixed line,India,fixed,Karnataka
+91,8173,Sakleshpur,Fixed line,India,fixed,Karnataka
+91,8174,Arsikere,Fixed line,India,fixed,Karnataka
+91,8175,Holenarsipur,Fixed line,India,fixed,Karnataka
+91,8176,Channarayapatna,Fixed line,India,fixed,Karnataka
+91,8177,Belur,Fixed line,India,fixed,Karnataka
+91,8180,Basavapatna,Fixed line,India,fixed,Karnataka
+91,8181,Thirthahalli,Fixed line,India,fixed,Karnataka
+91,8182,Shimoga,Fixed line,India,fixed,Karnataka
+91,8183,Sagar,Fixed line,India,fixed,Karnataka
+91,8184,Sorab,Fixed line,India,fixed,Karnataka
+91,8185,Hosanagara,Fixed line,India,fixed,Karnataka
+91,8186,Kargal,Fixed line,India,fixed,Karnataka
+91,8187,Shikaripura,Fixed line,India,fixed,Karnataka
+91,8188,Honnali,Fixed line,India,fixed,Karnataka
+91,8189,Channagiri,Fixed line,India,fixed,Karnataka
+91,8190,Tallak,Fixed line,India,fixed,Karnataka
+91,8191,Holalkere,Fixed line,India,fixed,Karnataka
+91,8192,Devangere,Fixed line,India,fixed,Karnataka
+91,8193,Hiriyur,Fixed line,India,fixed,Karnataka
+91,8194,Chitradurga,Fixed line,India,fixed,Karnataka
+91,8195,Challakere,Fixed line,India,fixed,Karnataka
+91,8196,Jagalur,Fixed line,India,fixed,Karnataka
+91,8198,Molkalmuru,Fixed line,India,fixed,Karnataka
+91,8199,Hosadurga,Fixed line,India,fixed,Karnataka
+91,8221,Nanjangud,Fixed line,India,fixed,Karnataka
+91,8222,Hunsur,Fixed line,India,fixed,Karnataka
+91,8223,K.R. Nagar,Fixed line,India,fixed,Karnataka
+91,8224,Kollegal,Fixed line,India,fixed,Karnataka
+91,8225,Cowdahalli,Fixed line,India,fixed,Karnataka
+91,8226,Chamrajnagar,Fixed line,India,fixed,Karnataka
+91,8227,T.Narsipur,Fixed line,India,fixed,Karnataka
+91,8228,H.D. Kote,Fixed line,India,fixed,Karnataka
+91,8229,Gundlupet,Fixed line,India,fixed,Karnataka
+91,8230,Krishnarajapet,Fixed line,India,fixed,Karnataka
+91,8231,Malavalli,Fixed line,India,fixed,Karnataka
+91,8232,Mandya,Fixed line,India,fixed,Karnataka
+91,8234,Nagamangala,Fixed line,India,fixed,Karnataka
+91,8236,Pandavapura,Fixed line,India,fixed,Karnataka
+91,8251,Puttur,Fixed line,India,fixed,Karnataka
+91,8252,Udipi,Fixed line,India,fixed,Karnataka
+91,8253,Hebri,Fixed line,India,fixed,Karnataka
+91,8254,Kundapur,Fixed line,India,fixed,Karnataka
+91,8255,Bantwal,Fixed line,India,fixed,Karnataka
+91,8256,Belthangady,Fixed line,India,fixed,Karnataka
+91,8257,Sullia,Fixed line,India,fixed,Karnataka
+91,8258,Karkala,Fixed line,India,fixed,Karnataka
+91,8259,Shankarnarayana,Fixed line,India,fixed,Karnataka
+91,8261,Tarikere,Fixed line,India,fixed,Karnataka
+91,8262,Chikmagalur,Fixed line,India,fixed,Karnataka
+91,8263,Mudigere,Fixed line,India,fixed,Karnataka
+91,8265,Koppa,Fixed line,India,fixed,Karnataka
+91,8266,Narsimrajapur,Fixed line,India,fixed,Karnataka
+91,8267,Kadur,Fixed line,India,fixed,Karnataka
+91,8272,Madikeri,Fixed line,India,fixed,Karnataka
+91,8274,Virajpet,Fixed line,India,fixed,Karnataka
+91,8276,Somwarpet,Fixed line,India,fixed,Karnataka
+91,8282,Bhadravati,Fixed line,India,fixed,Karnataka
+91,8283,Salkani,Fixed line,India,fixed,Karnataka
+91,8284,Haliyal,Fixed line,India,fixed,Karnataka
+91,8288,Bailhongal,Fixed line,India,fixed,Karnataka
+91,8289,Athani,Fixed line,India,fixed,Karnataka
+91,8301,Mundagod,Fixed line,India,fixed,Karnataka
+91,8304,Kundgol,Fixed line,India,fixed,Karnataka
+91,8330,Saundatti,Fixed line,India,fixed,Karnataka
+91,8331,Raibag,Fixed line,India,fixed,Karnataka
+91,8332,Gokak,Fixed line,India,fixed,Karnataka
+91,8333,Hukkeri,Fixed line,India,fixed,Karnataka
+91,8334,Mudalgi,Fixed line,India,fixed,Karnataka
+91,8335,Ramdurg,Fixed line,India,fixed,Karnataka
+91,8336,Khanapur / Londa,Fixed line,India,fixed,Karnataka
+91,8337,Murugod,Fixed line,India,fixed,Karnataka
+91,8338,Chikkodi,Fixed line,India,fixed,Karnataka
+91,8339,Ainapur,Fixed line,India,fixed,Karnataka
+91,8342,Margaon,Fixed line,India,fixed,Goa
+91,8343,Ponda,Fixed line,India,fixed,Goa
+91,8345,Sanguem,Fixed line,India,fixed,Maharashtra
+91,8346,Canacona,Fixed line,India,fixed,Goa
+91,8350,Mudhol,Fixed line,India,fixed,Karnataka
+91,8351,Hungund,Fixed line,India,fixed,Karnataka
+91,8352,Bijapur,Fixed line,India,fixed,Karnataka
+91,8353,Jamkhandi,Fixed line,India,fixed,Karnataka
+91,8354,Bagalkot,Fixed line,India,fixed,Karnataka
+91,8355,Bableshwar,Fixed line,India,fixed,Karnataka
+91,8356,Muddebihal,Fixed line,India,fixed,Karnataka
+91,8357,Badami,Fixed line,India,fixed,Karnataka
+91,8358,Basavanabagewadi,Fixed line,India,fixed,Karnataka
+91,8359,Indi,Fixed line,India,fixed,Karnataka
+91,8370,Kalghatagi,Fixed line,India,fixed,Karnataka
+91,8371,Mundargi,Fixed line,India,fixed,Karnataka
+91,8372,Gadag,Fixed line,India,fixed,Karnataka
+91,8373,Ranebennur,Fixed line,India,fixed,Karnataka
+91,8375,Haveri,Fixed line,India,fixed,Karnataka
+91,8376,Hirekerur,Fixed line,India,fixed,Karnataka
+91,8377,Nargund,Fixed line,India,fixed,Karnataka
+91,8378,Savanur,Fixed line,India,fixed,Karnataka
+91,8379,Hangal,Fixed line,India,fixed,Karnataka
+91,8380,Navalgund,Fixed line,India,fixed,Karnataka
+91,8381,Ron,Fixed line,India,fixed,Karnataka
+91,8382,Karwar,Fixed line,India,fixed,Karnataka
+91,8383,Joida,Fixed line,India,fixed,Karnataka
+91,8384,Sirsi,Fixed line,India,fixed,Karnataka
+91,8385,Bhatkal,Fixed line,India,fixed,Karnataka
+91,8386,Kumta,Fixed line,India,fixed,Karnataka
+91,8387,Honnavar,Fixed line,India,fixed,Karnataka
+91,8388,Ankola,Fixed line,India,fixed,Karnataka
+91,8389,Siddapur,Fixed line,India,fixed,Karnataka
+91,8391,Kudligi,Fixed line,India,fixed,Karnataka
+91,8392,Bellary,Fixed line,India,fixed,Karnataka
+91,8393,Kurugodu,Fixed line,India,fixed,Karnataka
+91,8394,Hospet,Fixed line,India,fixed,Karnataka
+91,8395,Devagiri / Sandur,Fixed line,India,fixed,Karnataka
+91,8396,Siruguppa,Fixed line,India,fixed,Karnataka
+91,8397,H.B.Halli,Fixed line,India,fixed,Karnataka
+91,8398,Harapanahalli,Fixed line,India,fixed,Karnataka
+91,8399,Huvinahadagali,Fixed line,India,fixed,Karnataka
+91,8403,Yerragondapalem,Fixed line,India,fixed,Andhra Pradesh
+91,8404,Marturu,Fixed line,India,fixed,Andhra Pradesh
+91,8405,Giddalur,Fixed line,India,fixed,Andhra Pradesh
+91,8406,Cumbum,Fixed line,India,fixed,Andhra Pradesh
+91,8407,Darsi,Fixed line,India,fixed,Andhra Pradesh
+91,8408,Donakonda,Fixed line,India,fixed,Andhra Pradesh
+91,8411,Tanduru,Fixed line,India,fixed,Telangana
+91,8412,Pargi,Fixed line,India,fixed,Andhra Pradesh
+91,8413,Hyderabad West,Fixed line,India,fixed,Telangana
+91,8414,Ibrahimpatnam,Fixed line,India,fixed,Telangana
+91,8416,Rangareddy / Vikrabad,Fixed line,India,fixed,"Andhra Pradesh, Telangana"
+91,8417,Chevella,Fixed line,India,fixed,Andhra Pradesh
+91,8418,Medachal,Fixed line,India,fixed,Telangana
+91,8419,Yellapur,Fixed line,India,fixed,Karnataka
+91,8422,Chadchan,Fixed line,India,fixed,Karnataka
+91,8424,Devarahippargi,Fixed line,India,fixed,Karnataka
+91,8425,Biligi,Fixed line,India,fixed,Karnataka
+91,8426,Telgi,Fixed line,India,fixed,Karnataka
+91,8440,Nimburga,Fixed line,India,fixed,Karnataka
+91,8441,Sedam,Fixed line,India,fixed,Karnataka
+91,8442,Jewargi,Fixed line,India,fixed,Karnataka
+91,8443,Shorapur,Fixed line,India,fixed,Karnataka
+91,8444,Hunsagi,Fixed line,India,fixed,Karnataka
+91,8450,Andole,Fixed line,India,fixed,Telangana
+91,8451,Zahirabad,Fixed line,India,fixed,Telanagana
+91,8452,Medak,Fixed line,India,fixed,Telangana
+91,8454,Gajwel,Fixed line,India,fixed,Telangana
+91,8455,Sadasivpet / Sangareddy,Fixed line,India,fixed,Telangana
+91,8457,Siddipet,Fixed line,India,fixed,Telangana
+91,8461,Dichpalli,Fixed line,India,fixed,Andhra Pradesh
+91,8462,Nizamabad,Fixed line,India,fixed,Telangana
+91,8463,Armoor,Fixed line,India,fixed,Telangana
+91,8464,Madnur,Fixed line,India,fixed,Andhra Pradesh
+91,8465,Yellareddy,Fixed line,India,fixed,Andhra Pradesh
+91,8466,Banswada,Fixed line,India,fixed,Andhra Pradesh
+91,8467,Bodhan,Fixed line,India,fixed,Telangana
+91,8468,Kamareddy,Fixed line,India,fixed,Telangana
+91,8470,Afzalpur,Fixed line,India,fixed,Karnataka
+91,8471,Mashal,Fixed line,India,fixed,Karnataka
+91,8472,Gulbarga,Fixed line,India,fixed,Karnataka
+91,8473,Yadgiri,Fixed line,India,fixed,Karnataka
+91,8474,Chittapur,Fixed line,India,fixed,Karnataka
+91,8475,Chincholi,Fixed line,India,fixed,Karnataka
+91,8476,Wadi,Fixed line,India,fixed,Karnataka
+91,8477,Aland,Fixed line,India,fixed,Karnataka
+91,8478,Kamalapur,Fixed line,India,fixed,Karnataka
+91,8479,Shahapur,Fixed line,India,fixed,Karnataka
+91,8481,Basavakalyan,Fixed line,India,fixed,Karnataka
+91,8482,Bidar,Fixed line,India,fixed,Karnataka
+91,8483,Humnabad,Fixed line,India,fixed,Karnataka
+91,8484,Bhalki,Fixed line,India,fixed,Karnataka
+91,8487,Shirahatti,Fixed line,India,fixed,Karnataka
+91,8488,Sindagi,Fixed line,India,fixed,Karnataka
+91,8490,Pamuru,Fixed line,India,fixed,Andhra Pradesh
+91,8491,Kanaganapalle,Fixed line,India,fixed,Andhra Pradesh
+91,8492,Kambadur,Fixed line,India,fixed,Andhra Pradesh
+91,8493,Madakasira,Fixed line,India,fixed,Andhra Pradesh
+91,8494,Kadiri,Fixed line,India,fixed,Andhra Pradesh
+91,8495,Rayadurg,Fixed line,India,fixed,Andhra Pradesh
+91,8496,Uravakonda,Fixed line,India,fixed,Andhra Pradesh
+91,8497,Kalyandurg,Fixed line,India,fixed,Andhra Pradesh
+91,8498,Nallacheruvu,Fixed line,India,fixed,Andhra Pradesh
+91,8499,Podili,Fixed line,India,fixed,Andhra Pradesh
+91,8501,Kollapur,Fixed line,India,fixed,Telangana
+91,8502,Alampur,Fixed line,India,fixed,Telangana
+91,8503,Makthal,Fixed line,India,fixed,Telangana
+91,8504,Atmakur,Fixed line,India,fixed,Andhra Pradesh
+91,8505,Kodangal,Fixed line,India,fixed,Telangana
+91,8506,Narayanpet,Fixed line,India,fixed,Telangana
+91,8510,Koilkuntla,Fixed line,India,fixed,Andhra Pradesh
+91,8512,Adoni,Fixed line,India,fixed,Andhra Pradesh
+91,8513,Nandikotkur,Fixed line,India,fixed,Andhra Pradesh
+91,8514,Nandyal,Fixed line,India,fixed,Andhra Pradesh
+91,8515,Banaganapalle,Fixed line,India,fixed,Andhra Pradesh
+91,8516,Dronachalam,Fixed line,India,fixed,Andhra Pradesh
+91,8517,Atmakur,Fixed line,India,fixed,Andhra Pradesh
+91,8518,Kurnool,Fixed line,India,fixed,Andhra Pradesh
+91,8519,Allagadda,Fixed line,India,fixed,Andhra Pradesh
+91,8520,Pattikonda,Fixed line,India,fixed,Andhra Pradesh
+91,8522,Peapalle,Fixed line,India,fixed,Andhra Pradesh
+91,8523,Alur,Fixed line,India,fixed,Andhra Pradesh
+91,8524,Srisailam,Fixed line,India,fixed,Andhra Pradesh
+91,8525,Gudur,Fixed line,India,fixed,Andhra Pradesh
+91,8531,Deodurga,Fixed line,India,fixed,Karnataka
+91,8532,Raichur,Fixed line,India,fixed,Karnataka
+91,8533,Gangavathi,Fixed line,India,fixed,Karnataka
+91,8534,Yelburga,Fixed line,India,fixed,Karnataka
+91,8535,Sindhanur,Fixed line,India,fixed,Karnataka
+91,8536,Kustagi,Fixed line,India,fixed,Karnataka
+91,8537,Lingsugur,Fixed line,India,fixed,Karnataka
+91,8538,Manvi,Fixed line,India,fixed,Karnataka
+91,8539,Koppal,Fixed line,India,fixed,Karnataka
+91,8540,Nagarkurnool,Fixed line,India,fixed,Telangana
+91,8541,Achampet,Fixed line,India,fixed,Telangana
+91,8542,Mahabubnagar,Fixed line,India,fixed,Telangana
+91,8543,Wanaparthy,Fixed line,India,fixed,Telangana
+91,8545,Amangallu,Fixed line,India,fixed,Andhra Pradesh
+91,8546,Gadwal,Fixed line,India,fixed,Telangana
+91,8548,Shadnagar,Fixed line,India,fixed,Telangana
+91,8549,Kalwakurthy,Fixed line,India,fixed,Telangana
+91,8550,Yellanuru,Fixed line,India,fixed,Telangana
+91,8551,Garladinne,Fixed line,India,fixed,Andhra Pradesh
+91,8552,Gooty,Fixed line,India,fixed,Andhra Pradesh
+91,8554,Anantapur,Fixed line,India,fixed,Andhra Pradesh
+91,8556,Hindupur,Fixed line,India,fixed,Andhra Pradesh
+91,8557,Penukonda,Fixed line,India,fixed,Andhra Pradesh
+91,8558,Tadipatri,Fixed line,India,fixed,Andhra Pradesh
+91,8559,Dharmavaram,Fixed line,India,fixed,Andhra Pradesh
+91,8560,Jammalamadugu,Fixed line,India,fixed,Andhra Pradesh
+91,8561,Rayachoti,Fixed line,India,fixed,Andhra Pradesh
+91,8562,Cuddapah,Fixed line,India,fixed,Andhra Pradesh
+91,8563,Kamalapuram,Fixed line,India,fixed,Andhra Pradesh
+91,8564,Proddatur,Fixed line,India,fixed,Andhra Pradesh
+91,8565,Rajampeta,Fixed line,India,fixed,Andhra Pradesh
+91,8566,Koduru,Fixed line,India,fixed,Andhra Pradesh
+91,8567,Lakkireddipalli,Fixed line,India,fixed,Andhra Pradesh
+91,8568,Pulivendla,Fixed line,India,fixed,Andhra Pradesh
+91,8569,Badvel,Fixed line,India,fixed,Andhra Pradesh
+91,8570,Kuppam,Fixed line,India,fixed,Andhra Pradesh
+91,8571,Madanapalli,Fixed line,India,fixed,Andhra Pradesh
+91,8572,Chittoor,Fixed line,India,fixed,Andhra Pradesh
+91,8573,Bangarupalem,Fixed line,India,fixed,Andhra Pradesh
+91,8574,Tirupathi,Fixed line,India,fixed,Andhra Pradesh
+91,8576,Satyavedu,Fixed line,India,fixed,Andhra Pradesh
+91,8578,Srikalahasthi,Fixed line,India,fixed,Andhra Pradesh
+91,8579,Palmaneru,Fixed line,India,fixed,Andhra Pradesh
+91,8581,Punganur,Fixed line,India,fixed,Andhra Pradesh
+91,8582,B. Kothakota,Fixed line,India,fixed,Andhra Pradesh
+91,8583,Sodam,Fixed line,India,fixed,Andhra Pradesh
+91,8584,Piler,Fixed line,India,fixed,Andhra Pradesh
+91,8585,Pakala,Fixed line,India,fixed,Andhra Pradesh
+91,8586,Vayalpad,Fixed line,India,fixed,Andhra Pradesh
+91,8587,Venkatgirikota,Fixed line,India,fixed,Andhra Pradesh
+91,8588,Vaimpalli,Fixed line,India,fixed,Andhra Pradesh
+91,8589,Siddavattam,Fixed line,India,fixed,Andhra Pradesh
+91,8592,Ongole,Fixed line,India,fixed,Andhra Pradesh
+91,8593,Medarmetla,Fixed line,India,fixed,Andhra Pradesh
+91,8594,Chirala,Fixed line,India,fixed,Andhra Pradesh
+91,8596,Markapur,Fixed line,India,fixed,Andhra Pradesh
+91,8598,Kandukuru,Fixed line,India,fixed,Andhra Pradesh
+91,8599,Ulvapadu,Fixed line,India,fixed,Andhra Pradesh
+91,8620,Udaygiri,Fixed line,India,fixed,Andhra Pradesh
+91,8621,Rapur,Fixed line,India,fixed,Andhra Pradesh
+91,8622,Kovvur,Fixed line,India,fixed,Andhra Pradesh
+91,8623,Sullarpet,Fixed line,India,fixed,Andhra Pradesh
+91,8624,Gudur,Fixed line,India,fixed,Andhra Pradesh
+91,8625,Venkatgiri,Fixed line,India,fixed,Andhra Pradesh
+91,8626,Kavali,Fixed line,India,fixed,Andhra Pradesh
+91,8627,Atmakur,Fixed line,India,fixed,Andhra Pradesh
+91,8628,Chejerla,Fixed line,India,fixed,Andhra Pradesh
+91,8629,Vinjamuru,Fixed line,India,fixed,Andhra Pradesh
+91,8640,Krosuru,Fixed line,India,fixed,Andhra Pradesh
+91,8641,Sattenapalle,Fixed line,India,fixed,Andhra Pradesh
+91,8642,Paland,Fixed line,India,fixed,Andhra Pradesh
+91,8643,Bapatla,Fixed line,India,fixed,Andhra Pradesh
+91,8644,Tenali,Fixed line,India,fixed,Andhra Pradesh
+91,8645,Mangalagiri,Fixed line,India,fixed,Andhra Pradesh
+91,8646,Vinukonda,Fixed line,India,fixed,Andhra Pradesh
+91,8647,Narasaraopet,Fixed line,India,fixed,Andhra Pradesh
+91,8648,Repalle,Fixed line,India,fixed,Andhra Pradesh
+91,8649,Piduguralla,Fixed line,India,fixed,Andhra Pradesh
+91,8654,Jaggayyapet,Fixed line,India,fixed,Andhra Pradesh
+91,8656,Nazvidu,Fixed line,India,fixed,Andhra Pradesh
+91,8659,Mylavaram,Fixed line,India,fixed,Andhra Pradesh
+91,8671,Divi,Fixed line,India,fixed,Andhra Pradesh
+91,8672,Bandar / Machilapatnam,Fixed line,India,fixed,Andhra Pradesh
+91,8673,Tirivuru,Fixed line,India,fixed,Andhra Pradesh
+91,8674,Gudivada,Fixed line,India,fixed,Andhra Pradesh
+91,8676,Vuyyuru,Fixed line,India,fixed,Andhra Pradesh
+91,8677,Kaikaluru,Fixed line,India,fixed,Andhra Pradesh
+91,8678,Nandigama,Fixed line,India,fixed,Andhra Pradesh
+91,8681,Chandoor,Fixed line,India,fixed,Andhra Pradesh
+91,8682,Nalgonda,Fixed line,India,fixed,Telangana
+91,8683,Huzurnagar,Fixed line,India,fixed,Telangana
+91,8684,Suryapet,Fixed line,India,fixed,Telangana
+91,8685,Bhongir,Fixed line,India,fixed,Andhra Pradesh
+91,8689,Mriyalguda,Fixed line,India,fixed,Andhra Pradesh
+91,8691,Devarakonda,Fixed line,India,fixed,Andhra Pradesh
+91,8692,Nampalle,Fixed line,India,fixed,Andhra Pradesh
+91,8693,Thungaturthy,Fixed line,India,fixed,Andhra Pradesh
+91,8694,Ramannapet,Fixed line,India,fixed,Telangana
+91,8710,Cherial,Fixed line,India,fixed,Andhra Pradesh
+91,8711,Wardhannapet,Fixed line,India,fixed,Telangana
+91,8713,Parkal,Fixed line,India,fixed,Telangana
+91,8715,Mulug,Fixed line,India,fixed,Telangana
+91,8716,Jangaon,Fixed line,India,fixed,Telangana
+91,8717,Eturnagaram,Fixed line,India,fixed,Telangana
+91,8718,Narasampet,Fixed line,India,fixed,Telangana
+91,8719,Mahabubabad,Fixed line,India,fixed,Telangana
+91,8720,Mahadevapur,Fixed line,India,fixed,Andhra Pradesh
+91,8721,Husnabad,Fixed line,India,fixed,Telangana
+91,8723,Rajanna Sircilla / Sircilla,Fixed line,India,fixed,"Andhra Pradesh, Telangana"
+91,8724,Jagtial,Fixed line,India,fixed,Telangana
+91,8725,Metpalli,Fixed line,India,fixed,Telangana
+91,8727,Huzurabad,Fixed line,India,fixed,Telangana
+91,8728,Peddapalli / Ramagundam,Fixed line,India,fixed,Telangana
+91,8729,Manthani,Fixed line,India,fixed,"Andhra Pradesh, Telangana"
+91,8730,Khanapur(ap),Fixed line,India,fixed,Andhra Pradesh
+91,8731,Utnor,Fixed line,India,fixed,Andhra Pradesh
+91,8732,Adilabad,Fixed line,India,fixed,Telangana
+91,8733,Asifabad,Fixed line,India,fixed,Telangana
+91,8734,Nirmal,Fixed line,India,fixed,Telangana
+91,8735,Bellampalli,Fixed line,India,fixed,Andhra Pradesh
+91,8736,Mancherial,Fixed line,India,fixed,"Andhra Pradesh, Telangana"
+91,8737,Chinnor,Fixed line,India,fixed,Andhra Pradesh
+91,8738,Sirpur Kagaznagar,Fixed line,India,fixed,Telangana
+91,8739,Jannaram / Luxettipet,Fixed line,India,fixed,Telangana
+91,8740,Aswaraopet,Fixed line,India,fixed,Andhra Pradesh
+91,8741,Sudhimalla,Fixed line,India,fixed,Andhra Pradesh
+91,8742,Khammam,Fixed line,India,fixed,Telangana
+91,8743,Bhadrachalam,Fixed line,India,fixed,Andhra Pradesh
+91,8744,Kothagudem,Fixed line,India,fixed,Telangana
+91,8745,Yellandu,Fixed line,India,fixed,Telangana
+91,8746,Bhooragamphad,Fixed line,India,fixed,Andhra Pradesh
+91,8749,Madhira,Fixed line,India,fixed,Telangana
+91,8751,Boath,Fixed line,India,fixed,Andhra Pradesh
+91,8752,Bhainsa,Fixed line,India,fixed,Telangana
+91,8753,Outsarangapalle,Fixed line,India,fixed,Andhra Pradesh
+91,8761,Sathupalli,Fixed line,India,fixed,Telangana
+91,8811,Polavaram,Fixed line,India,fixed,Andhra Pradesh
+91,8812,Eluru,Fixed line,India,fixed,Andhra Pradesh
+91,8814,Narsapur,Fixed line,India,fixed,Andhra Pradesh
+91,8816,Bhimavaram,Fixed line,India,fixed,Andhra Pradesh
+91,8818,Tadepalligudem,Fixed line,India,fixed,Andhra Pradesh
+91,8819,Tanuku,Fixed line,India,fixed,Andhra Pradesh
+91,8821,Jangareddygudem,Fixed line,India,fixed,Andhra Pradesh
+91,8823,Chintalapudi,Fixed line,India,fixed,Andhra Pradesh
+91,8829,Bhimadole,Fixed line,India,fixed,Andhra Pradesh
+91,8852,Peddapuram,Fixed line,India,fixed,Andhra Pradesh
+91,8854,Tuni,Fixed line,India,fixed,Andhra Pradesh
+91,8855,Mandapeta,Fixed line,India,fixed,Andhra Pradesh
+91,8856,Amalapuram,Fixed line,India,fixed,Andhra Pradesh
+91,8857,Ramachandrapuram,Fixed line,India,fixed,Andhra Pradesh
+91,8862,Razol,Fixed line,India,fixed,Andhra Pradesh
+91,8863,Chavitidibbalu,Fixed line,India,fixed,Andhra Pradesh
+91,8864,Rampachodavaram,Fixed line,India,fixed,Andhra Pradesh
+91,8865,Yelavaram,Fixed line,India,fixed,Andhra Pradesh
+91,8868,Yeleswaram,Fixed line,India,fixed,Andhra Pradesh
+91,8869,Pithapuram,Fixed line,India,fixed,Andhra Pradesh
+91,8922,Vizayanagaram,Fixed line,India,fixed,Andhra Pradesh
+91,8924,Anakapalle,Fixed line,India,fixed,Andhra Pradesh
+91,8931,Yelamanchili,Fixed line,India,fixed,Andhra Pradesh
+91,8932,Narsipatnam,Fixed line,India,fixed,Andhra Pradesh
+91,8933,Bheemunipatnam,Fixed line,India,fixed,Andhra Pradesh
+91,8934,Chodavaram / Gavaravaram,Fixed line,India,fixed,Andhra Pradesh
+91,8935,Paderu,Fixed line,India,fixed,Andhra Pradesh
+91,8936,Araku,Fixed line,India,fixed,Andhra Pradesh
+91,8937,Chintapalle,Fixed line,India,fixed,Andhra Pradesh
+91,8938,Sileru,Fixed line,India,fixed,Andhra Pradesh
+91,8941,Palakonda,Fixed line,India,fixed,Andhra Pradesh
+91,8942,Srikakulam,Fixed line,India,fixed,Andhra Pradesh
+91,8944,Bobbili,Fixed line,India,fixed,Andhra Pradesh
+91,8945,Tekkali,Fixed line,India,fixed,Andhra Pradesh
+91,8946,Pathapatnam,Fixed line,India,fixed,Andhra Pradesh
+91,8947,Sompeta,Fixed line,India,fixed,Andhra Pradesh
+91,8952,Chepurupalli,Fixed line,India,fixed,Andhra Pradesh
+91,8963,Parvathipuram,Fixed line,India,fixed,Andhra Pradesh
+91,8964,Saluru,Fixed line,India,fixed,Andhra Pradesh
+91,8965,Gajapathinagaram,Fixed line,India,fixed,Andhra Pradesh
+91,8966,Srungavarapukota,Fixed line,India,fixed,Andhra Pradesh
