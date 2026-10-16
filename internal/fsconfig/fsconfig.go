@@ -202,7 +202,11 @@ func (r *Renderer) RenderACLs(ctx context.Context) error {
 		return err
 	}
 	if r.fwFile != "" {
-		if err := writeAtomic(r.fwFile, string(firewall.Build(ips, carriers, banned, time.Now()).JSON())); err != nil {
+		eps, err := r.st.AllEndpoints(ctx)
+		if err != nil {
+			return err
+		}
+		if err := writeAtomic(r.fwFile, string(firewall.Build(ips, carriers, eps, banned, time.Now()).JSON())); err != nil {
 			r.log.Warn("firewall export failed", "file", r.fwFile, "error", err)
 		}
 	}

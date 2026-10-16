@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/imfanee/supersbc/internal/model"
 )
 
@@ -32,8 +34,10 @@ type Export struct {
 	Banned   []Banned `json:"banned"`
 }
 
-// Build assembles the export from the database rows.
-func Build(ips []model.CustomerIP, carriers []model.Carrier, banned []model.BannedIP, now time.Time) Export {
+// Build assembles the export from the database rows. Carrier addresses are
+// every endpoint of every active carrier (D-75) plus the extra signalling
+// sources configured on it, so the firewall follows the Endpoints tab.
+func Build(ips []model.CustomerIP, carriers []model.Carrier, endpoints map[uuid.UUID][]model.CarrierEndpoint, banned []model.BannedIP, now time.Time) Export {
 	ex := Export{GeneratedAt: now.UTC(), Customers: []string{}, Carriers: []string{}, Banned: []Banned{}}
 	seen := map[string]bool{}
 	for _, ip := range ips {
@@ -47,7 +51,12 @@ func Build(ips []model.CustomerIP, carriers []model.Carrier, banned []model.Bann
 		if c.Status != "active" {
 			continue
 		}
-		for _, src := range append([]string{c.GatewayHost}, c.SignallingSources...) {
+		srcs := []string{c.GatewayHost}
+		for _, e := range endpoints[c.ID] {
+			srcs = append(srcs, e.Host)
+		}
+		srcs = append(srcs, c.SignallingSources...)
+		for _, src := range srcs {
 			if src = strings.TrimSpace(src); src != "" && !seen[src] {
 				seen[src] = true
 				ex.Carriers = append(ex.Carriers, src)
