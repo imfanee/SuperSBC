@@ -52,6 +52,50 @@
                 },
                 "type": "object"
             },
+            "admin.areaCodeInput": {
+                "properties": {
+                    "area_code": {
+                        "maxLength": 10,
+                        "type": "string"
+                    },
+                    "country": {
+                        "maxLength": 100,
+                        "type": "string"
+                    },
+                    "country_code": {
+                        "maxLength": 4,
+                        "type": "string"
+                    },
+                    "description": {
+                        "maxLength": 200,
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "kind": {
+                        "enum": [
+                            "mobile",
+                            "fixed",
+                            "other"
+                        ],
+                        "type": "string"
+                    },
+                    "notes": {
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "operator": {
+                        "maxLength": 200,
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "country_code",
+                    "description"
+                ],
+                "type": "object"
+            },
             "admin.banInput": {
                 "properties": {
                     "ip": {
@@ -1233,6 +1277,47 @@
                 },
                 "type": "object"
             },
+            "model.AreaCode": {
+                "properties": {
+                    "area_code": {
+                        "type": "string"
+                    },
+                    "country": {
+                        "type": "string"
+                    },
+                    "country_code": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "operator": {
+                        "type": "string"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "model.AttemptRecord": {
                 "properties": {
                     "buy_rate_id": {
@@ -2299,6 +2384,13 @@
                     "answer_time": {
                         "type": "string"
                     },
+                    "area_description": {
+                        "type": "string"
+                    },
+                    "area_prefix": {
+                        "description": "Area of the called number and the operator that owns it (D-76).",
+                        "type": "string"
+                    },
                     "attempts": {
                         "items": {
                             "$ref": "#/components/schemas/model.AttemptRecord"
@@ -2395,6 +2487,9 @@
                     },
                     "negative_margin": {
                         "type": "boolean"
+                    },
+                    "operator_name": {
+                        "type": "string"
                     },
                     "pdd_ms": {
                         "type": "integer"
@@ -2521,6 +2616,27 @@
                 "required": [
                     "host"
                 ],
+                "type": "object"
+            },
+            "store.Listing-model_AreaCode": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/model.AreaCode"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "page": {
+                        "type": "integer"
+                    },
+                    "per_page": {
+                        "type": "integer"
+                    },
+                    "total": {
+                        "type": "integer"
+                    }
+                },
                 "type": "object"
             },
             "store.RouteCarrierRow": {
@@ -2655,6 +2771,243 @@
         "url": ""
     },
     "paths": {
+        "/area-codes": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "prefix, description, operator or country",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "country code",
+                        "in": "query",
+                        "name": "country_code",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "mobile|fixed|other",
+                        "in": "query",
+                        "name": "kind",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/store.Listing-model_AreaCode"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "List area codes (country code, area code, description, operator)",
+                "tags": [
+                    "area-codes"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.areaCodeInput",
+                                "summary": "body",
+                                "description": "area code"
+                            }
+                        }
+                    },
+                    "description": "area code",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.AreaCode"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    }
+                },
+                "summary": "Add an area code (replaces an existing entry with the same country and area code)",
+                "tags": [
+                    "area-codes"
+                ]
+            }
+        },
+        "/area-codes/backfill": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "true to recompute every CDR",
+                        "in": "query",
+                        "name": "all",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "integer"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Fill area and operator in on existing CDRs (all=true also refreshes the ones that already have them)",
+                "tags": [
+                    "area-codes"
+                ]
+            }
+        },
+        "/area-codes/import": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Import area codes from CSV (country_code, area_code, description, operator, country, kind), replacing entries with the same codes",
+                "tags": [
+                    "area-codes"
+                ]
+            }
+        },
+        "/area-codes/lookup": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "number in E.164 digits",
+                        "in": "query",
+                        "name": "number",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.AreaCode"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "The area code entry that matches a number (longest prefix first)",
+                "tags": [
+                    "area-codes"
+                ]
+            }
+        },
+        "/area-codes/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "area code id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Delete one area code",
+                "tags": [
+                    "area-codes"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "area code id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.areaCodeInput",
+                                "summary": "body",
+                                "description": "area code"
+                            }
+                        }
+                    },
+                    "description": "area code",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/model.AreaCode"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Update one area code",
+                "tags": [
+                    "area-codes"
+                ]
+            }
+        },
         "/audit-log": {
             "get": {
                 "parameters": [

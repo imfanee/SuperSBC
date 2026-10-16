@@ -277,6 +277,9 @@ export interface CDR {
   stir_status: string | null;
   stir_attest: string | null;
   sip_call_id: string | null;
+  area_prefix: string | null;
+  area_description: string | null;
+  operator_name: string | null;
   sbc_node: string | null;
 }
 
@@ -484,4 +487,17 @@ export interface CarrierEndpoint {
   state: string;
   parked: boolean;
   parked_for_seconds?: number;
+}
+
+export interface AreaCode {
+  id: string;
+  country_code: string;
+  area_code: string;
+  prefix: string;
+  country: string;
+  description: string;
+  operator: string;
+  kind: "mobile" | "fixed" | "other";
+  enabled: boolean;
+  notes: string;
 }

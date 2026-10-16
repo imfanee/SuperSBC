@@ -690,6 +690,16 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	cdr.CallerNumber = caller
 	resp.Called = called
 	resp.Caller = caller
+	// Area and operator of the called number (D-76); a number outside every
+	// known range simply has none.
+	if area, err := p.tables.Area(ctx, called); err == nil && area != nil {
+		pfx, desc, op := area.Prefix, area.Description, area.Operator
+		cdr.AreaPrefix, cdr.AreaDescription, cdr.OperatorName = &pfx, &desc, &op
+		resp.Vars["sbc_area"] = desc
+		if op != "" {
+			resp.Vars["sbc_operator"] = op
+		}
+	}
 
 	// STIR/SHAKEN (D-64): verify the Identity header when the customer asks for it.
 	forwardIdentity := false

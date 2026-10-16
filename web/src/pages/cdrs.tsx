@@ -87,7 +87,19 @@ export function CDRTable({ fixed = {}, showFilters = true }: { fixed?: Filters; 
         id: "called_number",
         header: "Called",
         accessorKey: "called_number",
-        cell: ({ row }) => <span className="font-mono text-xs">{row.original.called_number}</span>,
+        cell: ({ row }) => (
+          <span className="font-mono text-xs">
+            {row.original.called_number}
+            {row.original.area_description && (
+              <span className="ml-1 font-sans text-muted-foreground">
+                {row.original.area_description}
+                {row.original.operator_name && row.original.operator_name !== row.original.area_description
+                  ? ` / ${row.original.operator_name}`
+                  : ""}
+              </span>
+            )}
+          </span>
+        ),
         enableSorting: false,
       },
       {
@@ -394,6 +406,12 @@ export function CDRDetail({ cdr: c }: { cdr: CDR }) {
             ["SIP Call-ID", <span className="break-all font-mono text-xs">{c.sip_call_id ?? "n/a"}</span>],
             ["Source", `${c.src_ip ?? ""}:${c.src_port ?? ""}`],
             ["Dialled", <span className="font-mono">{c.called_number_raw}</span>],
+            [
+              "Area",
+              c.area_description
+                ? `${c.area_description}${c.operator_name && c.operator_name !== c.area_description ? ", " + c.operator_name : ""}${c.area_prefix ? " (+" + c.area_prefix + ")" : ""}`
+                : "unknown",
+            ],
             ["Start", dt(c.start_time)],
             ["Progress", dt(c.progress_time)],
             ["Answer", dt(c.answer_time)],

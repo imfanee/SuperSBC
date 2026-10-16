@@ -130,6 +130,8 @@ const (
 	ChanCallStarted      = "call.started"
 	ChanBlocklistChanged = "blocklist:changed"
 	ChanBansChanged      = "bans:changed"
+	// ChanAreaCodesChanged invalidates the area code table (D-76).
+	ChanAreaCodesChanged = "areacodes:changed"
 	ChanHeadersChanged   = "headers:changed"
 	ChanFXChanged        = "fx:changed"
 )

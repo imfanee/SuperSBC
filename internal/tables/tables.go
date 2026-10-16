@@ -30,6 +30,7 @@ type Tables struct {
 	rates  map[uuid.UUID]*entry[model.Rate]
 	routes map[uuid.UUID]*entry[model.Route]
 	blocks *blockEntry
+	areas  *areaEntry
 	fx     *fxEntry
 	rules  *rulesEntry
 
@@ -137,6 +138,49 @@ func (t *Tables) routeTrie(ctx context.Context, id uuid.UUID) (*prefix.Trie[mode
 	t.mu.Unlock()
 	t.log.Debug("route table loaded", "route_group_id", id, "prefixes", tr.Len())
 	return tr, nil
+}
+
+// areaEntry is the cached area code trie (D-76).
+type areaEntry struct {
+	trie     *prefix.Trie[model.AreaCode]
+	loadedAt time.Time
+}
+
+// Area returns the area code entry matching the number, longest prefix
+// first, or nil when nothing matches.
+func (t *Tables) Area(ctx context.Context, number string) (*model.AreaCode, error) {
+	t.mu.RLock()
+	a := t.areas
+	t.mu.RUnlock()
+	if a == nil || time.Since(a.loadedAt) >= t.MaxAge {
+		rows, err := t.st.AllAreaCodes(ctx)
+		if err != nil {
+			if a == nil {
+				return nil, err
+			}
+		} else {
+			tr := prefix.New[model.AreaCode]()
+			for _, r := range rows {
+				tr.Insert(r.Prefix, r)
+			}
+			a = &areaEntry{trie: tr, loadedAt: time.Now()}
+			t.mu.Lock()
+			t.areas = a
+			t.mu.Unlock()
+			t.log.Debug("area code table loaded", "prefixes", tr.Len())
+		}
+	}
+	if m, _, ok := a.trie.Match(number); ok {
+		return &m, nil
+	}
+	return nil, nil
+}
+
+// InvalidateAreas drops the area code cache.
+func (t *Tables) InvalidateAreas() {
+	t.mu.Lock()
+	t.areas = nil
+	t.mu.Unlock()
 }
 
 // Blocked returns the matching block for number: the customer's own list
@@ -288,7 +332,7 @@ func (t *Tables) InvalidateRoutes(id uuid.UUID) {
 
 // Listen subscribes to the invalidation channels until ctx ends.
 func (t *Tables) Listen(ctx context.Context, rdb *redis.Client) {
-	sub := rdb.Subscribe(ctx, cache.ChanRateDeckChanged, cache.ChanRoutesChanged, cache.ChanCarriersChanged, cache.ChanBlocklistChanged, cache.ChanFXChanged, cache.ChanHeadersChanged)
+	sub := rdb.Subscribe(ctx, cache.ChanRateDeckChanged, cache.ChanRoutesChanged, cache.ChanCarriersChanged, cache.ChanBlocklistChanged, cache.ChanFXChanged, cache.ChanHeadersChanged, cache.ChanAreaCodesChanged)
 	defer func() { _ = sub.Close() }()
 	ch := sub.Channel()
 	for {
@@ -301,6 +345,8 @@ func (t *Tables) Listen(ctx context.Context, rdb *redis.Client) {
 			}
 			id, _ := uuid.Parse(m.Payload)
 			switch m.Channel {
+			case cache.ChanAreaCodesChanged:
+				t.InvalidateAreas()
 			case cache.ChanRateDeckChanged:
 				t.InvalidateRates(id)
 			case cache.ChanRoutesChanged:

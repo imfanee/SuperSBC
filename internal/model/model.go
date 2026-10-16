@@ -125,6 +125,24 @@ func (e CarrierEndpoint) GatewayName(carrier string, only bool) string {
 	return fmt.Sprintf("%s-ep%d", carrier, e.Seq)
 }
 
+// AreaCode maps a country and area code to a human description and the
+// operator that owns the range (D-76). Matching is longest prefix first on
+// the full E.164 number.
+type AreaCode struct {
+	ID          uuid.UUID `json:"id" db:"id"`
+	CountryCode string    `json:"country_code" db:"country_code"`
+	AreaCode    string    `json:"area_code" db:"area_code"`
+	Prefix      string    `json:"prefix" db:"prefix"`
+	Country     string    `json:"country" db:"country"`
+	Description string    `json:"description" db:"description"`
+	Operator    string    `json:"operator" db:"operator"`
+	Kind        string    `json:"kind" db:"kind"`
+	Enabled     bool      `json:"enabled" db:"enabled"`
+	Notes       string    `json:"notes" db:"notes"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+}
+
 // RateGroup is a rate deck (selling or buying).
 type RateGroup struct {
 	ID          uuid.UUID `json:"id" db:"id"`
@@ -324,14 +342,18 @@ type CDR struct {
 	SRTPOut           bool             `json:"srtp_out" db:"srtp_out"`
 	Privacy           bool             `json:"privacy" db:"privacy"`
 	// SIPCallID is the customer leg Call-ID (D-71).
-	SIPCallID  *string    `json:"sip_call_id" db:"sip_call_id"`
-	STIRStatus *string    `json:"stir_status" db:"stir_status"`
-	STIRAttest *string    `json:"stir_attest" db:"stir_attest"`
-	SBCNode    *string    `json:"sbc_node" db:"sbc_node"`
-	BilledAt   *time.Time `json:"billed_at" db:"billed_at"`
-	BilledBy   *string    `json:"billed_by" db:"billed_by"`
-	CreatedAt  time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at" db:"updated_at"`
+	SIPCallID *string `json:"sip_call_id" db:"sip_call_id"`
+	// Area of the called number and the operator that owns it (D-76).
+	AreaPrefix      *string    `json:"area_prefix" db:"area_prefix"`
+	AreaDescription *string    `json:"area_description" db:"area_description"`
+	OperatorName    *string    `json:"operator_name" db:"operator_name"`
+	STIRStatus      *string    `json:"stir_status" db:"stir_status"`
+	STIRAttest      *string    `json:"stir_attest" db:"stir_attest"`
+	SBCNode         *string    `json:"sbc_node" db:"sbc_node"`
+	BilledAt        *time.Time `json:"billed_at" db:"billed_at"`
+	BilledBy        *string    `json:"billed_by" db:"billed_by"`
+	CreatedAt       time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at" db:"updated_at"`
 }
 
 // ActiveCall is a call with an open reservation.

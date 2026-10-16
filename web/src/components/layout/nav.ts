@@ -4,14 +4,15 @@ import {
   Building2,
   Cable,
   FileText,
+  Globe,
   LayoutDashboard,
   ListTree,
   Radio,
   Route as RouteIcon,
   Settings,
   Table2,
-  Users,
   type LucideIcon,
+  Users,
 } from "lucide-react";
 
 export interface NavItem {
@@ -38,6 +39,12 @@ export const navGroups: { title: string; items: NavItem[] }[] = [
       { title: "Carriers", to: "/carriers", icon: Building2, keywords: ["suppliers", "gateways"] },
       { title: "Rate groups", to: "/rate-groups", icon: FileText, keywords: ["rates", "decks", "prices"] },
       { title: "Route groups", to: "/route-groups", icon: RouteIcon, keywords: ["routing", "prefixes"] },
+      {
+        title: "Area codes",
+        to: "/area-codes",
+        icon: Globe,
+        keywords: ["operator", "prefix", "country", "city"],
+      },
       { title: "Routing simulator", to: "/simulator", icon: ListTree, keywords: ["test", "simulate"] },
     ],
   },

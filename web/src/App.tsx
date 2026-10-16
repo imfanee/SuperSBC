@@ -9,6 +9,7 @@ import { RateGroupsPage, RateGroupDetailPage } from "@/pages/rate-groups";
 import { RouteGroupsPage, RouteGroupDetailPage } from "@/pages/route-groups";
 import { SimulatorPage } from "@/pages/simulator";
 import { CDRsPage } from "@/pages/cdrs";
+import { AreaCodesPage } from "@/pages/area-codes";
 import { CallTracePage } from "@/pages/call-trace";
 import { SIPTracePage } from "@/pages/sip-trace";
 import { ReportsPage } from "@/pages/reports";
@@ -58,6 +59,7 @@ export function App() {
         <Route path="/rate-groups/:id" element={<RateGroupDetailPage />} />
         <Route path="/route-groups" element={<RouteGroupsPage />} />
         <Route path="/route-groups/:id" element={<RouteGroupDetailPage />} />
+        <Route path="/area-codes" element={<AreaCodesPage />} />
         <Route path="/simulator" element={<SimulatorPage />} />
         <Route path="/system" element={<SystemPage />} />
         <Route path="/system/users" element={<UsersPage />} />

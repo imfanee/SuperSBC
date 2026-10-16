@@ -19,6 +19,18 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `POST` | `/internal/v1/call/release` | Release a reservation for a call that will not be dialled |
 | `POST` | `/internal/v1/cdr` | mod_json_cdr receiver (basic auth, password = secret) |
 
+## Area-codes
+
+| Method | Path | Summary |
+|---|---|---|
+| `DELETE` | `/area-codes/{id}` | Delete one area code |
+| `GET` | `/area-codes/lookup` | The area code entry that matches a number (longest prefix first)<br>Query: `number` (required) |
+| `GET` | `/area-codes` | List area codes (country code, area code, description, operator)<br>Query: `search`, `country_code`, `kind` |
+| `POST` | `/area-codes/backfill` | Fill area and operator in on existing CDRs (all=true also refreshes the ones that already have them)<br>Query: `all` |
+| `POST` | `/area-codes/import` | Import area codes from CSV (country_code, area_code, description, operator, country, kind), replacing entries with the same codes |
+| `POST` | `/area-codes` | Add an area code (replaces an existing entry with the same country and area code) |
+| `PUT` | `/area-codes/{id}` | Update one area code |
+
 ## Auth
 
 | Method | Path | Summary |
