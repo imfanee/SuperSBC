@@ -120,13 +120,17 @@ func (h *Handler) listCarriers(w http.ResponseWriter, r *http.Request) {
 		GatewayState string  `json:"gateway_state"`
 		Degraded     bool    `json:"degraded"`
 	}
+	// One query for every carrier's endpoints, so the list stays a fixed
+	// number of round trips however many carriers it shows.
+	endpoints, err := h.Store.AllEndpoints(r.Context())
+	if err != nil {
+		failErr(w, err)
+		return
+	}
 	items := make([]row, 0, len(out.Items))
 	for i := range out.Items {
 		c := out.Items[i]
-		state := "UNKNOWN"
-		if h.Gateways != nil {
-			state = h.Gateways.State(c.GatewayName()).Status
-		}
+		state := h.gatewayStateOf(&c.Carrier, endpoints[c.ID])
 		if !c.SIPOptionsPing && state == "UNKNOWN" {
 			state = "NOPING"
 		}
@@ -205,12 +209,41 @@ func (h *Handler) getCarrier(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"carrier": c, "account": acc, "rate_group": rg, "status": h.carrierState(r, c)})
 }
 
+// gatewayStateOf rolls the gateway states of a carrier's endpoints into one
+// status for the carrier (D-75): UP when at least one address is up, DOWN
+// when every one is down, UNKNOWN when nothing is known yet. A carrier with a
+// single endpoint keeps its plain gateway name, so this also covers the
+// carriers that have never been touched since the upgrade.
+func (h *Handler) gatewayStateOf(c *model.Carrier, eps []model.CarrierEndpoint) string {
+	if h.Gateways == nil {
+		return "UNKNOWN"
+	}
+	names := []string{c.GatewayName()}
+	if len(eps) > 0 {
+		only := len(eps) == 1
+		names = names[:0]
+		for _, e := range eps {
+			names = append(names, e.GatewayName(c.Name, only))
+		}
+	}
+	state := "UNKNOWN"
+	for _, n := range names {
+		switch h.Gateways.State(n).Status {
+		case "UP":
+			return "UP"
+		case "DOWN":
+			state = "DOWN"
+		}
+	}
+	return state
+}
+
 func (h *Handler) carrierState(r *http.Request, c *model.Carrier) map[string]any {
-	st := map[string]any{"gateway": c.GatewayName(), "state": "UNKNOWN", "ping_enabled": c.SIPOptionsPing}
+	eps, _ := h.Store.Endpoints(r.Context(), c.ID)
+	st := map[string]any{"gateway": c.GatewayName(), "state": "UNKNOWN", "ping_enabled": c.SIPOptionsPing, "endpoints": len(eps)}
 	if h.Gateways != nil {
-		g := h.Gateways.State(c.GatewayName())
-		st["state"] = g.Status
-		if !g.Since.IsZero() {
+		st["state"] = h.gatewayStateOf(c, eps)
+		if g := h.Gateways.State(c.GatewayName()); !g.Since.IsZero() {
 			st["since"] = g.Since
 			st["checked_at"] = g.CheckedAt
 		}

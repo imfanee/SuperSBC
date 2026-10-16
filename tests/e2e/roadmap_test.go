@@ -339,11 +339,23 @@ func TestRoadmap_SIPTrace(t *testing.T) {
 			t.Fatalf("pcap %s: %d frames, want %d", c.leg, n, c.want)
 		}
 	}
-	// the customer leg Call-ID is searchable on the CDR list
+	// The customer leg Call-ID is searchable on the CDR list. sipp restarts
+	// its Call-ID counter in every container, so several calls of the suite
+	// can share one: assert this call is among the matches, not that it is
+	// the only one.
 	code, list := a.do("GET", "/cdrs?sip_call_id="+str(tr["customer_call_id"]), nil)
 	a.mustOK(code, list, "cdrs by call id")
-	if n := len(items(list)); n != 1 {
-		t.Fatalf("cdrs by sip_call_id: %d", n)
+	found := false
+	for _, row := range items(list) {
+		if str(row["call_uuid"]) == id {
+			found = true
+		}
+		if str(row["sip_call_id"]) != str(tr["customer_call_id"]) {
+			t.Fatalf("filter returned a foreign call id: %v", row["sip_call_id"])
+		}
+	}
+	if !found {
+		t.Fatalf("this call is not in the sip_call_id search: %v", list)
 	}
 }
 

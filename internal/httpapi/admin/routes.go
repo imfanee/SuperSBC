@@ -452,7 +452,8 @@ func (h *Handler) previewRoute(w http.ResponseWriter, r *http.Request) {
 		}
 		if c, err := h.Store.CarrierByID(r.Context(), rc.CarrierID); err == nil {
 			if h.Gateways != nil {
-				x.State = h.Gateways.State(c.GatewayName()).Status
+				eps, _ := h.Store.Endpoints(r.Context(), c.ID)
+				x.State = h.gatewayStateOf(c, eps)
 			}
 			if c.RateGroupID != nil {
 				if rt, ok, _ := h.Tables.MatchRate(r.Context(), *c.RateGroupID, number); ok {

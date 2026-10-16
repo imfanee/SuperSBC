@@ -84,6 +84,11 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 
 | Symptom | Check |
 |---|---|
+| Nothing runs after a reboot, `docker ps` says "Cannot connect to the Docker daemon" | `systemctl status docker` and `journalctl -u docker \| grep panic`. A `panic: assertion failed: Page expected to be ...` in bbolt means one of Docker's own databases was corrupted by the unclean shutdown. The build cache is disposable: `systemctl stop docker; mv /var/lib/docker/buildkit/cache.db /root/; systemctl start docker`. Never delete `/var/lib/docker/volumes`: the live database lives there |
+| The host firewall is empty after a reboot (`nft list table inet sbc` says no such file) | `systemctl status nftables`; the ruleset is re-applied with `make live-firewall` and the sets refilled by `systemctl restart supersbc-fwsync` |
+
+| Symptom | Check |
+|---|---|
 | `make live-up` fails with "pool overlaps" | a network from an old project name still exists: `docker network ls`, remove the stale one |
 | Containers use a stale image | the image tag follows `SBC_VERSION` (git version); always start through `make`, not bare `docker compose up` |
 | Postgres will not start after a crash | `docker logs supersbc-live-postgres-1`; it recovers from WAL by itself; disk full is the usual cause |
