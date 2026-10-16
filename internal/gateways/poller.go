@@ -70,22 +70,22 @@ func (p *Poller) Once(ctx context.Context) {
 	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	up, err := p.esl.API(ctx, "sofia profile "+p.profile+" gwlist up")
+	up, err := p.gwlist(ctx, "up")
 	if err != nil {
 		p.log.Warn("gwlist up failed", "error", err)
 		return
 	}
-	down, err := p.esl.API(ctx, "sofia profile "+p.profile+" gwlist down")
+	down, err := p.gwlist(ctx, "down")
 	if err != nil {
 		p.log.Warn("gwlist down failed", "error", err)
 		return
 	}
 	now := time.Now()
 	seen := map[string]string{}
-	for _, n := range strings.Fields(up) {
+	for _, n := range up {
 		seen[n] = "UP"
 	}
-	for _, n := range strings.Fields(down) {
+	for _, n := range down {
 		seen[n] = "DOWN"
 	}
 	p.mu.Lock()
@@ -108,6 +108,29 @@ func (p *Poller) Once(ctx context.Context) {
 			delete(p.states, name)
 		}
 	}
+}
+
+// gwlist asks FreeSWITCH for the gateways of the profile in one state.
+// An empty list is answered with "-ERR no reply", which is not an error:
+// treating it as one used to freeze the whole state map as soon as every
+// gateway was up (a real profile error reads "Invalid Profile [name]").
+func (p *Poller) gwlist(ctx context.Context, which string) ([]string, error) {
+	out, err := p.esl.API(ctx, "sofia profile "+p.profile+" gwlist "+which)
+	if err != nil {
+		if emptyGatewayList(err.Error()) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if emptyGatewayList(out) {
+		return nil, nil
+	}
+	return strings.Fields(out), nil
+}
+
+// emptyGatewayList reports whether a gwlist reply means "none in this state".
+func emptyGatewayList(s string) bool {
+	return strings.Contains(strings.ToLower(s), "no reply")
 }
 
 // GatewayDown implements callcontrol.CarrierHealth.
