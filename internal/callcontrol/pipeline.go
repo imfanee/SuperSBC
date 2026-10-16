@@ -118,6 +118,10 @@ type AuthResult struct {
 	Customer *model.Customer
 	Reject   *Reject
 	Admitted bool // a concurrent-call slot was taken and must be released
+	// Detail explains this exact rejection to an operator (D-77): which limit
+	// was hit, with the counter and the limit, or which address matched no
+	// customer. The caller only ever sees Reject.
+	Detail string
 }
 
 // Authorize resolves the source address to an active customer and applies
@@ -130,7 +134,7 @@ func (p *Pipeline) Authorize(ctx context.Context, srcIP string, srcPort int, tra
 	var customerID *uuid.UUID
 	if e := p.ips.Get(ctx, srcIP, srcPort, transport); e != nil {
 		if !e.Found {
-			return AuthResult{Reject: &Reject{403, "IP not authorized"}}, nil
+			return AuthResult{Reject: &Reject{403, "IP not authorized"}, Detail: unknownAddress(srcIP, srcPort, transport)}, nil
 		}
 		if id, err := uuid.Parse(e.CustomerID); err == nil {
 			customerID = &id
@@ -148,7 +152,7 @@ func (p *Pipeline) Authorize(ctx context.Context, srcIP string, srcPort int, tra
 		if err != nil {
 			if errors.Is(err, store.ErrNotFound) {
 				p.ips.Set(ctx, srcIP, srcPort, transport, cache.Entry{Found: false})
-				return AuthResult{Reject: &Reject{403, "IP not authorized"}}, nil
+				return AuthResult{Reject: &Reject{403, "IP not authorized"}, Detail: unknownAddress(srcIP, srcPort, transport)}, nil
 			}
 			return AuthResult{}, fmt.Errorf("lookup customer by ip: %w", err)
 		}
@@ -156,17 +160,22 @@ func (p *Pipeline) Authorize(ctx context.Context, srcIP string, srcPort int, tra
 		p.ips.Set(ctx, srcIP, srcPort, transport, cache.Entry{Found: true, CustomerID: cust.ID.String()})
 	}
 	if cust.Status != "active" {
-		return AuthResult{Customer: cust, Reject: &Reject{403, "Customer suspended"}}, nil
+		return AuthResult{Customer: cust, Reject: &Reject{403, "Customer suspended"},
+			Detail: fmt.Sprintf("customer %s is %s", cust.Name, cust.Status)}, nil
 	}
 	res, err := p.adm.Admit(ctx, "customer", cust.ID, cust.MaxConcurrentCalls, cust.MaxCPS)
 	if err != nil {
 		return AuthResult{Customer: cust}, err // fail closed
 	}
 	if res.ConcurrentExceeded {
-		return AuthResult{Customer: cust, Reject: &Reject{480, "Concurrent call limit"}}, nil
+		return AuthResult{Customer: cust, Reject: &Reject{480, "Concurrent call limit"},
+			Detail: fmt.Sprintf("customer %s already had %s up, its max_concurrent_calls is %d (max_cps is a separate limit)",
+				cust.Name, calls(res.Concurrent-1), cust.MaxConcurrentCalls)}, nil
 	}
 	if res.CPSExceeded {
-		return AuthResult{Customer: cust, Reject: &Reject{503, "CPS limit"}}, nil
+		return AuthResult{Customer: cust, Reject: &Reject{503, "CPS limit"},
+			Detail: fmt.Sprintf("customer %s started %s in this second, its max_cps is %d",
+				cust.Name, calls(res.CPS), cust.MaxCPS)}, nil
 	}
 	if p.cfg.Routing.GlobalMaxChannels > 0 || p.cfg.Routing.GlobalMaxCPS > 0 {
 		g, err := p.adm.Admit(ctx, "global", uuid.Nil, p.cfg.Routing.GlobalMaxChannels, p.cfg.Routing.GlobalMaxCPS)
@@ -176,11 +185,15 @@ func (p *Pipeline) Authorize(ctx context.Context, srcIP string, srcPort int, tra
 		}
 		if g.ConcurrentExceeded {
 			p.adm.Leave(ctx, "customer", cust.ID)
-			return AuthResult{Customer: cust, Reject: &Reject{480, "Concurrent call limit"}}, nil
+			return AuthResult{Customer: cust, Reject: &Reject{480, "Concurrent call limit"},
+				Detail: fmt.Sprintf("the node already had %s up across all customers, SBC_ROUTING_GLOBAL_MAX_CHANNELS is %d (customer %s was within its own limit)",
+					calls(g.Concurrent-1), p.cfg.Routing.GlobalMaxChannels, cust.Name)}, nil
 		}
 		if g.CPSExceeded {
 			p.adm.Leave(ctx, "customer", cust.ID)
-			return AuthResult{Customer: cust, Reject: &Reject{503, "CPS limit"}}, nil
+			return AuthResult{Customer: cust, Reject: &Reject{503, "CPS limit"},
+				Detail: fmt.Sprintf("the node took %s in this second across all customers, SBC_ROUTING_GLOBAL_MAX_CPS is %d (customer %s was within its own limit)",
+					calls(g.CPS), p.cfg.Routing.GlobalMaxCPS, cust.Name)}, nil
 		}
 	}
 	return AuthResult{Customer: cust, Admitted: true}, nil
@@ -662,8 +675,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		if auth.Reject.Reason == "IP not authorized" {
 			p.countScanner(ctx, req.SrcIP)
 		}
-		return reject("authorize", *auth.Reject, model.DispositionRejectedAuth,
-			fmt.Sprintf("no active customer has %s:%d over %s in its allowed IPs", req.SrcIP, req.SrcPort, transportOf(req.Transport))), nil
+		return reject("authorize", *auth.Reject, model.DispositionRejectedAuth, auth.Detail), nil
 	}
 	cust := auth.Customer
 	transport := strings.ToLower(req.Transport)
@@ -1077,10 +1089,16 @@ func noRouteDetail(cust *model.Customer, called string, route *RouteResult) stri
 	return fmt.Sprintf("every carrier on route %s (%s) was skipped: %s", r.Prefix, r.Destination, strings.Join(parts, "; "))
 }
 
-// transportOf normalises the transport of a request for a rejection detail.
-func transportOf(t string) string {
-	if t == "" {
-		return "udp"
+// unknownAddress is the rejection detail when a source address matches no
+// customer: the exact three values that have to be in an allowed IP (D-77).
+func unknownAddress(srcIP string, srcPort int, transport string) string {
+	return fmt.Sprintf("no active customer has %s:%d over %s in its allowed IPs", srcIP, srcPort, transport)
+}
+
+// calls counts calls in a rejection detail, singular or plural.
+func calls(n int64) string {
+	if n == 1 {
+		return "1 call"
 	}
-	return strings.ToLower(t)
+	return fmt.Sprintf("%d calls", n)
 }

@@ -55,3 +55,20 @@ func TestMarginDetail(t *testing.T) {
 		t.Error("a missing rate should give no detail")
 	}
 }
+
+func TestCalls(t *testing.T) {
+	for n, want := range map[int64]string{0: "0 calls", 1: "1 call", 15: "15 calls"} {
+		if got := calls(n); got != want {
+			t.Errorf("calls(%d) = %q want %q", n, got, want)
+		}
+	}
+}
+
+func TestUnknownAddress(t *testing.T) {
+	d := unknownAddress("203.0.113.9", 5060, "udp")
+	for _, want := range []string{"203.0.113.9:5060", "udp", "allowed IPs"} {
+		if !strings.Contains(d, want) {
+			t.Errorf("detail %q is missing %q", d, want)
+		}
+	}
+}

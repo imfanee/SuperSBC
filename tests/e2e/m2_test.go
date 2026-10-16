@@ -24,6 +24,14 @@ func TestM2_ConcurrentCallLimit(t *testing.T) {
 		case "rejected_auth":
 			if str(r["sip_final_reason"]) == "Concurrent call limit" {
 				limited++
+				// the detail names the limit that was hit, not the IP (D-77)
+				d := str(r["reject_detail"])
+				if !strings.Contains(d, "max_concurrent_calls") || !strings.Contains(d, "delta-limited") {
+					t.Errorf("concurrency rejection detail: %q", d)
+				}
+				if strings.Contains(d, "allowed IPs") {
+					t.Errorf("a limit rejection must not blame the IP: %q", d)
+				}
 			}
 		}
 	}

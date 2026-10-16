@@ -176,7 +176,7 @@ func cdrsSince(t *testing.T, srcIP string, since time.Time) []map[string]any {
 	t.Helper()
 	deadline := time.Now().Add(20 * time.Second)
 	for time.Now().Before(deadline) {
-		rows := sql(t, fmt.Sprintf(`SELECT disposition, sip_final_code, sip_final_reason, billsec, sell_price::text AS sell_price, billed_at
+		rows := sql(t, fmt.Sprintf(`SELECT disposition, sip_final_code, sip_final_reason, reject_reason, reject_step, reject_detail, billsec, sell_price::text AS sell_price, billed_at
 			FROM cdrs WHERE src_ip = '%s' AND start_time >= '%s' ORDER BY start_time`, srcIP, since.UTC().Format(time.RFC3339)))
 		allBilled := len(rows) > 0
 		for _, r := range rows {
