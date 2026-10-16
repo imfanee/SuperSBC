@@ -257,6 +257,8 @@ function pipeline.run(session)
       buy_rate_id = c.buy_rate_id,
       buy_rate_per_min = c.buy_rate_per_min,
       route_prefix = session:getVariable("sbc_route_prefix") or "",
+      endpoint_id = c.endpoint_id,
+      endpoint = c.endpoint,
     }
     local st, verdict = http.post_json(api, "/internal/v1/call/attempt", attempt, uuid)
     log:info("attempt result", {

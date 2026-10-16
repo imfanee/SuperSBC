@@ -77,6 +77,7 @@ Durations use Go syntax (`30s`, `5m`, `4h`). Booleans are `true`/`false`.
 | `SBC_ROUTING_ORIGINATE_TIMEOUT` | `60` | seconds to wait for a carrier answer |
 | `SBC_ROUTING_PROGRESS_TIMEOUT` | `8` | seconds to wait for the first provisional response before trying the next carrier |
 | `SBC_ROUTING_BLOCK_NEGATIVE_MARGIN` | `false` | skip carriers whose buy rate exceeds the sell rate |
+| `SBC_ROUTING_MAX_ENDPOINTS_PER_CARRIER` | `3` | how many addresses of one carrier a single call may try before moving on (D-75); `0` means all |
 | `SBC_ROUTING_GLOBAL_MAX_CPS`, `SBC_ROUTING_GLOBAL_MAX_CHANNELS` | `0` | system wide caps (`0` = none) |
 | `SBC_MEDIA_TIMEOUT_SEC` | `300` | hang up after this long without RTP |
 | `SBC_MEDIA_HOLD_TIMEOUT_SEC` | `1800` | same while on hold |

@@ -100,10 +100,13 @@ type Routing struct {
 	OriginateTimeout    int // seconds
 	ProgressTimeout     int // seconds
 	BlockNegativeMargin bool
-	GlobalMaxCPS        int // 0 = unlimited
-	GlobalMaxChannels   int // 0 = unlimited
-	MediaTimeoutSec     int // hang up after this many seconds without RTP (D-34)
-	MediaHoldTimeoutSec int // same while on hold
+	// MaxEndpointsPerCarrier bounds how many addresses of one carrier a single
+	// call may try before moving to the next carrier (D-75); 0 means all.
+	MaxEndpointsPerCarrier int
+	GlobalMaxCPS           int // 0 = unlimited
+	GlobalMaxChannels      int // 0 = unlimited
+	MediaTimeoutSec        int // hang up after this many seconds without RTP (D-34)
+	MediaHoldTimeoutSec    int // same while on hold
 }
 
 // Failover holds the tunables of Section 6.
@@ -175,13 +178,14 @@ func Load() (*Config, error) {
 			Currency:            getenv("SBC_BILLING_CURRENCY", "USD"),
 		},
 		Routing: Routing{
-			OriginateTimeout:    getint("SBC_ROUTING_ORIGINATE_TIMEOUT", 60),
-			ProgressTimeout:     getint("SBC_ROUTING_PROGRESS_TIMEOUT", 8),
-			BlockNegativeMargin: getbool("SBC_ROUTING_BLOCK_NEGATIVE_MARGIN", false),
-			GlobalMaxCPS:        getint("SBC_ROUTING_GLOBAL_MAX_CPS", 0),
-			GlobalMaxChannels:   getint("SBC_ROUTING_GLOBAL_MAX_CHANNELS", 0),
-			MediaTimeoutSec:     getint("SBC_MEDIA_TIMEOUT_SEC", 300),
-			MediaHoldTimeoutSec: getint("SBC_MEDIA_HOLD_TIMEOUT_SEC", 1800),
+			OriginateTimeout:       getint("SBC_ROUTING_ORIGINATE_TIMEOUT", 60),
+			ProgressTimeout:        getint("SBC_ROUTING_PROGRESS_TIMEOUT", 8),
+			BlockNegativeMargin:    getbool("SBC_ROUTING_BLOCK_NEGATIVE_MARGIN", false),
+			MaxEndpointsPerCarrier: getint("SBC_ROUTING_MAX_ENDPOINTS_PER_CARRIER", 3),
+			GlobalMaxCPS:           getint("SBC_ROUTING_GLOBAL_MAX_CPS", 0),
+			GlobalMaxChannels:      getint("SBC_ROUTING_GLOBAL_MAX_CHANNELS", 0),
+			MediaTimeoutSec:        getint("SBC_MEDIA_TIMEOUT_SEC", 300),
+			MediaHoldTimeoutSec:    getint("SBC_MEDIA_HOLD_TIMEOUT_SEC", 1800),
 		},
 		Failover: Failover{
 			RulesFile:                  getenv("SBC_FAILOVER_RULES_FILE", "/app/failover.yaml"),

@@ -92,7 +92,15 @@ Carriers > New carrier:
 
 The carrier's account records what you owe it (`cost` entries). Top-ups there represent payments made to the carrier.
 
-### 4.2 Check the gateway
+### 4.2 Several addresses for one carrier
+
+Carrier > Endpoints lists the carrier's signalling addresses. The first one is the address on the Gateway tab; add more for a carrier that gives you a cluster. Each address becomes its own gateway, so a call that gets no answer from one rolls over to the next **before** the next carrier is tried, and the attempts in the CDR show which address each try used.
+
+* **Endpoint balancing** (carrier settings): `failover` uses the list order, `round_robin` spreads calls evenly, `weighted` spreads them by the weight column. In every mode the remaining addresses stay behind the chosen one as failover.
+* **Health with OPTIONS ping on** (recommended when the carrier answers pings): FreeSWITCH pings each address and routing skips the ones that are DOWN; the Endpoints tab shows the state.
+* **Health without OPTIONS ping**: switch on "Park an endpoint that fails calls" in the carrier settings. Calls that never reach the far end count against that address, and after the configured number of them in a row it is parked for the configured period, then tried again. The tab shows "parked" with the time left and an operator can put it back at once. Leave this off for carriers that answer `503` when busy: FreeSWITCH cannot tell that apart from an address that answers nothing.
+
+### 4.3 Check the gateway
 
 Carrier > Gateway shows the FreeSWITCH gateway state (`UP`, `DOWN`, `NOREG`, `REGED`), the last ping and the circuit breaker state (`degraded` after too many consecutive faults or a low ASR; a degraded carrier is tried last for a minute).
 

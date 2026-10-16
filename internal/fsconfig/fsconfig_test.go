@@ -78,3 +78,14 @@ func TestPendingGatewayKills(t *testing.T) {
 		t.Fatal("a gateway that exists again must not be killed")
 	}
 }
+
+// killgw on a gateway FreeSWITCH never loaded is the outcome we wanted, not
+// a failure to retry forever (it used to block the rescan of new gateways).
+func TestGatewayAlreadyGone(t *testing.T) {
+	if !gatewayAlreadyGone("esl: -ERR no such gateway.") || !gatewayAlreadyGone("-ERR No such gateway") {
+		t.Fatal("a missing gateway must count as killed")
+	}
+	if gatewayAlreadyGone("-ERR Invalid Profile [x]") || gatewayAlreadyGone("i/o timeout") {
+		t.Fatal("a real error must be retried")
+	}
+}

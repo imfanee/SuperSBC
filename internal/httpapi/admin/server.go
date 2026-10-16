@@ -115,6 +115,7 @@ func (h *Handler) Mount(r chi.Router) {
 
 			h.mountCustomers(r)
 			h.mountCarriers(r)
+			h.mountEndpoints(r)
 			h.mountRates(r)
 			h.mountRoutes(r)
 			h.mountCDRs(r)

@@ -141,6 +141,27 @@
                         ],
                         "type": "string"
                     },
+                    "endpoint_fail_threshold": {
+                        "maximum": 20,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "endpoint_lb": {
+                        "enum": [
+                            "failover",
+                            "round_robin",
+                            "weighted"
+                        ],
+                        "type": "string"
+                    },
+                    "endpoint_park_on_failure": {
+                        "type": "boolean"
+                    },
+                    "endpoint_retry_seconds": {
+                        "maximum": 86400,
+                        "minimum": 10,
+                        "type": "integer"
+                    },
                     "failover_sip_codes": {
                         "items": {
                             "type": "integer"
@@ -385,6 +406,76 @@
                 },
                 "required": [
                     "name"
+                ],
+                "type": "object"
+            },
+            "admin.endpointRow": {
+                "properties": {
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "gateway": {
+                        "type": "string"
+                    },
+                    "host": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "parked": {
+                        "type": "boolean"
+                    },
+                    "parked_for_seconds": {
+                        "type": "integer"
+                    },
+                    "port": {
+                        "type": "integer"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "seq": {
+                        "type": "integer"
+                    },
+                    "state": {
+                        "description": "State is UP, DOWN or UNKNOWN from the OPTIONS ping, \"parked\" when the\nendpoint was taken out of rotation after unanswered calls (D-75).",
+                        "type": "string"
+                    },
+                    "transport": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "admin.endpointsInput": {
+                "properties": {
+                    "endpoints": {
+                        "items": {
+                            "$ref": "#/components/schemas/store.EndpointSpec"
+                        },
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "endpoints"
                 ],
                 "type": "object"
             },
@@ -1166,6 +1257,10 @@
                     "ended_at": {
                         "type": "string"
                     },
+                    "endpoint": {
+                        "description": "Endpoint is the carrier address this attempt dialled (D-75).",
+                        "type": "string"
+                    },
                     "gateway": {
                         "type": "string"
                     },
@@ -1266,6 +1361,27 @@
                     "dtmf_mode": {
                         "type": "string"
                     },
+                    "endpoint_fail_threshold": {
+                        "type": "integer"
+                    },
+                    "endpoint_lb": {
+                        "description": "Endpoint policy (D-75): how calls are spread over the carrier's endpoints,\nhow long a dead endpoint waits before it is tried again, and how many\nunanswered attempts in a row mark one dead when OPTIONS ping is off.",
+                        "type": "string"
+                    },
+                    "endpoint_park_on_failure": {
+                        "type": "boolean"
+                    },
+                    "endpoint_retry_seconds": {
+                        "type": "integer"
+                    },
+                    "endpoints": {
+                        "description": "Endpoints is filled by the stores that need it (renderer, routing).",
+                        "items": {
+                            "$ref": "#/components/schemas/model.CarrierEndpoint"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
                     "failover_sip_codes": {
                         "items": {
                             "type": "integer"
@@ -1337,6 +1453,47 @@
                     },
                     "updated_at": {
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "model.CarrierEndpoint": {
+                "properties": {
+                    "carrier_id": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "host": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "string"
+                    },
+                    "port": {
+                        "type": "integer"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "seq": {
+                        "type": "integer"
+                    },
+                    "transport": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "integer"
                     }
                 },
                 "type": "object"
@@ -2329,6 +2486,41 @@
                         "type": "string"
                     }
                 },
+                "type": "object"
+            },
+            "store.EndpointSpec": {
+                "properties": {
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "host": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "port": {
+                        "type": "integer"
+                    },
+                    "priority": {
+                        "type": "integer"
+                    },
+                    "transport": {
+                        "enum": [
+                            "udp",
+                            "tcp",
+                            "tls"
+                        ],
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "host"
+                ],
                 "type": "object"
             },
             "store.RouteCarrierRow": {
@@ -3379,6 +3571,118 @@
                     }
                 },
                 "summary": "Record a payment to the carrier (ledger type topup)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/endpoints": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/admin.endpointRow"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Signalling endpoints of a carrier with their live state (D-75)",
+                "tags": [
+                    "carriers"
+                ]
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/admin.endpointsInput",
+                                "summary": "body",
+                                "description": "endpoints"
+                            }
+                        }
+                    },
+                    "description": "endpoints",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/admin.endpointRow"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Replace the endpoint list of a carrier (first one is the primary address)",
+                "tags": [
+                    "carriers"
+                ]
+            }
+        },
+        "/carriers/{id}/endpoints/{endpointId}/revive": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "carrier id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "endpoint id",
+                        "in": "path",
+                        "name": "endpointId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                },
+                "summary": "Put a parked endpoint back into rotation at once",
                 "tags": [
                     "carriers"
                 ]

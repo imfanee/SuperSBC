@@ -73,14 +73,17 @@ type CarrierChoice struct {
 	BuyDestination string           `json:"buy_destination"`
 	NegativeMargin bool             `json:"negative_margin"`
 	// Quality is the score used in quality mode (0..1), QualitySamples its evidence; Share the percent in percent mode (D-73).
-	Quality          *float64 `json:"quality,omitempty"`
-	QualitySamples   int64    `json:"quality_samples,omitempty"`
-	Share            int      `json:"share,omitempty"`
-	FailoverSIPCodes []int    `json:"failover_sip_codes"`
-	Codecs           string   `json:"codecs"`
-	IgnoreEarlyMedia bool     `json:"ignore_early_media"`
-	Degraded         bool     `json:"degraded"`
-	MediaMode        string   `json:"media_mode"` // anchor | proxy | bypass for this pair
+	Quality        *float64 `json:"quality,omitempty"`
+	QualitySamples int64    `json:"quality_samples,omitempty"`
+	Share          int      `json:"share,omitempty"`
+	// Endpoint is the carrier address this attempt dials, EndpointID its row (D-75).
+	Endpoint         string     `json:"endpoint,omitempty"`
+	EndpointID       *uuid.UUID `json:"endpoint_id,omitempty"`
+	FailoverSIPCodes []int      `json:"failover_sip_codes"`
+	Codecs           string     `json:"codecs"`
+	IgnoreEarlyMedia bool       `json:"ignore_early_media"`
+	Degraded         bool       `json:"degraded"`
+	MediaMode        string     `json:"media_mode"` // anchor | proxy | bypass for this pair
 	// Passthrough lists a-leg headers Lua copies onto this carrier's INVITE (sip_h_<name>).
 	Passthrough []string `json:"passthrough_headers"`
 }
@@ -139,6 +142,9 @@ type AttemptRequest struct {
 	BuyRatePerMin *string    `json:"buy_rate_per_min"`
 	// RoutePrefix is the routing table prefix the call matched (sbc_route_prefix), for quality tracking (D-73).
 	RoutePrefix string `json:"route_prefix"`
+	// EndpointID is the carrier endpoint this attempt dialled, and Endpoint its address (D-75).
+	EndpointID *uuid.UUID `json:"endpoint_id"`
+	Endpoint   string     `json:"endpoint"`
 }
 
 // AttemptResponse tells Lua whether to continue.

@@ -152,6 +152,9 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 		if err != nil {
 			return err
 		}
+		if err := st.EnsureSeedEndpoint(ctx, car); err != nil {
+			return err
+		}
 		carrierIDs[c.name] = car.ID
 		if _, err := st.EnsureAccount(ctx, "carrier", car.ID, "USD"); err != nil {
 			return err

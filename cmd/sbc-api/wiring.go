@@ -80,6 +80,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 	pipe.SetHealth(gw)
 	qt := quality.New(rdb, quality.Config{MinSamples: cfg.Quality.MinSamples, WindowHours: cfg.Quality.WindowHours, RefreshEvery: cfg.Quality.RefreshEvery}, log)
 	pipe.SetQuality(qt)
+	pipe.SetEndpointHealth(callcontrol.NewEndpointHealth(rdb))
 	if stirV, err := stir.New(stir.Config{MaxAge: cfg.STIR.MaxAge, CAFile: cfg.STIR.CAFile, AllowHTTP: cfg.STIR.AllowHTTP}); err != nil {
 		log.Error("stir verifier disabled", "err", err)
 	} else {

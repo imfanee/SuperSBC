@@ -28,33 +28,37 @@ func (h *Handler) mountCarriers(r chi.Router) {
 }
 
 type carrierInput struct {
-	Name                 string   `json:"name" validate:"required,min=1,max=64,lowercase,excludesall= "`
-	Status               string   `json:"status" validate:"omitempty,oneof=active disabled"`
-	RateGroupID          string   `json:"rate_group_id" validate:"omitempty,uuid"`
-	GatewayHost          string   `json:"gateway_host" validate:"required,hostname|ip"`
-	GatewayPort          int      `json:"gateway_port" validate:"omitempty,min=1,max=65535"`
-	Transport            string   `json:"transport" validate:"omitempty,oneof=udp tcp tls"`
-	DNIPrefix            string   `json:"dni_prefix" validate:"omitempty,max=16"`
-	ANIPrefix            string   `json:"ani_prefix" validate:"omitempty,max=16"`
-	StripDigits          int      `json:"strip_digits" validate:"min=0,max=15"`
-	AuthUsername         string   `json:"auth_username"`
-	AuthPassword         *string  `json:"auth_password"`
-	FromDomain           string   `json:"from_domain"`
-	Register             bool     `json:"register"`
-	AllowedCodecs        []string `json:"allowed_codecs"`
-	MaxConcurrentCalls   int      `json:"max_concurrent_calls" validate:"min=0"`
-	MaxCPS               int      `json:"max_cps" validate:"min=0"`
-	FailoverSIPCodes     []int    `json:"failover_sip_codes"`
-	SIPOptionsPing       *bool    `json:"sip_options_ping"`
-	ChargeFailedAttempts bool     `json:"charge_failed_attempts"`
-	IgnoreEarlyMedia     bool     `json:"ignore_early_media"`
-	Notes                string   `json:"notes"`
-	Currency             string   `json:"currency" validate:"omitempty,len=3"`
-	MediaMode            string   `json:"media_mode" validate:"omitempty,oneof=anchor proxy bypass"`
-	DTMFMode             string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
-	SRTPMode             string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
-	PrivacyMode          string   `json:"privacy_mode" validate:"omitempty,oneof=anonymize pass ignore"`
-	SignallingSources    []string `json:"signalling_sources" validate:"dive,cidr|ip"`
+	Name                  string   `json:"name" validate:"required,min=1,max=64,lowercase,excludesall= "`
+	Status                string   `json:"status" validate:"omitempty,oneof=active disabled"`
+	RateGroupID           string   `json:"rate_group_id" validate:"omitempty,uuid"`
+	GatewayHost           string   `json:"gateway_host" validate:"required,hostname|ip"`
+	GatewayPort           int      `json:"gateway_port" validate:"omitempty,min=1,max=65535"`
+	Transport             string   `json:"transport" validate:"omitempty,oneof=udp tcp tls"`
+	DNIPrefix             string   `json:"dni_prefix" validate:"omitempty,max=16"`
+	ANIPrefix             string   `json:"ani_prefix" validate:"omitempty,max=16"`
+	StripDigits           int      `json:"strip_digits" validate:"min=0,max=15"`
+	AuthUsername          string   `json:"auth_username"`
+	AuthPassword          *string  `json:"auth_password"`
+	FromDomain            string   `json:"from_domain"`
+	Register              bool     `json:"register"`
+	AllowedCodecs         []string `json:"allowed_codecs"`
+	MaxConcurrentCalls    int      `json:"max_concurrent_calls" validate:"min=0"`
+	MaxCPS                int      `json:"max_cps" validate:"min=0"`
+	FailoverSIPCodes      []int    `json:"failover_sip_codes"`
+	SIPOptionsPing        *bool    `json:"sip_options_ping"`
+	ChargeFailedAttempts  bool     `json:"charge_failed_attempts"`
+	IgnoreEarlyMedia      bool     `json:"ignore_early_media"`
+	Notes                 string   `json:"notes"`
+	Currency              string   `json:"currency" validate:"omitempty,len=3"`
+	MediaMode             string   `json:"media_mode" validate:"omitempty,oneof=anchor proxy bypass"`
+	DTMFMode              string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
+	SRTPMode              string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
+	PrivacyMode           string   `json:"privacy_mode" validate:"omitempty,oneof=anonymize pass ignore"`
+	SignallingSources     []string `json:"signalling_sources" validate:"dive,cidr|ip"`
+	EndpointLB            string   `json:"endpoint_lb" validate:"omitempty,oneof=failover round_robin weighted"`
+	EndpointRetrySeconds  int      `json:"endpoint_retry_seconds" validate:"omitempty,min=10,max=86400"`
+	EndpointFailThreshold int      `json:"endpoint_fail_threshold" validate:"omitempty,min=1,max=20"`
+	EndpointParkOnFailure bool     `json:"endpoint_park_on_failure"`
 }
 
 func (in carrierInput) toModel(w http.ResponseWriter) (*model.Carrier, bool) {
@@ -87,7 +91,8 @@ func (in carrierInput) toModel(w http.ResponseWriter) (*model.Carrier, bool) {
 		DNIPrefix: in.DNIPrefix, ANIPrefix: in.ANIPrefix, StripDigits: in.StripDigits, AuthUsername: strPtr(in.AuthUsername), AuthPassword: in.AuthPassword,
 		FromDomain: strPtr(in.FromDomain), Register: in.Register, AllowedCodecs: codecs, MaxConcurrentCalls: in.MaxConcurrentCalls, MaxCPS: in.MaxCPS,
 		FailoverSIPCodes: in.FailoverSIPCodes, SIPOptionsPing: ping, ChargeFailedAttempts: in.ChargeFailedAttempts, IgnoreEarlyMedia: in.IgnoreEarlyMedia, Notes: in.Notes,
-		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, PrivacyMode: in.PrivacyMode, SignallingSources: in.SignallingSources}, true
+		MediaMode: in.MediaMode, DTMFMode: in.DTMFMode, SRTPMode: in.SRTPMode, PrivacyMode: in.PrivacyMode, SignallingSources: in.SignallingSources,
+		EndpointLB: in.EndpointLB, EndpointRetrySeconds: in.EndpointRetrySeconds, EndpointFailThreshold: in.EndpointFailThreshold, EndpointParkOnFailure: in.EndpointParkOnFailure}, true
 }
 
 // listCarriers godoc

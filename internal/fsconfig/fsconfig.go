@@ -69,12 +69,27 @@ func (r *Renderer) RenderGateways(ctx context.Context) error {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	endpoints, err := r.st.AllEndpoints(ctx)
+	if err != nil {
+		return err
+	}
 	want := map[string]string{}
 	for _, c := range carriers {
 		if c.Status != "active" {
 			continue
 		}
-		want[c.GatewayName()] = GatewayXML(c, r.nodeIP)
+		eps := endpoints[c.ID]
+		if len(eps) == 0 { // a carrier created before D-75, or without endpoint rows
+			want[c.GatewayName()] = GatewayXML(c, r.nodeIP)
+			continue
+		}
+		only := len(eps) == 1
+		for _, e := range eps {
+			if !e.Enabled {
+				continue
+			}
+			want[e.GatewayName(c.Name, only)] = EndpointGatewayXML(c, e, only, r.nodeIP)
+		}
 	}
 	var killed []string
 	// remove stale files
@@ -130,8 +145,10 @@ func (r *Renderer) applyGatewayChanges(ctx context.Context, want map[string]stri
 	}
 	for name := range r.pendingKills {
 		if _, err := r.esl.API(ctx, "sofia profile external-egress killgw "+name); err != nil {
-			r.log.Warn("killgw failed, will retry", "gateway", name, "error", err)
-			return false
+			if !gatewayAlreadyGone(err.Error()) {
+				r.log.Warn("killgw failed, will retry", "gateway", name, "error", err)
+				return false
+			}
 		}
 		delete(r.pendingKills, name)
 	}
@@ -222,14 +239,27 @@ func TLSSubjects(customers []model.Customer) string {
 	return b.String()
 }
 
+// gatewayAlreadyGone reports whether a killgw failed because the gateway was
+// never loaded, which is the outcome we wanted anyway.
+func gatewayAlreadyGone(s string) bool {
+	return strings.Contains(strings.ToLower(s), "no such gateway")
+}
+
 // SetFirewallExportFile enables the host firewall export (D-69).
 func (r *Renderer) SetFirewallExportFile(path string) { r.fwFile = path }
 
 // GatewayXML renders one carrier as a Sofia gateway.
 func GatewayXML(c model.Carrier, nodeIP string) string {
-	proxy := net.JoinHostPort(c.GatewayHost, fmt.Sprint(c.GatewayPort))
-	if c.Transport == "tcp" || c.Transport == "tls" {
-		proxy += ";transport=" + c.Transport
+	return EndpointGatewayXML(c, model.CarrierEndpoint{Seq: 1, Host: c.GatewayHost, Port: c.GatewayPort, Transport: c.Transport, Enabled: true}, true, nodeIP)
+}
+
+// EndpointGatewayXML renders one gateway for one endpoint of a carrier
+// (D-75). With a single endpoint the gateway keeps the carrier's name.
+func EndpointGatewayXML(c model.Carrier, e model.CarrierEndpoint, only bool, nodeIP string) string {
+	name := e.GatewayName(c.Name, only)
+	proxy := net.JoinHostPort(e.Host, fmt.Sprint(e.Port))
+	if e.Transport == "tcp" || e.Transport == "tls" {
+		proxy += ";transport=" + e.Transport
 	}
 	user := c.Name
 	if c.AuthUsername != nil && *c.AuthUsername != "" {
@@ -240,15 +270,15 @@ func GatewayXML(c model.Carrier, nodeIP string) string {
 		pass = *c.AuthPassword
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "<!-- rendered by sbc-api at %s from carrier %s; do not edit -->\n", time.Now().UTC().Format(time.RFC3339), c.ID)
-	fmt.Fprintf(&b, "<gateway name=%q>\n", c.Name)
+	fmt.Fprintf(&b, "<!-- rendered by sbc-api at %s from carrier %s endpoint %d; do not edit -->\n", time.Now().UTC().Format(time.RFC3339), c.ID, e.Seq)
+	fmt.Fprintf(&b, "<gateway name=%q>\n", name)
 	fmt.Fprintf(&b, "  <param name=\"proxy\" value=%q/>\n", proxy)
 	fmt.Fprintf(&b, "  <param name=\"register\" value=\"%t\"/>\n", c.Register)
 	fmt.Fprintf(&b, "  <param name=\"username\" value=%q/>\n", user)
 	fmt.Fprintf(&b, "  <param name=\"password\" value=%q/>\n", pass)
 	// From host: the carrier's from_domain when set, else our own address
 	// (topology hiding: the carrier only ever sees the SBC), else the proxy.
-	fromDomain := c.GatewayHost
+	fromDomain := e.Host
 	if nodeIP != "" {
 		fromDomain = nodeIP
 	}
@@ -256,9 +286,9 @@ func GatewayXML(c model.Carrier, nodeIP string) string {
 		fromDomain = *c.FromDomain
 	}
 	fmt.Fprintf(&b, "  <param name=\"from-domain\" value=%q/>\n", fromDomain)
-	fmt.Fprintf(&b, "  <param name=\"realm\" value=%q/>\n", c.GatewayHost)
-	if c.Transport == "tcp" || c.Transport == "tls" {
-		fmt.Fprintf(&b, "  <param name=\"register-transport\" value=%q/>\n", c.Transport)
+	fmt.Fprintf(&b, "  <param name=\"realm\" value=%q/>\n", e.Host)
+	if e.Transport == "tcp" || e.Transport == "tls" {
+		fmt.Fprintf(&b, "  <param name=\"register-transport\" value=%q/>\n", e.Transport)
 	}
 	fmt.Fprintf(&b, "  <param name=\"caller-id-in-from\" value=\"true\"/>\n")
 	fmt.Fprintf(&b, "  <param name=\"extension-in-contact\" value=\"true\"/>\n")
@@ -270,6 +300,7 @@ func GatewayXML(c model.Carrier, nodeIP string) string {
 	}
 	fmt.Fprintf(&b, "  <variables>\n")
 	fmt.Fprintf(&b, "    <variable name=\"sbc_carrier_name\" value=%q direction=\"outbound\"/>\n", c.Name)
+	fmt.Fprintf(&b, "    <variable name=\"sbc_endpoint\" value=%q direction=\"outbound\"/>\n", net.JoinHostPort(e.Host, fmt.Sprint(e.Port)))
 	if len(c.AllowedCodecs) > 0 {
 		fmt.Fprintf(&b, "    <variable name=\"sbc_carrier_codecs\" value=%q direction=\"outbound\"/>\n", strings.Join(c.AllowedCodecs, ","))
 	}

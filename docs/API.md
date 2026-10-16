@@ -53,13 +53,16 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `GET` | `/carriers/status` | Gateway state of every carrier (dashboard health cards) |
 | `GET` | `/carriers/{id}/account/ledger` | Ledger entries of a carrier account |
 | `GET` | `/carriers/{id}/account` | Account of a carrier |
+| `GET` | `/carriers/{id}/endpoints` | Signalling endpoints of a carrier with their live state (D-75) |
 | `GET` | `/carriers/{id}/quality` | Quality scores of a carrier per route prefix (rolling window, D-73) |
 | `GET` | `/carriers/{id}/status` | Gateway ping state, circuit breaker and live channel count of a carrier |
 | `GET` | `/carriers/{id}` | Get a carrier with account, gateway state and breaker statistics |
 | `GET` | `/carriers` | List carriers with account and gateway state<br>Query: `search`, `status`, `page`, `per_page` |
 | `POST` | `/carriers/{id}/account/adjust` | Adjust a carrier balance (signed) |
 | `POST` | `/carriers/{id}/account/topup` | Record a payment to the carrier (ledger type topup) |
+| `POST` | `/carriers/{id}/endpoints/{endpointId}/revive` | Put a parked endpoint back into rotation at once |
 | `POST` | `/carriers` | Create a carrier (renders its FreeSWITCH gateway) |
+| `PUT` | `/carriers/{id}/endpoints` | Replace the endpoint list of a carrier (first one is the primary address) |
 | `PUT` | `/carriers/{id}` | Update a carrier (re-renders its gateway) |
 
 ## Cdrs

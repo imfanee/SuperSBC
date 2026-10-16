@@ -105,6 +105,10 @@ export interface Carrier {
   srtp_mode: "off" | "optional" | "mandatory";
   privacy_mode: "anonymize" | "pass" | "ignore";
   signalling_sources: string[];
+  endpoint_lb: "failover" | "round_robin" | "weighted";
+  endpoint_retry_seconds: number;
+  endpoint_fail_threshold: number;
+  endpoint_park_on_failure: boolean;
   notes: string;
   created_at: string;
 }
@@ -463,4 +467,21 @@ export interface InvoiceLedger {
     payment?: Payment;
     allocations: Allocation[];
   }[];
+}
+
+export interface CarrierEndpoint {
+  id: string;
+  carrier_id: string;
+  seq: number;
+  host: string;
+  port: number;
+  transport: string;
+  priority: number;
+  weight: number;
+  enabled: boolean;
+  notes: string;
+  gateway: string;
+  state: string;
+  parked: boolean;
+  parked_for_seconds?: number;
 }

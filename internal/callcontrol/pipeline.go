@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"net"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -57,7 +59,9 @@ type Pipeline struct {
 	stir   *stir.Verifier
 	// quality serves the per carrier and prefix scores for quality based routing (D-73); nil disables.
 	quality *quality.Tracker
-	now     func() time.Time
+	// epHealth parks carrier endpoints that stop replying (D-75).
+	epHealth *EndpointHealth
+	now      func() time.Time
 
 	breaker *Breaker
 	rndMu   sync.Mutex
@@ -79,6 +83,12 @@ func (p *Pipeline) SetBreaker(b *Breaker) { p.breaker = b }
 
 // Breaker exposes the circuit breaker (may be nil).
 func (p *Pipeline) Breaker() *Breaker { return p.breaker }
+
+// EndpointHealth returns the endpoint health tracker (D-75); nil when disabled.
+func (p *Pipeline) EndpointHealth() *EndpointHealth { return p.epHealth }
+
+// SetEndpointHealth installs the endpoint health tracker (D-75).
+func (p *Pipeline) SetEndpointHealth(h *EndpointHealth) { p.epHealth = h }
 
 // SetQuality installs the quality tracker (D-73).
 func (p *Pipeline) SetQuality(q *quality.Tracker) { p.quality = q }
@@ -347,12 +357,21 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 	if err != nil {
 		return nil, err
 	}
+	// Endpoints of every candidate carrier (D-75); a carrier without rows
+	// falls back to its gateway columns as a single endpoint.
+	allEndpoints, err := p.st.AllEndpoints(ctx)
+	if err != nil {
+		return nil, err
+	}
 	res := &RouteResult{Route: route, Modes: route.Modes()}
 	modes := route.Modes()
 	type cand struct {
 		choice CarrierChoice
 		rc     model.RouteCarrier
 		buy    *model.Rate
+		eps    []model.CarrierEndpoint // dial order of this carrier's endpoints (D-75)
+		only   bool                    // the carrier has exactly one endpoint: plain gateway name
+		extra  []string                // per carrier dial string variables
 	}
 	var cands []cand
 	for _, rc := range route.Carriers {
@@ -361,7 +380,14 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: rc.CarrierID, Name: c.Name, Reason: "disabled"})
 			continue
 		}
-		if p.health.GatewayDown(c.GatewayName()) {
+		eps := allEndpoints[c.ID]
+		if len(eps) == 0 {
+			eps = []model.CarrierEndpoint{{Seq: 1, Host: c.GatewayHost, Port: c.GatewayPort, Transport: c.Transport, Priority: 1, Weight: 100, Enabled: true}}
+		}
+		p.rndMu.Lock()
+		usable := UsableEndpoints(c, eps, p.health.GatewayDown, p.epHealth.Dead(ctx, eps), p.cfg.Routing.MaxEndpointsPerCarrier, p.rnd)
+		p.rndMu.Unlock()
+		if len(usable) == 0 {
 			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "gateway_down"})
 			continue
 		}
@@ -435,8 +461,7 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 		if modes.Percent {
 			ch.Share = rc.Weight
 		}
-		ch.DialString = p.dialString(ch, callUUID, extra)
-		cands = append(cands, cand{choice: ch, rc: rc, buy: buy})
+		cands = append(cands, cand{choice: ch, rc: rc, buy: buy, eps: usable, only: len(eps) == 1, extra: extra})
 	}
 	// Order by the group's routing modes (D-73): priority and weighted
 	// random by default, LCR by buy rate, quality tier first, or percent
@@ -453,9 +478,23 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 	p.rndMu.Lock()
 	order := orderCandidates(ord, modes, p.rnd)
 	p.rndMu.Unlock()
-	for seq, i := range order {
-		cands[i].choice.Seq = seq + 1
-		res.Carriers = append(res.Carriers, cands[i].choice)
+	// Expand every carrier into its endpoints, keeping them together: the
+	// bridge loop in Lua then fails over inside a carrier before moving to
+	// the next one (D-75).
+	seq := 0
+	for _, i := range order {
+		cd := cands[i]
+		for _, e := range cd.eps {
+			ch := cd.choice
+			seq++
+			ch.Seq = seq
+			ch.Gateway = e.GatewayName(cd.choice.Name, cd.only)
+			id := e.ID
+			ch.EndpointID = &id
+			ch.Endpoint = net.JoinHostPort(e.Host, strconv.Itoa(e.Port))
+			ch.DialString = p.dialString(ch, callUUID, cd.extra)
+			res.Carriers = append(res.Carriers, ch)
+		}
 	}
 	return res, nil
 }
@@ -881,7 +920,7 @@ func (p *Pipeline) RecordAttempt(ctx context.Context, req AttemptRequest) (*Atte
 	}
 	rec := model.AttemptRecord{Seq: req.Seq, CarrierID: req.CarrierID, CarrierName: carrierName, Gateway: gateway, SIPCode: req.SIPCode,
 		Reason: req.Reason, HangupCause: req.HangupCause, StartedAt: started, EndedAt: req.EndedAt, PDDMs: req.PDDMs, Classification: string(class),
-		BuyRateID: req.BuyRateID, BuyRatePerMin: req.BuyRatePerMin}
+		BuyRateID: req.BuyRateID, BuyRatePerMin: req.BuyRatePerMin, Endpoint: req.Endpoint}
 	if err := p.st.AppendAttempt(ctx, callUUID, rec); err != nil {
 		return nil, err
 	}
@@ -889,6 +928,16 @@ func (p *Pipeline) RecordAttempt(ctx context.Context, req AttemptRequest) (*Atte
 	// attempts; answered calls release it when billed.
 	if !req.Answered {
 		p.adm.Leave(ctx, "carrier", req.CarrierID)
+	}
+	// Endpoint health (D-75): with call based parking enabled, attempts that
+	// never reached the far end count against the address and enough of them
+	// in a row park it for the carrier's retry period.
+	if p.epHealth != nil && req.EndpointID != nil {
+		if record, usable := EndpointOutcome(class, req.Answered); record {
+			if c, err := p.st.CarrierByID(ctx, req.CarrierID); err == nil && c.EndpointParkOnFailure && !c.SIPOptionsPing {
+				p.epHealth.RecordAttempt(ctx, *req.EndpointID, usable, c.EndpointFailThreshold, c.EndpointRetrySeconds)
+			}
+		}
 	}
 	degraded := false
 	if p.quality != nil {

@@ -3,6 +3,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -77,14 +78,52 @@ type Carrier struct {
 	PrivacyMode          string     `json:"privacy_mode" db:"privacy_mode"`
 	// SignallingSources are extra source addresses (IP or CIDR) of the carrier
 	// allow-listed in the host firewall besides the gateway host (D-69).
-	SignallingSources []string  `json:"signalling_sources" db:"signalling_sources"`
-	Notes             string    `json:"notes" db:"notes"`
-	CreatedAt         time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`
+	SignallingSources []string `json:"signalling_sources" db:"signalling_sources"`
+	// Endpoint policy (D-75): how calls are spread over the carrier's endpoints,
+	// how long a dead endpoint waits before it is tried again, and how many
+	// unanswered attempts in a row mark one dead when OPTIONS ping is off.
+	EndpointLB            string `json:"endpoint_lb" db:"endpoint_lb"`
+	EndpointRetrySeconds  int    `json:"endpoint_retry_seconds" db:"endpoint_retry_seconds"`
+	EndpointFailThreshold int    `json:"endpoint_fail_threshold" db:"endpoint_fail_threshold"`
+	EndpointParkOnFailure bool   `json:"endpoint_park_on_failure" db:"endpoint_park_on_failure"`
+	// Endpoints is filled by the stores that need it (renderer, routing).
+	Endpoints []CarrierEndpoint `json:"endpoints,omitempty" db:"-"`
+	Notes     string            `json:"notes" db:"notes"`
+	CreatedAt time.Time         `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time         `json:"updated_at" db:"updated_at"`
 }
 
 // GatewayName is the FreeSWITCH gateway name for the carrier.
 func (c Carrier) GatewayName() string { return c.Name }
+
+// CarrierEndpoint is one signalling address of a carrier (D-75). Each one is
+// rendered as its own FreeSWITCH gateway named "<carrier>#<seq>", so OPTIONS
+// pings, dial attempts and health are tracked per endpoint.
+type CarrierEndpoint struct {
+	ID        uuid.UUID `json:"id" db:"id"`
+	CarrierID uuid.UUID `json:"carrier_id" db:"carrier_id"`
+	Seq       int       `json:"seq" db:"seq"`
+	Host      string    `json:"host" db:"host"`
+	Port      int       `json:"port" db:"port"`
+	Transport string    `json:"transport" db:"transport"`
+	Priority  int       `json:"priority" db:"priority"`
+	Weight    int       `json:"weight" db:"weight"`
+	Enabled   bool      `json:"enabled" db:"enabled"`
+	Notes     string    `json:"notes" db:"notes"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// GatewayName is the FreeSWITCH gateway of this endpoint. A carrier with one
+// endpoint keeps the plain carrier name so existing deployments do not churn;
+// with several, each gets a "-ep<seq>" suffix (mod_sofia refuses some
+// punctuation in gateway names, so the suffix stays alphanumeric).
+func (e CarrierEndpoint) GatewayName(carrier string, only bool) string {
+	if only {
+		return carrier
+	}
+	return fmt.Sprintf("%s-ep%d", carrier, e.Seq)
+}
 
 // RateGroup is a rate deck (selling or buying).
 type RateGroup struct {
@@ -227,6 +266,8 @@ type AttemptRecord struct {
 	// Cost is the connect fee charged for a failed attempt when the carrier
 	// has charge_failed_attempts (D-62); unset otherwise.
 	Cost *string `json:"cost,omitempty" db:"cost"`
+	// Endpoint is the carrier address this attempt dialled (D-75).
+	Endpoint string `json:"endpoint,omitempty" db:"endpoint"`
 }
 
 // CDR is one call detail record; every attempted call has exactly one.

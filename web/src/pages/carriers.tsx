@@ -24,6 +24,7 @@ import { ErrorBox, KV, PageHeader } from "@/components/page";
 import { RateGroupSelect } from "@/components/selects";
 import { AccountTab } from "@/pages/customers";
 import { CDRTable } from "@/pages/cdrs";
+import { EndpointsTab } from "@/components/endpoints";
 import { HeaderRulesTab } from "@/components/header-rules";
 import { InvoicesTab } from "@/components/invoices";
 import { useAuth } from "@/hooks/use-auth";
@@ -61,6 +62,10 @@ const schema = z.object({
   dtmf_mode: z.enum(["rfc2833", "info", "inband"]),
   srtp_mode: z.enum(["off", "optional", "mandatory"]),
   privacy_mode: z.enum(["anonymize", "pass", "ignore"]),
+  endpoint_lb: z.enum(["failover", "round_robin", "weighted"]),
+  endpoint_retry_seconds: z.number().int().min(10).max(86400),
+  endpoint_fail_threshold: z.number().int().min(1).max(20),
+  endpoint_park_on_failure: z.boolean(),
 });
 type FormT = z.infer<typeof schema>;
 
@@ -93,6 +98,10 @@ function toForm(c?: Carrier | null): FormT {
     dtmf_mode: c?.dtmf_mode ?? "rfc2833",
     srtp_mode: c?.srtp_mode ?? "off",
     privacy_mode: c?.privacy_mode ?? "anonymize",
+    endpoint_lb: c?.endpoint_lb ?? "failover",
+    endpoint_retry_seconds: c?.endpoint_retry_seconds ?? 300,
+    endpoint_fail_threshold: c?.endpoint_fail_threshold ?? 2,
+    endpoint_park_on_failure: c?.endpoint_park_on_failure ?? false,
   };
 }
 
@@ -257,6 +266,12 @@ export function CarrierForm({
             ["anonymize", "pass", "ignore"],
             "anonymize: From anonymous + Privacy: id; pass: real identity + PAI + Privacy: id",
           ],
+          [
+            "endpoint_lb",
+            "Endpoint balancing",
+            ["failover", "round_robin", "weighted"],
+            "how calls are spread over the carrier's addresses (Endpoints tab)",
+          ],
         ] as const
       ).map(([key, label, opts, hint]) => (
         <Field key={key} label={label} hint={hint}>
@@ -274,6 +289,30 @@ export function CarrierForm({
           </Select>
         </Field>
       ))}
+      <div className="flex items-center gap-2 sm:col-span-2">
+        <Switch
+          checked={watch("endpoint_park_on_failure")}
+          onCheckedChange={(v) => setValue("endpoint_park_on_failure", v)}
+          id="park"
+        />
+        <label htmlFor="park" className="text-sm">
+          Park an endpoint that fails calls (only when OPTIONS ping is off)
+          <span className="block text-xs text-muted-foreground">
+            Calls that never reach the far end count against the address. A carrier that answers "503 Service
+            Unavailable" looks the same to FreeSWITCH as an address that answers nothing, so leave this off
+            for carriers that reject calls with 503 under load.
+          </span>
+        </label>
+      </div>
+      <Field
+        label="Park a dead endpoint for (seconds)"
+        hint="without OPTIONS ping: how long an address that stopped answering calls stays out of rotation"
+      >
+        <Input type="number" {...register("endpoint_retry_seconds", { valueAsNumber: true })} />
+      </Field>
+      <Field label="Unanswered attempts before parking">
+        <Input type="number" {...register("endpoint_fail_threshold", { valueAsNumber: true })} />
+      </Field>
       <div className="flex items-center gap-2 pt-5">
         <Switch
           checked={watch("sip_options_ping")}
@@ -486,6 +525,7 @@ export function CarrierDetailPage() {
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="invoices">Invoices and payments</TabsTrigger>
           <TabsTrigger value="gateway">Gateway</TabsTrigger>
+          <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="headers">Header rules</TabsTrigger>
           <TabsTrigger value="cdrs">Recent CDRs</TabsTrigger>
@@ -567,6 +607,9 @@ export function CarrierDetailPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="endpoints">
+          <EndpointsTab carrierId={id} lbMode={c.endpoint_lb} />
         </TabsContent>
         <TabsContent value="headers">
           <HeaderRulesTab ownerType="carrier" ownerId={id} />
