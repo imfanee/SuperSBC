@@ -73,3 +73,37 @@ func TestRoadmap_AreaCodes(t *testing.T) {
 		t.Fatalf("import did not take effect: %v", look["match"])
 	}
 }
+
+// Rejection detail (D-77): every rejected call records where setup stopped and
+// what an operator has to change, not only what the caller was told.
+func TestRoadmap_RejectDetail(t *testing.T) {
+	since := time.Now()
+	// a destination whose route has no usable carrier
+	sc := scenario(t, "uac_expect_fail.xml.tmpl", map[string]string{"__CODE__": "503"})
+	expectFinal(t, placeCall(t, "customer-acme", sc, "33123456789", 1), "503 No route")
+	cdr := lastCDR(t, "172.28.0.101", "33123456789", since)
+	expectField(t, cdr, "reject_step", "route")
+	detail := str(cdr["reject_detail"])
+	if detail == "" || !strings.Contains(detail, "33") {
+		t.Errorf("no route detail should name the route: %q", detail)
+	}
+
+	// a destination with no selling rate
+	sc404 := scenario(t, "uac_expect_fail.xml.tmpl", map[string]string{"__CODE__": "404"})
+	expectFinal(t, placeCall(t, "customer-acme", sc404, "99123456789", 1), "404 No rate for destination")
+	cdr = lastCDR(t, "172.28.0.101", "99123456789", since)
+	expectField(t, cdr, "reject_step", "rate")
+	if d := str(cdr["reject_detail"]); !strings.Contains(d, "99123456789") {
+		t.Errorf("rate detail should name the number: %q", d)
+	}
+
+	// a number that cannot be normalised
+	sc484 := scenario(t, "uac_expect_fail.xml.tmpl", map[string]string{"__CODE__": "484"})
+	expectFinal(t, placeCall(t, "customer-acme", sc484, "12", 1), "484 Address Incomplete")
+	cdr = lastCDR(t, "172.28.0.101", "12", since)
+	expectField(t, cdr, "reject_step", "normalize")
+	if d := str(cdr["reject_detail"]); d == "" {
+		t.Error("normalise rejection should explain itself")
+	}
+	reconcileOK(t)
+}

@@ -93,6 +93,9 @@ type SkippedCarrier struct {
 	CarrierID uuid.UUID `json:"carrier_id"`
 	Name      string    `json:"name"`
 	Reason    string    `json:"reason"`
+	// Detail explains the skip in operator terms, for example the two rates
+	// behind a lossless skip (D-77). Empty when the reason says it all.
+	Detail string `json:"detail,omitempty"`
 }
 
 // SetupResponse is the full decision.

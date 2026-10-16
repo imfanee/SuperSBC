@@ -377,7 +377,12 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 	for _, rc := range route.Carriers {
 		c, ok := carriers[rc.CarrierID]
 		if !ok || c.Status != "active" {
-			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: rc.CarrierID, Name: c.Name, Reason: "disabled"})
+			name := c.Name
+			if !ok {
+				name = rc.CarrierID.String()
+			}
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: rc.CarrierID, Name: name, Reason: "disabled",
+				Detail: "the carrier is not active"})
 			continue
 		}
 		eps := allEndpoints[c.ID]
@@ -388,18 +393,21 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 		usable := UsableEndpoints(c, eps, p.health.GatewayDown, p.epHealth.Dead(ctx, eps), p.cfg.Routing.MaxEndpointsPerCarrier, p.rnd)
 		p.rndMu.Unlock()
 		if len(usable) == 0 {
-			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "gateway_down"})
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "gateway_down",
+				Detail: fmt.Sprintf("all %d endpoints are down or parked", len(eps))})
 			continue
 		}
 		// Time-of-day routing window of this route carrier (D-61).
 		if win, err := timewindow.Parse(rc.Window); err != nil || !win.Contains(p.now()) {
-			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "outside_window"})
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "outside_window",
+				Detail: "outside the routing window " + rc.Window})
 			continue
 		}
 		// Carrier capacity (Section 7): skip a carrier already at its channel limit.
 		if c.MaxConcurrentCalls > 0 {
 			if n, err := p.adm.Concurrent(ctx, "carrier", c.ID); err == nil && n >= int64(c.MaxConcurrentCalls) {
-				res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "carrier_capacity"})
+				res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "carrier_capacity",
+					Detail: fmt.Sprintf("%d calls in progress, limit %d", n, c.MaxConcurrentCalls)})
 				continue
 			}
 		}
@@ -414,17 +422,23 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 			}
 		}
 		if buy == nil {
-			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "skipped_no_rate"})
+			detail := "the carrier has no rate group"
+			if c.RateGroupID != nil {
+				detail = "no rate matches " + called + " in the carrier rate deck"
+			}
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "skipped_no_rate", Detail: detail})
 			continue
 		}
 		negative := sell != nil && buy.RatePerMin.GreaterThan(sell.RatePerMin)
 		if negative && p.cfg.Routing.BlockNegativeMargin {
-			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "negative_margin_blocked"})
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "negative_margin_blocked",
+				Detail: marginDetail(buy, sell)})
 			continue
 		}
 		// Lossless routing (D-73): the group refuses carriers that would lose money on this call.
 		if negative && modes.Lossless {
-			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "lossless_skipped"})
+			res.Skipped = append(res.Skipped, SkippedCarrier{CarrierID: c.ID, Name: c.Name, Reason: "lossless_skipped",
+				Detail: marginDetail(buy, sell)})
 			continue
 		}
 		dial := buildDialNumber(called, c)
@@ -601,7 +615,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		cdr.SIPCallID = &cid
 	}
 
-	reject := func(step string, r Reject, disposition string) *SetupResponse {
+	reject := func(step string, r Reject, disposition, detail string) *SetupResponse {
 		resp.Reject = &r
 		resp.RejectStep = step
 		resp.Vars["sbc_reject_reason"] = r.Reason
@@ -612,6 +626,11 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		cdr.EndTime = &end
 		cdr.Disposition = disposition
 		cdr.RejectReason = &reason
+		cdr.RejectStep = &step
+		if detail != "" {
+			cdr.RejectDetail = &detail
+			resp.Vars["sbc_reject_detail"] = detail
+		}
 		cdr.SIPFinalCode = &code
 		cdr.SIPFinalReason = &reason
 		cdr.BilledAt = &end
@@ -621,7 +640,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		}
 		metrics.Setups.WithLabelValues(resp.CustomerName, "reject_"+step).Inc()
 		metrics.Rejections.WithLabelValues(step, fmt.Sprint(r.Code)).Inc()
-		log.Info("call rejected", "step", step, "code", r.Code, "reason", r.Reason, "src_ip", req.SrcIP, "called", req.Called)
+		log.Info("call rejected", "step", step, "code", r.Code, "reason", r.Reason, "detail", detail, "src_ip", req.SrcIP, "called", req.Called)
 		return resp
 	}
 
@@ -643,7 +662,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		if auth.Reject.Reason == "IP not authorized" {
 			p.countScanner(ctx, req.SrcIP)
 		}
-		return reject("authorize", *auth.Reject, model.DispositionRejectedAuth), nil
+		return reject("authorize", *auth.Reject, model.DispositionRejectedAuth,
+			fmt.Sprintf("no active customer has %s:%d over %s in its allowed IPs", req.SrcIP, req.SrcPort, transportOf(req.Transport))), nil
 	}
 	cust := auth.Customer
 	transport := strings.ToLower(req.Transport)
@@ -654,17 +674,19 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	cdr.SRTPIn = req.SRTPOffered
 	cdr.Privacy = req.Privacy
 	// From here on a concurrency slot is held; release it on every rejection.
-	rejectAdmitted := func(step string, r Reject, disposition string) *SetupResponse {
+	rejectAdmitted := func(step string, r Reject, disposition, detail string) *SetupResponse {
 		p.LeaveAdmission(ctx, cust.ID)
-		return reject(step, r, disposition)
+		return reject(step, r, disposition, detail)
 	}
 
 	// Customer transport and media policies (Section 7 [M5]).
 	if cust.RequireTLS && transport != "tls" {
-		return rejectAdmitted("policy", Reject{403, "TLS required"}, model.DispositionRejectedAuth), nil
+		return rejectAdmitted("policy", Reject{403, "TLS required"}, model.DispositionRejectedAuth,
+			"the customer requires TLS and the call arrived over "+transport), nil
 	}
 	if cust.SRTPMode == "mandatory" && !req.SRTPOffered {
-		return rejectAdmitted("policy", Reject{488, "SRTP required"}, model.DispositionRejectedAuth), nil
+		return rejectAdmitted("policy", Reject{488, "SRTP required"}, model.DispositionRejectedAuth,
+			"the customer requires SRTP and the offer carried none"), nil
 	}
 	resp.Vars["rtp_secure_media"] = srtpVar(cust.SRTPMode)
 	dtmfV, dtmfApps := ALegDTMF(cust.DTMFMode)
@@ -680,7 +702,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	opts := normOptions(cust)
 	called, err := numbering.Normalize(req.Called, opts)
 	if err != nil {
-		return rejectAdmitted("normalize", Reject{484, "Address Incomplete"}, model.DispositionRejectedRoute), nil
+		return rejectAdmitted("normalize", Reject{484, "Address Incomplete"}, model.DispositionRejectedRoute,
+			fmt.Sprintf("cannot normalise %q: %v (country code %q, international prefix %q)", req.Called, err, opts.DefaultCountryCode, opts.IntlPrefix)), nil
 	}
 	caller := numbering.NormalizeCaller(req.Caller, opts)
 	if cust.TrustPAI && req.PAINumber != "" {
@@ -718,7 +741,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		metrics.STIR.WithLabelValues(res.Status).Inc()
 		if cust.STIRMode == "require" && res.Status != stir.StatusVerified {
 			code, reason := res.RejectCode()
-			return rejectAdmitted("stir", Reject{code, reason}, model.DispositionRejectedAuth), nil
+			return rejectAdmitted("stir", Reject{code, reason}, model.DispositionRejectedAuth,
+				fmt.Sprintf("the customer requires STIR and verification returned %s", res.Status)), nil
 		}
 		forwardIdentity = res.Status == stir.StatusVerified && p.cfg.STIR.Forward
 	}
@@ -727,7 +751,12 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	if cust.BlockedPrefixesEnabled {
 		if blk, err := p.tables.Blocked(ctx, cust.ID, called); err == nil && blk != nil {
 			log.Info("destination blocked", "prefix", blk.Prefix, "reason", blk.Reason, "global", blk.CustomerID == nil)
-			return rejectAdmitted("blocklist", Reject{403, "Destination blocked"}, model.DispositionRejectedRoute), nil
+			scope := "this customer"
+			if blk.CustomerID == nil {
+				scope = "every customer"
+			}
+			return rejectAdmitted("blocklist", Reject{403, "Destination blocked"}, model.DispositionRejectedRoute,
+				fmt.Sprintf("prefix %s is blocked for %s: %s", blk.Prefix, scope, blk.Reason)), nil
 		}
 	}
 
@@ -737,7 +766,11 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		return nil, err
 	}
 	if sell == nil {
-		return rejectAdmitted("rate", Reject{404, "No rate for destination"}, model.DispositionRejectedRoute), nil
+		detail := "no rate matches " + called + " in the customer rate deck"
+		if cust.RateGroupID == nil {
+			detail = "the customer has no rate group"
+		}
+		return rejectAdmitted("rate", Reject{404, "No rate for destination"}, model.DispositionRejectedRoute, detail), nil
 	}
 	// Multi-currency (D-45): rate in the customer's account currency.
 	acctCurrency := p.cfg.Billing.Currency
@@ -747,7 +780,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	sellConv, sellFX, fxOK := p.ConvertRate(ctx, sell, acctCurrency)
 	if !fxOK {
 		log.Error("no exchange rate for sell deck", "rate_group_id", sell.RateGroupID, "account_currency", acctCurrency)
-		return rejectAdmitted("rate", Reject{404, "No rate for destination"}, model.DispositionRejectedRoute), nil
+		return rejectAdmitted("rate", Reject{404, "No rate for destination"}, model.DispositionRejectedRoute,
+			"no exchange rate from the sell deck currency to the account currency "+acctCurrency), nil
 	}
 	sell = sellConv
 	cdr.SellCurrency = &acctCurrency
@@ -773,7 +807,13 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 				resp.Available = rr.Available
 			}
 			metrics.ReservationFailures.WithLabelValues(cust.Name).Inc()
-			return rejectAdmitted("balance", Reject{402, "Not enough funds"}, model.DispositionRejectedBalance), nil
+			detail := "the account has no funds for the reservation"
+			if rr != nil {
+				detail = fmt.Sprintf("available %s %s is below the %s needed to reserve %d minutes at %s per minute",
+					rr.Available.StringFixed(6), acctCurrency, rr.ReservedAmount.StringFixed(6),
+					p.cfg.Billing.ReserveMinutes, sell.RatePerMin.StringFixed(6))
+			}
+			return rejectAdmitted("balance", Reject{402, "Not enough funds"}, model.DispositionRejectedBalance, detail), nil
 		}
 		return nil, err
 	}
@@ -784,8 +824,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	resp.Vars["sbc_max_call_seconds"] = fmt.Sprint(rr.MaxCallSeconds)
 
 	// A rejection after the reservation must release it.
-	rejectReserved := func(step string, r Reject, disposition string) *SetupResponse {
-		if err := p.ReleaseReservation(ctx, callUUID, r.Code, r.Reason, disposition); err != nil {
+	rejectReserved := func(step string, r Reject, disposition, detail string) *SetupResponse {
+		if err := p.ReleaseReservation(ctx, callUUID, r.Code, r.Reason, disposition, step, detail); err != nil {
 			log.Error("release reservation after reject", "error", err)
 		}
 		p.LeaveAdmission(ctx, cust.ID)
@@ -793,9 +833,12 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		resp.RejectStep = step
 		resp.Vars["sbc_reject_reason"] = r.Reason
 		resp.Vars["sbc_reject_step"] = step
+		if detail != "" {
+			resp.Vars["sbc_reject_detail"] = detail
+		}
 		metrics.Setups.WithLabelValues(cust.Name, "reject_"+step).Inc()
 		metrics.Rejections.WithLabelValues(step, fmt.Sprint(r.Code)).Inc()
-		log.Info("call rejected", "step", step, "code", r.Code, "reason", r.Reason, "called", called)
+		log.Info("call rejected", "step", step, "code", r.Code, "reason", r.Reason, "detail", detail, "called", called)
 		return resp
 	}
 
@@ -813,7 +856,8 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 		}
 	}
 	if route.Route == nil || len(route.Carriers) == 0 {
-		return rejectReserved("route", Reject{503, "No route"}, model.DispositionRejectedRoute), nil
+		return rejectReserved("route", Reject{503, "No route"}, model.DispositionRejectedRoute,
+			noRouteDetail(cust, called, route)), nil
 	}
 	rid := route.Route.ID
 	resp.RouteID = &rid
@@ -861,7 +905,7 @@ func (p *Pipeline) countScanner(ctx context.Context, ip string) {
 
 // ReleaseReservation gives the money back for a call that will not be
 // dialled or that ended without a billable event, and finalises the CDR.
-func (p *Pipeline) ReleaseReservation(ctx context.Context, callUUID uuid.UUID, sipCode int, reason, disposition string) error {
+func (p *Pipeline) ReleaseReservation(ctx context.Context, callUUID uuid.UUID, sipCode int, reason, disposition, step, detail string) error {
 	now := p.now()
 	node := p.cfg.NodeName
 	err := p.st.WithTx(ctx, func(tx pgx.Tx) error {
@@ -892,6 +936,12 @@ func (p *Pipeline) ReleaseReservation(ctx context.Context, callUUID uuid.UUID, s
 		cdr.Duration = int(now.Sub(cdr.StartTime).Seconds())
 		cdr.Disposition = disposition
 		cdr.RejectReason = &reason
+		if step != "" {
+			cdr.RejectStep = &step
+		}
+		if detail != "" {
+			cdr.RejectDetail = &detail
+		}
 		cdr.SIPFinalCode = &sipCode
 		cdr.SIPFinalReason = &reason
 		cdr.BilledAt = &now
@@ -990,4 +1040,47 @@ func (p *Pipeline) RecordAttempt(ctx context.Context, req AttemptRequest) (*Atte
 	logging.FromContext(ctx, p.log).Info("attempt", "seq", req.Seq, "carrier", carrierName, "sip_code", req.SIPCode,
 		"cause", req.HangupCause, "classification", class, "continue", resp.Continue, "pdd_ms", req.PDDMs, "carrier_degraded", degraded)
 	return resp, nil
+}
+
+// marginDetail states the two rates behind a margin skip, which is what an
+// operator has to change to let the call through (D-77).
+func marginDetail(buy, sell *model.Rate) string {
+	if buy == nil || sell == nil {
+		return ""
+	}
+	return fmt.Sprintf("buy %s on %s is above sell %s on %s", buy.RatePerMin.StringFixed(6), buy.Prefix,
+		sell.RatePerMin.StringFixed(6), sell.Prefix)
+}
+
+// noRouteDetail says why a call found no carrier: either no route prefix
+// matched, or every carrier on the matching route was skipped and for what
+// reason, so an operator can see what to change (D-77).
+func noRouteDetail(cust *model.Customer, called string, route *RouteResult) string {
+	if route == nil || route.Route == nil {
+		if cust.RouteGroupID == nil {
+			return "the customer has no route group"
+		}
+		return "no route prefix matches " + called + " in the customer route group"
+	}
+	r := route.Route
+	if len(route.Skipped) == 0 {
+		return fmt.Sprintf("route %s (%s) has no carrier attached", r.Prefix, r.Destination)
+	}
+	parts := make([]string, 0, len(route.Skipped))
+	for _, s := range route.Skipped {
+		if s.Detail != "" {
+			parts = append(parts, fmt.Sprintf("%s %s: %s", s.Name, s.Reason, s.Detail))
+			continue
+		}
+		parts = append(parts, s.Name+" "+s.Reason)
+	}
+	return fmt.Sprintf("every carrier on route %s (%s) was skipped: %s", r.Prefix, r.Destination, strings.Join(parts, "; "))
+}
+
+// transportOf normalises the transport of a request for a rejection detail.
+func transportOf(t string) string {
+	if t == "" {
+		return "udp"
+	}
+	return strings.ToLower(t)
 }

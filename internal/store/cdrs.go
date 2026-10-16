@@ -14,7 +14,7 @@ import (
 
 const cdrCols = `call_uuid, customer_id, carrier_id, src_ip::text AS src_ip, src_port, caller_number_raw, caller_number, called_number_raw, called_number,
 	start_time, progress_time, answer_time, end_time, pdd_ms, ring_seconds, billsec, duration, sip_final_code, sip_final_reason, hangup_cause,
-	disposition::text AS disposition, reject_reason, sell_rate_id, sell_rate_per_min, sell_billed_seconds, sell_price, sell_destination, sell_currency, buy_currency, sell_fx, buy_fx,
+	disposition::text AS disposition, reject_reason, reject_step, reject_detail, sell_rate_id, sell_rate_per_min, sell_billed_seconds, sell_price, sell_destination, sell_currency, buy_currency, sell_fx, buy_fx,
 	buy_rate_id, buy_rate_per_min, buy_billed_seconds, cost, margin, negative_margin, reserved_amount, charged_amount, released_amount,
 	attempts, failover_depth, codec_in, codec_out, media_mode, COALESCE(rtp_stats, 'null'::jsonb) AS rtp_stats, transport_in, transport_out, srtp_in, srtp_out, privacy, stir_status, stir_attest, sip_call_id, area_prefix, area_description, operator_name, sbc_node, billed_at, billed_by, created_at, updated_at`
 
@@ -28,13 +28,14 @@ func InsertCDRSetup(ctx context.Context, q Querier, c *model.CDR) error {
 	_, err := q.Exec(ctx, `
 		INSERT INTO cdrs (call_uuid, customer_id, carrier_id, src_ip, src_port, caller_number_raw, caller_number, called_number_raw, called_number,
 		  start_time, end_time, disposition, reject_reason, sip_final_code, sip_final_reason, hangup_cause,
-		  sell_rate_id, sell_rate_per_min, sell_destination, reserved_amount, attempts, sbc_node, billed_at, billed_by, sell_currency, sell_fx, transport_in, srtp_in, privacy, stir_status, stir_attest, sip_call_id, area_prefix, area_description, operator_name)
-		VALUES ($1, $2, $3, NULLIF($4, '')::inet, $5, $6, $7, $8, $9, $10, $11, $12::disposition_kind, $13, $14, $15, $16, $17, $18::numeric, $19, $20::numeric, $21::jsonb, $22, $23, $24, $25, COALESCE(NULLIF($26, '')::numeric, 1), $27, $28, $29, $30, $31, $32, $33, $34, $35)
+		  sell_rate_id, sell_rate_per_min, sell_destination, reserved_amount, attempts, sbc_node, billed_at, billed_by, sell_currency, sell_fx, transport_in, srtp_in, privacy, stir_status, stir_attest, sip_call_id, area_prefix, area_description, operator_name, reject_step, reject_detail)
+		VALUES ($1, $2, $3, NULLIF($4, '')::inet, $5, $6, $7, $8, $9, $10, $11, $12::disposition_kind, $13, $14, $15, $16, $17, $18::numeric, $19, $20::numeric, $21::jsonb, $22, $23, $24, $25, COALESCE(NULLIF($26, '')::numeric, 1), $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37)
 		ON CONFLICT (call_uuid) DO NOTHING`,
 		c.CallUUID, c.CustomerID, c.CarrierID, deref(c.SrcIP), c.SrcPort, c.CallerNumberRaw, c.CallerNumber, c.CalledNumberRaw, c.CalledNumber,
 		c.StartTime, c.EndTime, c.Disposition, c.RejectReason, c.SIPFinalCode, c.SIPFinalReason, c.HangupCause,
 		c.SellRateID, c.SellRatePerMin, c.SellDestination, c.ReservedAmount, string(attempts), c.SBCNode, c.BilledAt, c.BilledBy, c.SellCurrency, fxString(c.SellFX),
-		c.TransportIn, c.SRTPIn, c.Privacy, c.STIRStatus, c.STIRAttest, c.SIPCallID, c.AreaPrefix, c.AreaDescription, c.OperatorName)
+		c.TransportIn, c.SRTPIn, c.Privacy, c.STIRStatus, c.STIRAttest, c.SIPCallID, c.AreaPrefix, c.AreaDescription, c.OperatorName,
+		c.RejectStep, c.RejectDetail)
 	return wrapErr(err)
 }
 
@@ -95,6 +96,7 @@ func FinalizeCDR(ctx context.Context, tx pgx.Tx, c *model.CDR) error {
 		UPDATE cdrs SET
 		  carrier_id = $2, progress_time = $3, answer_time = $4, end_time = $5, pdd_ms = $6, ring_seconds = $7, billsec = $8, duration = $9,
 		  sip_final_code = $10, sip_final_reason = $11, hangup_cause = $12, disposition = $13::disposition_kind, reject_reason = COALESCE($14, reject_reason),
+		  reject_step = COALESCE($39, reject_step), reject_detail = COALESCE($40, reject_detail),
 		  sell_billed_seconds = $15, sell_price = $16::numeric, buy_rate_id = $17, buy_rate_per_min = $18::numeric, buy_billed_seconds = $19, cost = $20::numeric,
 		  negative_margin = $21, charged_amount = $22::numeric, released_amount = $23::numeric, attempts = $24::jsonb,
 		  failover_depth = GREATEST(jsonb_array_length($24::jsonb) - 1, 0),
@@ -107,7 +109,7 @@ func FinalizeCDR(ctx context.Context, tx pgx.Tx, c *model.CDR) error {
 		c.SellBilledSeconds, c.SellPrice, c.BuyRateID, c.BuyRatePerMin, c.BuyBilledSeconds, c.Cost,
 		c.NegativeMargin, c.ChargedAmount, c.ReleasedAmount, string(attempts),
 		c.CodecIn, c.CodecOut, c.MediaMode, rtp, c.SBCNode, c.BilledAt, c.BilledBy, c.BuyCurrency, fxString(c.BuyFX),
-		c.TransportIn, c.TransportOut, c.SRTPIn, c.SRTPOut, c.Privacy)
+		c.TransportIn, c.TransportOut, c.SRTPIn, c.SRTPOut, c.Privacy, c.RejectStep, c.RejectDetail)
 	return wrapErr(err)
 }
 

@@ -238,7 +238,7 @@ func (h *Handler) release(w http.ResponseWriter, r *http.Request) {
 	if reason == "" {
 		reason = "released"
 	}
-	if err := h.pipe.ReleaseReservation(r.Context(), id, code, reason, model.DispositionFailed); err != nil && !errors.Is(err, store.ErrNotFound) {
+	if err := h.pipe.ReleaseReservation(r.Context(), id, code, reason, model.DispositionFailed, "", ""); err != nil && !errors.Is(err, store.ErrNotFound) {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	}

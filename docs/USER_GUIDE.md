@@ -171,7 +171,11 @@ Dispositions: `answered`, `no_answer`, `busy`, `failed` (carrier or network faul
 
 **SIP trace** on a CDR (next to the UUID) opens a new tab with every SIP message of the call from the capture store: customer and carrier legs in time order, source and destination, method or status code, and the full headers and body of any message you expand; filter by leg, expand all, download as text or **export as pcap** (customer leg, carrier leg or the complete call) for Wireshark or sngrep, with the exact SIP bytes, addresses, ports and timestamps as captured. Capture is always on for the live stack and messages are kept for the retention period (30 days by default). **trace** next to it shows the SBC's own decision log for the call (API steps, Lua, FreeSWITCH lines).
 
-### 6.3 Area codes
+### 6.3 Why a call was rejected
+
+Every rejected call carries a **Why rejected** column in the CDR list and a "Why" line in the call detail. It names the step that stopped the call and what to change, for example "every carrier on route 24389 (DRC ORANGE) was skipped: drc_avo lossless_skipped: buy 0.220000 on 24389 is above sell 0.200000 on 24389", or "no active customer has 1.2.3.4:5060 over udp in its allowed IPs". The caller only ever receives the short SIP reason, and the detail is left out of the customer and carrier CSV exports because it names costs and carriers.
+
+### 6.4 Area codes
 
 Configuration > Area codes maps a country code plus an area code to a description and an operator, for example `243` + `81` to "Vodacom" or `91` + `22` to "Mumbai". Every call is labelled with the longest matching prefix when its CDR is written, and the CDR list shows the label next to the called number.
 
@@ -180,7 +184,7 @@ Configuration > Area codes maps a country code plus an area code to a descriptio
 * **Label existing CDRs** fills the label in on calls recorded before an entry existed. Labels are stored with the CDR, so editing the table never rewrites past records until you ask for it.
 * What ships: the DRC mobile ranges per operator and its fixed line ranges; for India every geographic STD code (2,598 of them, with the state in the notes) and the mobile series; and a country level fallback for both so a call is never unlabelled. Indian mobile numbers show only "Mobile" because number portability means the series no longer identifies an operator. The India list is also in `deploy/data/india-std-codes.csv` if you want to correct it and re-import.
 
-### 6.4 Reports
+### 6.5 Reports
 
 Reports has tabs for traffic over time, per customer, per carrier, per destination, profit (revenue, cost, margin), failures by SIP code and carrier, rejections by reason, quality (ASR, ACD, PDD, MOS), peaks (concurrent calls and CPS), the balance statement of any account (opening balance, movements, closing balance, exportable), and top destinations. Every tab takes a time range and, where it applies, a customer or carrier filter; tables export to CSV.
 

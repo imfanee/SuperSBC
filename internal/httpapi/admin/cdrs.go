@@ -104,9 +104,14 @@ var cdrColumns = []cdrColumn{
 	{"called_raw", func(c store.CDRRow) string { return c.CalledNumberRaw }},
 	{"caller", func(c store.CDRRow) string { return c.CallerNumber }},
 	{"called", func(c store.CDRRow) string { return c.CalledNumber }},
+	{"area_prefix", func(c store.CDRRow) string { return deref(c.AreaPrefix) }},
+	{"area_description", func(c store.CDRRow) string { return deref(c.AreaDescription) }},
+	{"operator_name", func(c store.CDRRow) string { return deref(c.OperatorName) }},
 	{"destination", func(c store.CDRRow) string { return deref(c.SellDestination) }},
 	{"disposition", func(c store.CDRRow) string { return c.Disposition }},
 	{"reject_reason", func(c store.CDRRow) string { return deref(c.RejectReason) }},
+	{"reject_step", func(c store.CDRRow) string { return deref(c.RejectStep) }},
+	{"reject_detail", func(c store.CDRRow) string { return deref(c.RejectDetail) }},
 	{"sip_code", func(c store.CDRRow) string { return intStr(c.SIPFinalCode) }},
 	{"sip_reason", func(c store.CDRRow) string { return deref(c.SIPFinalReason) }},
 	{"hangup_cause", func(c store.CDRRow) string { return deref(c.HangupCause) }},
@@ -141,10 +146,10 @@ var cdrColumns = []cdrColumn{
 // (no carrier, routing or cost data), what a carrier may see (no customer,
 // routing or selling data), and everything.
 var cdrViews = map[string][]string{
-	"customer": {"call_uuid", "sip_call_id", "start_time", "answer_time", "end_time", "customer", "src_ip", "caller_raw", "called_raw", "caller", "called", "destination",
+	"customer": {"call_uuid", "sip_call_id", "start_time", "answer_time", "end_time", "customer", "src_ip", "caller_raw", "called_raw", "caller", "called", "area_description", "operator_name", "destination",
 		"disposition", "reject_reason", "sip_code", "sip_reason", "hangup_cause", "pdd_ms", "billsec", "duration",
 		"sell_rate_per_min", "sell_billed_seconds", "sell_price", "sell_currency", "codec_in", "transport_in", "srtp_in", "privacy", "stir_status", "stir_attest"},
-	"carrier": {"call_uuid", "start_time", "answer_time", "end_time", "carrier", "caller", "called", "destination",
+	"carrier": {"call_uuid", "start_time", "answer_time", "end_time", "carrier", "caller", "called", "area_description", "operator_name", "destination",
 		"disposition", "sip_code", "sip_reason", "hangup_cause", "pdd_ms", "billsec", "duration",
 		"buy_rate_per_min", "buy_billed_seconds", "cost", "buy_currency", "codec_out", "transport_out", "srtp_out"},
 }

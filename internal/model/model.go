@@ -290,28 +290,32 @@ type AttemptRecord struct {
 
 // CDR is one call detail record; every attempted call has exactly one.
 type CDR struct {
-	CallUUID          uuid.UUID        `json:"call_uuid" db:"call_uuid"`
-	CustomerID        *uuid.UUID       `json:"customer_id" db:"customer_id"`
-	CarrierID         *uuid.UUID       `json:"carrier_id" db:"carrier_id"`
-	SrcIP             *string          `json:"src_ip" db:"src_ip"`
-	SrcPort           *int             `json:"src_port" db:"src_port"`
-	CallerNumberRaw   string           `json:"caller_number_raw" db:"caller_number_raw"`
-	CallerNumber      string           `json:"caller_number" db:"caller_number"`
-	CalledNumberRaw   string           `json:"called_number_raw" db:"called_number_raw"`
-	CalledNumber      string           `json:"called_number" db:"called_number"`
-	StartTime         time.Time        `json:"start_time" db:"start_time"`
-	ProgressTime      *time.Time       `json:"progress_time" db:"progress_time"`
-	AnswerTime        *time.Time       `json:"answer_time" db:"answer_time"`
-	EndTime           *time.Time       `json:"end_time" db:"end_time"`
-	PDDMs             *int             `json:"pdd_ms" db:"pdd_ms"`
-	RingSeconds       int              `json:"ring_seconds" db:"ring_seconds"`
-	Billsec           int              `json:"billsec" db:"billsec"`
-	Duration          int              `json:"duration" db:"duration"`
-	SIPFinalCode      *int             `json:"sip_final_code" db:"sip_final_code"`
-	SIPFinalReason    *string          `json:"sip_final_reason" db:"sip_final_reason"`
-	HangupCause       *string          `json:"hangup_cause" db:"hangup_cause"`
-	Disposition       string           `json:"disposition" db:"disposition"`
-	RejectReason      *string          `json:"reject_reason" db:"reject_reason"`
+	CallUUID        uuid.UUID  `json:"call_uuid" db:"call_uuid"`
+	CustomerID      *uuid.UUID `json:"customer_id" db:"customer_id"`
+	CarrierID       *uuid.UUID `json:"carrier_id" db:"carrier_id"`
+	SrcIP           *string    `json:"src_ip" db:"src_ip"`
+	SrcPort         *int       `json:"src_port" db:"src_port"`
+	CallerNumberRaw string     `json:"caller_number_raw" db:"caller_number_raw"`
+	CallerNumber    string     `json:"caller_number" db:"caller_number"`
+	CalledNumberRaw string     `json:"called_number_raw" db:"called_number_raw"`
+	CalledNumber    string     `json:"called_number" db:"called_number"`
+	StartTime       time.Time  `json:"start_time" db:"start_time"`
+	ProgressTime    *time.Time `json:"progress_time" db:"progress_time"`
+	AnswerTime      *time.Time `json:"answer_time" db:"answer_time"`
+	EndTime         *time.Time `json:"end_time" db:"end_time"`
+	PDDMs           *int       `json:"pdd_ms" db:"pdd_ms"`
+	RingSeconds     int        `json:"ring_seconds" db:"ring_seconds"`
+	Billsec         int        `json:"billsec" db:"billsec"`
+	Duration        int        `json:"duration" db:"duration"`
+	SIPFinalCode    *int       `json:"sip_final_code" db:"sip_final_code"`
+	SIPFinalReason  *string    `json:"sip_final_reason" db:"sip_final_reason"`
+	HangupCause     *string    `json:"hangup_cause" db:"hangup_cause"`
+	Disposition     string     `json:"disposition" db:"disposition"`
+	RejectReason    *string    `json:"reject_reason" db:"reject_reason"`
+	// RejectStep and RejectDetail say where setup stopped and what an operator
+	// has to change to make the call work (D-77).
+	RejectStep        *string          `json:"reject_step" db:"reject_step"`
+	RejectDetail      *string          `json:"reject_detail" db:"reject_detail"`
 	SellRateID        *uuid.UUID       `json:"sell_rate_id" db:"sell_rate_id"`
 	SellRatePerMin    *decimal.Decimal `json:"sell_rate_per_min" db:"sell_rate_per_min"`
 	SellBilledSeconds int              `json:"sell_billed_seconds" db:"sell_billed_seconds"`

@@ -249,6 +249,8 @@ export interface CDR {
   hangup_cause: string | null;
   disposition: string;
   reject_reason: string | null;
+  reject_step: string | null;
+  reject_detail: string | null;
   sell_rate_per_min: string | null;
   sell_billed_seconds: number;
   sell_price: string;

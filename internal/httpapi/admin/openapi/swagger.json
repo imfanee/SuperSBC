@@ -2500,7 +2500,14 @@
                     "progress_time": {
                         "type": "string"
                     },
+                    "reject_detail": {
+                        "type": "string"
+                    },
                     "reject_reason": {
+                        "type": "string"
+                    },
+                    "reject_step": {
+                        "description": "RejectStep and RejectDetail say where setup stopped and what an operator\nhas to change to make the call work (D-77).",
                         "type": "string"
                     },
                     "released_amount": {
