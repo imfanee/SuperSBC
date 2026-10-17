@@ -56,7 +56,7 @@ export function LoginPage() {
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "", totp: "" },
   });
-  const from = (location.state as { from?: string } | null)?.from ?? "/";
+  const from = (location.state as { from?: string } | null)?.from ?? "/dashboard";
   if (user) navigate(from, { replace: true });
 
   const submit = form.handleSubmit(async (v) => {

@@ -16,7 +16,7 @@ export async function login(page: Page) {
   await page.getByTestId("email").fill("admin@example.com");
   await page.getByTestId("password").fill(adminPassword());
   await page.getByTestId("login-submit").click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 }
 

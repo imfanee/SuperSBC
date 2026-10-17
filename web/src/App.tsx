@@ -11,6 +11,11 @@ import { SimulatorPage } from "@/pages/simulator";
 import { CDRsPage } from "@/pages/cdrs";
 import { AreaCodesPage } from "@/pages/area-codes";
 import { CallTracePage } from "@/pages/call-trace";
+import { MarketingLayout } from "@/components/marketing/layout";
+import { MarketingContactPage } from "@/pages/marketing/contact";
+import { MarketingFeaturesPage } from "@/pages/marketing/features";
+import { MarketingHomePage } from "@/pages/marketing/home";
+import { MarketingSecurityPage } from "@/pages/marketing/security";
 import { SIPTracePage } from "@/pages/sip-trace";
 import { ReportsPage } from "@/pages/reports";
 import { LiveCallsPage } from "@/pages/live-calls";
@@ -35,6 +40,12 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
 export function App() {
   return (
     <Routes>
+      <Route element={<MarketingLayout />}>
+        <Route path="/" element={<MarketingHomePage />} />
+        <Route path="/features" element={<MarketingFeaturesPage />} />
+        <Route path="/security" element={<MarketingSecurityPage />} />
+        <Route path="/contact" element={<MarketingContactPage />} />
+      </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -45,7 +56,7 @@ export function App() {
           </RequireAuth>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/calls" element={<LiveCallsPage />} />
         <Route path="/cdrs" element={<CDRsPage />} />
         <Route path="/cdrs/:id/trace" element={<CallTracePage />} />
@@ -65,7 +76,7 @@ export function App() {
         <Route path="/system/users" element={<UsersPage />} />
         <Route path="/system/audit" element={<AuditPage />} />
         <Route path="/account" element={<AccountPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
   );

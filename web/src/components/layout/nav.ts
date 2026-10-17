@@ -26,7 +26,7 @@ export const navGroups: { title: string; items: NavItem[] }[] = [
   {
     title: "Overview",
     items: [
-      { title: "Dashboard", to: "/", icon: LayoutDashboard },
+      { title: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
       { title: "Live calls", to: "/calls", icon: Radio, keywords: ["active", "channels"] },
       { title: "CDRs", to: "/cdrs", icon: Table2, keywords: ["calls", "records"] },
       { title: "Reports", to: "/reports", icon: BarChart3, keywords: ["asr", "acd", "revenue"] },

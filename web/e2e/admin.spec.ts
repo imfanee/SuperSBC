@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, unique } from "./helpers";
+import { adminPassword, login, unique } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
 
@@ -115,4 +115,33 @@ test("dashboard, live calls, reports and system pages render", async ({ page }) 
     .first()
     .click();
   await expect(page.getByRole("heading", { name: "Carriers" })).toBeVisible();
+});
+
+test("the public site is browsable without logging in and leads to the portal", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("session border controller");
+  await expect(page).toHaveTitle(/SuperSBC/);
+
+  // every public page is reachable without a session
+  for (const [link, heading] of [
+    ["Capabilities", /operator's own order/i],
+    ["Security", /scanner finds a new SIP port/i],
+    ["Contact", /Talk to the person who built it/i],
+  ] as const) {
+    await page.getByRole("navigation").first().getByRole("link", { name: link }).click();
+    await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+  }
+
+  // the contact details are the real ones, not placeholders
+  await expect(page.getByText("Faisal Hanif")).toBeVisible();
+  await expect(page.getByText("AI Technologies").first()).toBeVisible();
+
+  // and logging in from the public site lands in the portal
+  await page.getByTestId("header-login").click();
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByTestId("email").fill("admin@example.com");
+  await page.getByTestId("password").fill(adminPassword());
+  await page.getByTestId("login-submit").click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 });
