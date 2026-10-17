@@ -131,6 +131,8 @@ Every choice the specification left open, and the reason it was made. Numbered s
 
   The SMTP password is read from `.env.live`, which is git ignored, and never passed as an argument, so it cannot surface in the process list, the journal or a crash log.
 
+  Planned maintenance opens a window with `make live-watchdog-mute FOR=2h WHY="..."`, which holds back alerts and recovery notices without stopping the checks. The problems seen inside a window are deliberately not remembered, so whatever is still broken when it closes counts as new and alerts on the very next pass rather than waiting for the repeat timer: a window can delay an alert, never swallow it. The daily report still goes out and carries a banner saying a window is open and until when, so a quiet inbox is never ambiguous.
+
 * **D-80 The node has a name and a certificate browsers trust.** The host answers to `sbc.softautonomi.com`, and the UI is served on 443 with a Let's Encrypt certificate instead of a self signed one on 8443. 8080 and 8443 stay published so nothing that already points at them breaks.
 
   Renewal runs through the ACME webroot that nginx serves from a bind mount, not the standalone server, so a renewal never needs the web server stopped. The deploy hook distributes the result: the chain and key for nginx, and a concatenated `agent.pem` for FreeSWITCH so SIP TLS and WSS present the same certificate as the UI, then reloads both. The certificate is in the watchdog's checks, so it reports the days left in every all clear and alerts three weeks before expiry rather than on the morning it breaks.

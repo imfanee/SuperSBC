@@ -111,7 +111,7 @@ func TestSubjectsCarryNameAndAddress(t *testing.T) {
 func TestRenderCoversEveryCheck(t *testing.T) {
 	r := report(okCheck("docker.service"), okCheck("redis"), failCheck("freeswitch"))
 	r.Traffic = Traffic{Known: true, Attempts: 120, Answered: 90, ASR: "75.0", Minutes: "310.5", Revenue: "41.20", Margin: "6.80", LiveCalls: 3}
-	m := r.OK()
+	m := r.OK(MuteNotice{})
 	for _, want := range []string{"docker.service", "redis", "freeswitch", "120", "75.0", "41.20", "Services", "Containers"} {
 		if !strings.Contains(m.Text, want) {
 			t.Errorf("text report is missing %q", want)
@@ -145,5 +145,69 @@ func TestLevelsAndHelpers(t *testing.T) {
 	name, v, ok := sample(`sbc_gateway_up{gateway="drc_avo"} 1`)
 	if !ok || name != "drc_avo" || v != 1 {
 		t.Errorf("sample: %q %v %v", name, v, ok)
+	}
+}
+
+func TestMuteHoldsAlertsAndRemembersNothing(t *testing.T) {
+	st := State{Failing: map[string]string{}}
+	p := Policy{RepeatAfter: 30 * time.Minute, ReportHour: -1}
+	now := time.Date(2026, 10, 17, 9, 0, 0, 0, time.UTC)
+	broken := report(okCheck("docker.service"), failCheck("freeswitch"))
+
+	// a window is opened the way the command does it
+	st.MutedUntil, st.MuteReason = now.Add(2*time.Hour), "proxmox upgrade"
+
+	d := Decide(broken, &st, p, now.Add(5*time.Minute))
+	if d.SendAlert || d.SendRecovery {
+		t.Fatalf("a maintenance window must hold alerts back: %+v", d)
+	}
+	if !d.Muted || st.MutedAlerts != 1 {
+		t.Errorf("the window should count the alert it swallowed: muted=%v count=%d", d.Muted, st.MutedAlerts)
+	}
+	if len(st.Failing) != 0 {
+		t.Errorf("problems seen while muted must not be remembered, else nothing alerts afterwards: %v", st.Failing)
+	}
+	// the daily report still goes out, so the window is visible
+	st2 := st
+	st2.MutedUntil = now.Add(2 * time.Hour)
+	if d := Decide(broken, &st2, Policy{ReportHour: -1, Force: true}, now.Add(10*time.Minute)); !d.SendReport {
+		t.Error("the scheduled report should still go out during a window")
+	}
+
+	// once the window closes, what is still broken alerts at once
+	d = Decide(broken, &st, p, now.Add(3*time.Hour))
+	if !d.SendAlert || len(d.New) != 1 || d.New[0].Name != "freeswitch" {
+		t.Fatalf("a problem that outlived the window must alert: %+v", d)
+	}
+	if !d.JustUnmuted {
+		t.Error("the first pass after a window should say so")
+	}
+	if !st.MutedUntil.IsZero() || st.MutedAlerts != 0 {
+		t.Errorf("the window should be cleared once it closes: %v %d", st.MutedUntil, st.MutedAlerts)
+	}
+}
+
+func TestMuteDoesNotHideAReboot(t *testing.T) {
+	// A reboot during maintenance is expected, so it stays quiet too.
+	boot := time.Date(2026, 10, 17, 4, 31, 0, 0, time.UTC)
+	st := State{Failing: map[string]string{}, LastBoot: boot.Add(-48 * time.Hour), MutedUntil: boot.Add(time.Hour)}
+	r := report(okCheck("docker.service"))
+	r.Reboot = boot
+	if d := Decide(r, &st, Policy{ReportHour: -1}, boot.Add(5*time.Minute)); d.SendAlert {
+		t.Error("a reboot inside a maintenance window should not page")
+	}
+}
+
+func TestReportShowsTheWindow(t *testing.T) {
+	r := report(okCheck("docker.service"))
+	until := time.Date(2026, 10, 17, 11, 30, 0, 0, time.UTC)
+	m := r.OK(MuteNotice{Muted: true, MutedUntil: until, Reason: "proxmox upgrade"})
+	for _, want := range []string{"11:30", "proxmox upgrade"} {
+		if !strings.Contains(m.Text, want) || !strings.Contains(m.HTML, want) {
+			t.Errorf("the report should say a window is open (%q): %s", want, m.Text)
+		}
+	}
+	if plain := r.OK(MuteNotice{}); strings.Contains(plain.Text, "MAINTENANCE") {
+		t.Error("no banner when no window is open")
 	}
 }

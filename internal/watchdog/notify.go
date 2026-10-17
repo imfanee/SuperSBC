@@ -20,7 +20,17 @@ type State struct {
 	LastRun      time.Time         `json:"last_run"`      // when the previous pass ran
 	Consecutive  int               `json:"consecutive"`   // how many passes in a row were not clean
 	AlertedClear bool              `json:"alerted_clear"` // a recovery notice is owed
+	// MutedUntil silences alerts during planned maintenance (D-79). The
+	// checks still run and are still logged; only the e-mail is held back,
+	// and the problems seen while muted are deliberately not remembered, so
+	// anything still broken when the window closes alerts at once.
+	MutedUntil  time.Time `json:"muted_until"`
+	MuteReason  string    `json:"mute_reason"`
+	MutedAlerts int       `json:"muted_alerts"` // how many alerts the window swallowed
 }
+
+// Muted reports whether alerts are being held back at this instant.
+func (s State) Muted(now time.Time) bool { return now.Before(s.MutedUntil) }
 
 // LoadState reads the state file, returning an empty state when it is missing
 // or unreadable: a watchdog that cannot read its history still has to run.
@@ -59,6 +69,12 @@ type Decision struct {
 	Reason       string
 	New          []Check // problems not alerted before
 	Fixed        []Check // problems that have gone away
+	// Muted is set when a maintenance window held an alert back, and
+	// MutedUntil says until when, so the report can say so.
+	Muted      bool
+	MutedUntil time.Time
+	// JustUnmuted marks the first pass after a window closed.
+	JustUnmuted bool
 }
 
 // Policy configures when to speak up.
@@ -120,6 +136,28 @@ func Decide(r Report, s *State, p Policy, now time.Time) Decision {
 		d.SendReport = true
 	} else if p.ReportHour >= 0 && now.Hour() == p.ReportHour && now.Sub(s.LastReport) > 23*time.Hour {
 		d.SendReport = true
+	}
+
+	// A maintenance window holds back the alert and the recovery notice, and
+	// leaves the remembered problems alone: whatever is still broken when the
+	// window closes is new again and alerts on the next pass.
+	if s.Muted(now) {
+		d.Muted, d.MutedUntil = true, s.MutedUntil
+		if d.SendAlert || d.SendRecovery {
+			s.MutedAlerts++
+		}
+		d.SendAlert, d.SendRecovery = false, false
+		d.Reason = "alerts are muted until " + s.MutedUntil.Format("15:04")
+		s.LastRun = now
+		s.LastBoot = r.Reboot
+		if d.SendReport {
+			s.LastReport = now
+		}
+		return d
+	}
+	if !s.MutedUntil.IsZero() {
+		d.JustUnmuted = true
+		s.MutedUntil, s.MuteReason, s.MutedAlerts = time.Time{}, "", 0
 	}
 
 	s.Failing = map[string]string{}

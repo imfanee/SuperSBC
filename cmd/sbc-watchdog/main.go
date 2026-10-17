@@ -29,12 +29,34 @@ func run() int {
 		state    = flag.String("state", "/var/lib/supersbc/watchdog.json", "where to remember what was already alerted")
 		report   = flag.Bool("report", false, "send the all clear report now, whatever the schedule says")
 		dry      = flag.Bool("dry-run", false, "print what would be sent and send nothing")
+		mute     = flag.Duration("mute", 0, "hold alerts back for this long, for planned maintenance (for example 2h)")
+		muteWhy  = flag.String("mute-reason", "", "what the maintenance is, shown in the reports")
+		unmute   = flag.Bool("unmute", false, "end the maintenance window now")
 		printOut = flag.String("print", "", "write the rendered message to this file as well (ok, alert or recovery picked automatically)")
 	)
 	flag.Parse()
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	env := readEnv(*envFile)
+
+	// Opening or closing a maintenance window only touches the state file:
+	// it is a flag for the passes that follow, not a pass of its own.
+	if *mute > 0 || *unmute {
+		st := watchdog.LoadState(*state)
+		switch {
+		case *unmute:
+			st.MutedUntil, st.MuteReason = time.Time{}, ""
+			fmt.Println("maintenance window closed, alerts are live again")
+		default:
+			st.MutedUntil, st.MuteReason, st.MutedAlerts = time.Now().Add(*mute), *muteWhy, 0
+			fmt.Printf("alerts muted until %s%s\n", st.MutedUntil.Format("15:04 on 2 Jan 2006"), reasonSuffix(*muteWhy))
+		}
+		if err := st.Save(*state); err != nil {
+			log.Error("save state", "error", err)
+			return 1
+		}
+		return 0
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
@@ -93,11 +115,11 @@ func run() int {
 		outgoing = append(outgoing, r.Recovery(d))
 	}
 	if d.SendReport {
-		outgoing = append(outgoing, r.OK())
+		outgoing = append(outgoing, r.OK(watchdog.MuteNotice{Muted: d.Muted, MutedUntil: d.MutedUntil, Reason: st.MuteReason}))
 	}
 
 	log.Info("watchdog pass", "worst", r.Worst().String(), "checks", len(r.Checks), "problems", len(r.Problems()),
-		"sending", len(outgoing), "reason", d.Reason)
+		"sending", len(outgoing), "muted", d.Muted, "reason", d.Reason)
 	for _, c := range r.Problems() {
 		log.Warn("check not ok", "name", c.Name, "level", c.Level.String(), "status", c.Status, "detail", c.Detail)
 	}
@@ -198,4 +220,12 @@ func (m envMap) list(key, def string) []string {
 		}
 	}
 	return out
+}
+
+// reasonSuffix matches the one the reports use, for the console line.
+func reasonSuffix(reason string) string {
+	if reason == "" {
+		return ""
+	}
+	return " (" + reason + ")"
 }

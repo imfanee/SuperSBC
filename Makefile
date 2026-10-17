@@ -4,7 +4,7 @@ COMPOSE ?= docker compose
 GO ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-fwsync live-tls live-watchdog live-watchdog-report live-watchdog-check
+.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-fwsync live-tls live-watchdog live-watchdog-report live-watchdog-check live-watchdog-mute live-watchdog-unmute
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -131,6 +131,12 @@ live-watchdog: ## Build and install sbc-watchdog (checks every service, e-mails 
 
 live-watchdog-report: ## Send the full all clear report now
 	/usr/local/bin/sbc-watchdog -env $(PWD)/.env.live -state /var/lib/supersbc/watchdog.json -report
+
+live-watchdog-mute: ## Hold watchdog alerts back during planned maintenance: make live-watchdog-mute FOR=2h WHY="proxmox upgrade"
+	/usr/local/bin/sbc-watchdog -env $(PWD)/.env.live -state /var/lib/supersbc/watchdog.json -mute $(or $(FOR),2h) -mute-reason "$(WHY)"
+
+live-watchdog-unmute: ## End the maintenance window and make alerts live again
+	/usr/local/bin/sbc-watchdog -env $(PWD)/.env.live -state /var/lib/supersbc/watchdog.json -unmute
 
 live-watchdog-check: ## Run the checks and print the result, sending nothing
 	/usr/local/bin/sbc-watchdog -env $(PWD)/.env.live -state /var/lib/supersbc/watchdog.json -dry-run -report

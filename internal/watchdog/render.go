@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"strings"
+	"time"
 )
 
 // Mail is a rendered message ready for the mailer.
@@ -61,6 +62,9 @@ func (r Report) Alert(d Decision) Mail {
 			fmt.Fprintf(&t, "  %s\n", c.Name)
 		}
 	}
+	if d.JustUnmuted {
+		t.WriteString("\nThe maintenance window has closed; this is the first alert since it opened.\n")
+	}
 	fmt.Fprintf(&t, "\nLive calls now: %d. Host up %s.\n", r.Traffic.LiveCalls, r.Uptime)
 
 	var h strings.Builder
@@ -111,10 +115,15 @@ func (r Report) Recovery(d Decision) Mail {
 }
 
 // OK is the scheduled all clear: every check, grouped, with what the SBC
-// carried over the last day.
-func (r Report) OK() Mail {
+// carried over the last day. The maintenance banner, when one is open, says
+// that a quiet inbox is the window and not the SBC.
+func (r Report) OK(m MuteNotice) Mail {
 	var t strings.Builder
 	fmt.Fprintf(&t, "Super SBC %s (%s)\n%s\n\n", r.IP, r.Node, r.At.Format("Mon 2 Jan 2006 15:04:05 MST"))
+	if m.Muted {
+		fmt.Fprintf(&t, "MAINTENANCE MODE: alerts are muted until %s%s.\n\n",
+			m.MutedUntil.Format("15:04 on 2 Jan 2006"), reasonSuffix(m.Reason))
+	}
 	worst := r.Worst()
 	if worst == LevelOK {
 		fmt.Fprintf(&t, "All %d checks pass.\n", len(r.Checks))
@@ -144,6 +153,10 @@ func (r Report) OK() Mail {
 		title, colour = fmt.Sprintf("%d checks need attention", len(r.Problems())), levelColour(worst)
 	}
 	h.WriteString(htmlHead(r, title, colour))
+	if m.Muted {
+		fmt.Fprintf(&h, `<div style="padding:10px 12px;margin:0 0 16px;background:#fff8e6;border:1px solid #f0d58c;border-radius:6px;font:13px/1.5 -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:%s">Maintenance mode: alerts are muted until %s%s. Checks keep running and this report is unaffected.</div>`,
+			colWarn, html.EscapeString(m.MutedUntil.Format("15:04 on 2 Jan 2006")), html.EscapeString(reasonSuffix(m.Reason)))
+	}
 	if r.Traffic.Known {
 		h.WriteString(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 20px;background:#fff;border:1px solid #e6e8eb;border-radius:6px"><tr>`)
 		for _, kv := range [][2]string{
@@ -213,4 +226,18 @@ func (t Traffic) money(v string) string {
 		return v
 	}
 	return v + " " + t.Currency
+}
+
+// MuteNotice tells the report whether a maintenance window is open.
+type MuteNotice struct {
+	Muted      bool
+	MutedUntil time.Time
+	Reason     string
+}
+
+func reasonSuffix(reason string) string {
+	if reason == "" {
+		return ""
+	}
+	return " (" + reason + ")"
 }
