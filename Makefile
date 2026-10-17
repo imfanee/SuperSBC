@@ -4,7 +4,7 @@ COMPOSE ?= docker compose
 GO ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-fwsync
+.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-fwsync live-watchdog live-watchdog-report live-watchdog-check
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -121,6 +121,19 @@ live-fwsync: ## Build and install sbc-fwsync (keeps the nftables customer, carri
 	install -m 644 deploy/live/supersbc-fwsync.service /etc/systemd/system/
 	systemctl daemon-reload && systemctl enable --now supersbc-fwsync.service && systemctl restart supersbc-fwsync.service
 	sleep 2 && nft list set inet sbc customers && nft list set inet sbc carriers
+
+live-watchdog: ## Build and install sbc-watchdog (checks every service, e-mails the all clear and alerts) as a systemd timer
+	CGO_ENABLED=0 $(GO) build -o /usr/local/bin/sbc-watchdog ./cmd/sbc-watchdog
+	install -m 644 deploy/live/supersbc-watchdog.service deploy/live/supersbc-watchdog.timer /etc/systemd/system/
+	install -d -m 750 /var/lib/supersbc
+	systemctl daemon-reload && systemctl enable --now supersbc-watchdog.timer
+	@echo "watchdog armed: systemctl list-timers supersbc-watchdog.timer"
+
+live-watchdog-report: ## Send the full all clear report now
+	/usr/local/bin/sbc-watchdog -env $(PWD)/.env.live -state /var/lib/supersbc/watchdog.json -report
+
+live-watchdog-check: ## Run the checks and print the result, sending nothing
+	/usr/local/bin/sbc-watchdog -env $(PWD)/.env.live -state /var/lib/supersbc/watchdog.json -dry-run -report
 
 live-firewall: ## Apply and persist the nftables ruleset in deploy/live/nftables.conf (sets are filled by sbc-fwsync)
 	mkdir -p deploy/live/state && touch deploy/live/state/firewall-sets.nft

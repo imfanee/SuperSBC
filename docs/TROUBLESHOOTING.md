@@ -62,6 +62,8 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 
 | Symptom | Check |
 |---|---|
+| No watchdog e-mail arrives | run `make live-watchdog-check`: it prints every check and sends nothing. If the checks are fine, the problem is SMTP; the service log shows the reason (`journalctl -u supersbc-watchdog.service -n 20`). Gmail needs an app password in `SBC_SMTP_PASSWORD`, not the account password |
+| Watchdog alerts about something already fixed | it re-alerts every `SBC_WATCHDOG_REPEAT_MINUTES` while a check is still failing; `make live-watchdog-check` shows what it still sees |
 | Dashboard says "no calls yet today" while the CDR list shows calls | the hourly roll-up stopped writing. System > Status shows "reports roll-up: stale" with the error, `docker logs supersbc-live-api-1 \| grep rollup` has it too. It catches up by itself once the error is fixed, and `sbc_reports_rollup_last_success_timestamp_seconds` alerts on it |
 | SIP trace empty for recent calls while older ones are fine | heplify-server lost its database when it started (a host reboot starts containers in any order) and discards packets silently. Restart it: `docker compose -p supersbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml restart heplify`, then look for "postgres connection established" in its log |
 | UI shows "network error" or 502 | `docker logs supersbc-live-web-1` (nginx) and `supersbc-live-api-1`; `readyz` |

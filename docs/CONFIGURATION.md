@@ -58,6 +58,15 @@ Durations use Go syntax (`30s`, `5m`, `4h`). Booleans are `true`/`false`.
 | `SBC_FS_LOG_LEVEL` | `info` | FreeSWITCH log level |
 | `SBC_FS_HEP_SERVER` | empty | HEPv3 capture target `udp:host:9060;hep=3;capture_id=N`; empty disables (live: `udp:172.29.0.1:9060;hep=3;capture_id=2`) |
 | `SBC_HEP_DATABASE_URL` | empty | HOMER capture database read by the CDR "SIP trace" viewer; empty disables the viewer (D-71) |
+| `SBC_WATCHDOG_TO` | admin e-mail | who gets the watchdog reports, comma separated |
+| `SBC_WATCHDOG_FROM` | `Super SBC <smtp user>` | sender shown on the reports |
+| `SBC_WATCHDOG_IP` | node name | the address in every subject line |
+| `SBC_WATCHDOG_REPORT_HOUR` | `8` | local hour for the daily all clear, `-1` to send none |
+| `SBC_WATCHDOG_REPEAT_MINUTES` | `30` | how often a lasting problem is repeated |
+| `SBC_WATCHDOG_ALERT_ON_WARN` | `true` | `false` keeps warnings for the daily report |
+| `SBC_WATCHDOG_UNITS`, `SBC_WATCHDOG_CONTAINERS` | the live set | what must be active and running |
+| `SBC_WATCHDOG_DISK_WARN_PCT`, `SBC_WATCHDOG_DISK_FAIL_PCT` | `80`, `92` | disk thresholds |
+| `SBC_WATCHDOG_TLS_FILES`, `SBC_WATCHDOG_TLS_WARN_DAYS` | none, `21` | certificates to watch and the notice period |
 | `HOMER_DB_PASSWORD`, `HOMER_KEEP_DAYS` | required (live), `30` | capture database password and retention. heplify drops partitions older than this by itself; the compose file pins the partitions to one per day (`HEPLIFYSERVER_DBPART*`), because the stock two hour partitions carry 13 indexes each and ran the capture database out of lock slots long before retention was reached |
 
 ## Billing

@@ -1,0 +1,11 @@
+[Unit]
+Description=SuperSBC: run the service watchdog every five minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Unit=supersbc-watchdog.service
+
+[Install]
+WantedBy=timers.target

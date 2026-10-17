@@ -1,0 +1,13 @@
+[Unit]
+Description=SuperSBC: check every service and send the all clear or an alert by e-mail
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# SuccessExitStatus covers the warning (1) and failure (2) codes the watchdog
+# returns: the pass itself succeeded, what it found is in the e-mail.
+SuccessExitStatus=0 1 2
+ExecStart=/usr/local/bin/sbc-watchdog -env /root/supersbc/.env.live -state /var/lib/supersbc/watchdog.json
+# The SMTP password is read from the environment file, never passed on the
+# command line, so it cannot show up in the process list or the journal.

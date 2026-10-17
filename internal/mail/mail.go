@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"mime"
 	"net"
 	"net/smtp"
 	"strings"
@@ -50,26 +51,67 @@ func New(cfg Config) *Mailer {
 // Enabled reports whether an SMTP host is configured.
 func (m *Mailer) Enabled() bool { return m != nil && m.cfg.Host != "" }
 
+// Message is one e-mail: several recipients, an optional HTML body beside the
+// plain text one, and an optional From that overrides the configured sender
+// (the watchdog sends as "Super SBC", D-79).
+type Message struct {
+	To      []string
+	From    string
+	Subject string
+	Text    string
+	HTML    string
+}
+
 // Send delivers one plain text message.
 func (m *Mailer) Send(ctx context.Context, to, subject, body string) error {
+	return m.SendMessage(ctx, Message{To: []string{to}, Subject: subject, Text: body})
+}
+
+// SendMessage delivers one message, as multipart/alternative when it carries
+// an HTML body.
+func (m *Mailer) SendMessage(ctx context.Context, msg Message) error {
 	if !m.Enabled() {
 		return fmt.Errorf("e-mail is not configured (SBC_SMTP_HOST)")
 	}
-	from := m.cfg.From
+	if len(msg.To) == 0 {
+		return fmt.Errorf("no recipient")
+	}
+	to, subject, body := strings.Join(msg.To, ", "), msg.Subject, msg.Text
+	from := msg.From
+	if from == "" {
+		from = m.cfg.From
+	}
 	if from == "" {
 		from = "SuperSBC <noreply@" + m.cfg.Host + ">"
 	}
 	addr := net.JoinHostPort(m.cfg.Host, fmt.Sprint(m.cfg.Port))
-	msg := strings.Join([]string{
+	head := []string{
 		"From: " + from,
 		"To: " + to,
-		"Subject: " + subject,
+		"Subject: " + mime.QEncoding.Encode("UTF-8", subject),
 		"MIME-Version: 1.0",
-		"Content-Type: text/plain; charset=UTF-8",
 		"Date: " + time.Now().UTC().Format(time.RFC1123Z),
-		"",
-		body,
-	}, "\r\n")
+	}
+	var raw string
+	if msg.HTML == "" {
+		raw = strings.Join(append(head, "Content-Type: text/plain; charset=UTF-8", "", body), "\r\n")
+	} else {
+		b := "sbc-" + fmt.Sprint(time.Now().UnixNano())
+		raw = strings.Join(append(head,
+			"Content-Type: multipart/alternative; boundary="+b,
+			"",
+			"--"+b,
+			"Content-Type: text/plain; charset=UTF-8",
+			"",
+			body,
+			"--"+b,
+			"Content-Type: text/html; charset=UTF-8",
+			"",
+			msg.HTML,
+			"--"+b+"--",
+			"",
+		), "\r\n")
+	}
 	dialer := &net.Dialer{Timeout: 10 * time.Second}
 	var conn net.Conn
 	var err error
@@ -106,14 +148,16 @@ func (m *Mailer) Send(ctx context.Context, to, subject, body string) error {
 	if err := c.Mail(envelope(from)); err != nil {
 		return fmt.Errorf("smtp from: %w", err)
 	}
-	if err := c.Rcpt(envelope(to)); err != nil {
-		return fmt.Errorf("smtp to: %w", err)
+	for _, rcpt := range msg.To {
+		if err := c.Rcpt(envelope(rcpt)); err != nil {
+			return fmt.Errorf("smtp to %s: %w", rcpt, err)
+		}
 	}
 	w, err := c.Data()
 	if err != nil {
 		return err
 	}
-	if _, err := w.Write([]byte(msg)); err != nil {
+	if _, err := w.Write([]byte(raw)); err != nil {
 		return err
 	}
 	if err := w.Close(); err != nil {
