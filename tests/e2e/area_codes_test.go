@@ -107,3 +107,58 @@ func TestRoadmap_RejectDetail(t *testing.T) {
 	}
 	reconcileOK(t)
 }
+
+// Web brute force protection (D-81): an unknown address that keeps guessing
+// lands on the ban list the firewall drops, a customer address that does the
+// same is only flagged, because a ban would take their calls down with it.
+func TestRoadmap_AuthAbuseBan(t *testing.T) {
+	// this test deliberately fails logins, so it clears the attempt history on
+	// the way in and out: the per address throttle would otherwise lock the
+	// next test out of the admin account
+	sqlExec(t, `DELETE FROM login_attempts`)
+	defer sqlExec(t, `DELETE FROM login_attempts`)
+	defer sqlExec(t, `DELETE FROM banned_ips WHERE reason LIKE 'web %'`)
+	// fresh addresses each run, so a counter left in Redis by an earlier run
+	// cannot decide the outcome, and an address nobody uses for the guesses
+	// so the admin account stays usable
+	stamp := time.Now().UnixNano()
+	attacker := fmt.Sprintf("198.51.100.%d", 2+stamp%250)
+	customerIP := fmt.Sprintf("203.0.113.%d", 2+(stamp/251)%250)
+	guessed := fmt.Sprintf("nobody-%d@example.com", stamp%10000)
+
+	admin := newAPIClient(t)
+	admin.ok(admin.login("admin@example.com", adminPassword(t)))
+	code, list := admin.do("GET", "/customers?search=acme", nil)
+	admin.mustOK(code, list, "customers")
+	custID := str(list["items"].([]any)[0].(map[string]any)["id"])
+	code, added := admin.do("POST", "/customers/"+custID+"/ips", map[string]any{"ip_cidr": customerIP + "/32", "transport": "udp"})
+	admin.mustOK(code, added, "add customer ip")
+	defer admin.do("DELETE", "/customers/"+custID+"/ips/"+str(added["id"]), nil)
+
+	flood := func(ip string, n int) {
+		t.Helper()
+		for i := 0; i < n; i++ {
+			c := newAPIClient(t)
+			c.header("X-Forwarded-For", ip)
+			code, _ := c.do("POST", "/auth/login", map[string]any{"email": guessed, "password": "nope"})
+			if code != 401 && code != 429 {
+				t.Fatalf("a wrong password should be refused, got %d", code)
+			}
+		}
+	}
+
+	flood(attacker, 45)
+	rows := sql(t, `SELECT reason, hits FROM banned_ips WHERE ip = '`+attacker+`'::inet`)
+	if len(rows) != 1 || !strings.Contains(str(rows[0]["reason"]), "sign in") {
+		t.Fatalf("an unknown address that guesses 45 times should be banned: %v", rows)
+	}
+
+	flood(customerIP, 45)
+	if rows := sql(t, `SELECT ip FROM banned_ips WHERE ip = '`+customerIP+`'::inet`); len(rows) != 0 {
+		t.Errorf("a customer address must not be banned, its SIP would go down with it: %v", rows)
+	}
+	notes := sql(t, `SELECT payload->>'ip' AS ip FROM notifications WHERE kind = 'auth_abuse_known_source' ORDER BY id DESC LIMIT 1`)
+	if len(notes) != 1 || str(notes[0]["ip"]) != customerIP {
+		t.Errorf("abuse from a customer address should be raised for an operator instead: %v", notes)
+	}
+}

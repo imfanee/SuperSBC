@@ -33,8 +33,12 @@ type Config struct {
 	// FreeSWITCH rendered configuration (D-04)
 	FSConfigDir string // directory shared with FreeSWITCH, gateways and acl are rendered here
 	FSNodeIP    string // advertised IP of the FreeSWITCH host (used in ACL for ourselves)
-	ACLMode     string // "dialplan" (403 text always sent) or "strict" (unknown IPs dropped by Sofia)
-	FSLogFile   string // FreeSWITCH log file (read only mount) for the per-call trace page
+	// TrustedProxies are the networks whose X-Forwarded-For header is
+	// believed, comma separated (D-81). Empty keeps the loopback and private
+	// ranges the stack runs on.
+	TrustedProxies string
+	ACLMode        string // "dialplan" (403 text always sent) or "strict" (unknown IPs dropped by Sofia)
+	FSLogFile      string // FreeSWITCH log file (read only mount) for the per-call trace page
 
 	Billing  Billing
 	Routing  Routing
@@ -122,10 +126,14 @@ type Failover struct {
 
 // Ban holds the scanner protection tunables (Section 7).
 type Ban struct {
-	Threshold  int           // unauthorised INVITEs from one address within Window that trigger a ban (0 disables)
-	Window     time.Duration // sliding window
-	Duration   time.Duration // how long an automatic ban lasts
-	ExportFile string        // allow and ban lists mirrored to this JSON file for sbc-fwsync (D-69); empty disables
+	Threshold int // unauthorised INVITEs from one address within Window that trigger a ban (0 disables)
+	// WebThreshold is the same idea for the admin UI and API: failed sign
+	// ins, password resets and API keys from one address inside Window
+	// (D-81). 0 uses the built in default.
+	WebThreshold int
+	Window       time.Duration // sliding window
+	Duration     time.Duration // how long an automatic ban lasts
+	ExportFile   string        // allow and ban lists mirrored to this JSON file for sbc-fwsync (D-69); empty disables
 }
 
 // Auth holds the admin authentication tunables of Section 8.
@@ -167,6 +175,7 @@ func Load() (*Config, error) {
 		FSConfigDir:         getenv("SBC_FS_CONFIG_DIR", "/fsconfig"),
 		FSNodeIP:            getenv("SBC_FS_NODE_IP", ""),
 		ACLMode:             getenv("SBC_ACL_MODE", "dialplan"),
+		TrustedProxies:      getenv("SBC_TRUSTED_PROXIES", ""),
 		FSLogFile:           getenv("SBC_FS_LOG_FILE", "/var/log/freeswitch/freeswitch.log"),
 		LogLevel:            getenv("SBC_LOG_LEVEL", "info"),
 		OpenAPIFile:         getenv("SBC_OPENAPI_FILE", ""),
@@ -197,10 +206,11 @@ func Load() (*Config, error) {
 			GatewayPingIntervalSeconds: getint("SBC_FAILOVER_GATEWAY_PING_INTERVAL_SECONDS", 10),
 		},
 		Ban: Ban{
-			Threshold:  getint("SBC_BAN_THRESHOLD", 20),
-			Window:     getduration("SBC_BAN_WINDOW", 5*time.Minute),
-			Duration:   getduration("SBC_BAN_DURATION", time.Hour),
-			ExportFile: getenv("SBC_FIREWALL_EXPORT_FILE", getenv("SBC_BAN_EXPORT_FILE", "")),
+			Threshold:    getint("SBC_BAN_THRESHOLD", 20),
+			WebThreshold: getint("SBC_BAN_WEB_THRESHOLD", 40),
+			Window:       getduration("SBC_BAN_WINDOW", 5*time.Minute),
+			Duration:     getduration("SBC_BAN_DURATION", time.Hour),
+			ExportFile:   getenv("SBC_FIREWALL_EXPORT_FILE", getenv("SBC_BAN_EXPORT_FILE", "")),
 		},
 		Quality: Quality{
 			MinSamples:   getint("SBC_QUALITY_MIN_SAMPLES", 20),

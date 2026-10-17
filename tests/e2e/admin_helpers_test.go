@@ -39,7 +39,8 @@ type apiClient struct {
 	t    *testing.T
 	c    *http.Client
 	csrf string
-	key  string // when set, Authorization: Bearer is used instead of cookies
+	key  string            // when set, Authorization: Bearer is used instead of cookies
+	hdr  map[string]string // extra headers, for example a forwarded address
 }
 
 func newAPIClient(t *testing.T) *apiClient {
@@ -51,6 +52,15 @@ func newAPIClient(t *testing.T) *apiClient {
 func adminPassword(t *testing.T) string {
 	t.Helper()
 	return envValue("SBC_BOOTSTRAP_ADMIN_PASSWORD", "")
+}
+
+// header sets an extra header on every request this client makes, which is
+// how a test pretends to come from somewhere else.
+func (a *apiClient) header(key, value string) {
+	if a.hdr == nil {
+		a.hdr = map[string]string{}
+	}
+	a.hdr[key] = value
 }
 
 func (a *apiClient) login(email, password string) (int, map[string]any) {
@@ -70,6 +80,9 @@ func (a *apiClient) do(method, path string, body any) (int, map[string]any) {
 	}
 	req, _ := http.NewRequestWithContext(context.Background(), method, adminBase+path, rd)
 	req.Header.Set("Content-Type", "application/json")
+	for k, v := range a.hdr {
+		req.Header.Set(k, v)
+	}
 	if a.key != "" {
 		req.Header.Set("Authorization", "Bearer "+a.key)
 	} else if a.csrf != "" {

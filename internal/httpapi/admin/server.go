@@ -70,6 +70,7 @@ type Handler struct {
 
 // New creates the handler.
 func New(d Deps) *Handler {
+	SetTrustedProxies(d.Cfg.TrustedProxies)
 	return &Handler{Deps: d, signer: auth.NewSigner(d.Cfg.Auth.JWTSecret, d.Cfg.Auth.AccessTokenTTL), validate: validator.New()}
 }
 
@@ -157,6 +158,7 @@ func (h *Handler) authenticate(next http.Handler) http.Handler {
 			key := strings.TrimPrefix(ah, "Bearer ")
 			u, err := h.Store.UserByAPIKeyHash(r.Context(), auth.HashToken(key))
 			if err != nil {
+				h.noteAuthAbuse(r.Context(), remoteIP(r), "api key")
 				fail(w, http.StatusUnauthorized, "invalid api key")
 				return
 			}
@@ -301,14 +303,88 @@ func pageParams(r *http.Request) store.Page {
 }
 
 func remoteIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		return strings.TrimSpace(strings.Split(xff, ",")[0])
+	peer := peerIP(r)
+	// X-Forwarded-For is only believed when the request actually arrived from
+	// one of our own proxies, and then only its rightmost entry: everything
+	// to the left of that was supplied by the client (D-81). Taking the first
+	// entry from anyone let an attacker rotate the header to slip past the
+	// per address throttle, or put a third party on the ban list.
+	if !trustedProxy(peer) {
+		return peer
 	}
+	parts := strings.Split(r.Header.Get("X-Forwarded-For"), ",")
+	for i := len(parts) - 1; i >= 0; i-- {
+		v := strings.TrimSpace(parts[i])
+		if v == "" {
+			continue
+		}
+		if net.ParseIP(v) == nil {
+			return peer // a malformed chain says nothing useful
+		}
+		if !trustedProxy(v) {
+			return v
+		}
+	}
+	return peer
+}
+
+// peerIP is the address the connection really came from.
+func peerIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr
 	}
 	return host
+}
+
+// trustedProxyNets are the networks a forwarded header is believed from: the
+// loopback and the docker bridges the stack runs on. The admin API is never
+// published to the internet directly, so nothing outside these can be a hop
+// of ours. SBC_TRUSTED_PROXIES replaces the list.
+var trustedProxyNets = parseCIDRs("127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7")
+
+// SetTrustedProxies replaces the networks whose X-Forwarded-For is believed.
+func SetTrustedProxies(list string) {
+	if nets := parseCIDRs(list); len(nets) > 0 {
+		trustedProxyNets = nets
+	}
+}
+
+func parseCIDRs(list string) []*net.IPNet {
+	var out []*net.IPNet
+	for _, part := range strings.Split(list, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if !strings.Contains(part, "/") {
+			if ip := net.ParseIP(part); ip != nil {
+				bits := 32
+				if ip.To4() == nil {
+					bits = 128
+				}
+				out = append(out, &net.IPNet{IP: ip, Mask: net.CIDRMask(bits, bits)})
+			}
+			continue
+		}
+		if _, n, err := net.ParseCIDR(part); err == nil {
+			out = append(out, n)
+		}
+	}
+	return out
+}
+
+func trustedProxy(addr string) bool {
+	ip := net.ParseIP(addr)
+	if ip == nil {
+		return false
+	}
+	for _, n := range trustedProxyNets {
+		if n.Contains(ip) {
+			return true
+		}
+	}
+	return false
 }
 
 // audit records an admin action.

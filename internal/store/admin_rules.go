@@ -88,3 +88,28 @@ func (s *Store) IsBanned(ctx context.Context, ip string) (bool, error) {
 	err := s.pool.QueryRow(ctx, `SELECT count(*) FROM banned_ips WHERE ip = $1::inet AND (expires_at IS NULL OR expires_at > now())`, ip).Scan(&n)
 	return n > 0, wrapErr(err)
 }
+
+// KnownSourceIP reports whether an address belongs to a customer or a carrier.
+// An address that does is never banned automatically (D-81): the ban list is
+// dropped by the firewall before the rules that let a customer's SIP in, so a
+// ban on their office address would take their calls down with it.
+func (s *Store) KnownSourceIP(ctx context.Context, ip string) (bool, error) {
+	var known bool
+	err := s.pool.QueryRow(ctx, `SELECT EXISTS (
+			SELECT 1 FROM customer_ips WHERE $1::inet <<= ip_cidr
+			UNION ALL
+			SELECT 1 FROM carriers WHERE deleted_at IS NULL
+			  AND (host($1::inet) = ANY (signalling_sources) OR gateway_host = host($1::inet))
+			UNION ALL
+			SELECT 1 FROM carrier_endpoints WHERE host = host($1::inet)
+		)`, ip).Scan(&known)
+	return known, wrapErr(err)
+}
+
+// NoteSecurityEvent records something an operator should look at, such as a
+// customer address failing to sign in over and over (D-81).
+func (s *Store) NoteSecurityEvent(ctx context.Context, kind, ip, detail string) {
+	// owner_type stays null: this is about the node, not one account.
+	_, _ = s.pool.Exec(ctx, `INSERT INTO notifications (kind, owner_type, owner_id, payload)
+		VALUES ($1, NULL, NULL, jsonb_build_object('ip', $2::text, 'detail', $3::text))`, kind, ip, detail)
+}

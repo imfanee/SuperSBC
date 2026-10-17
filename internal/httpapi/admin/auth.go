@@ -15,8 +15,8 @@ const (
 	accessCookie  = "sbc_access"
 	refreshCookie = "sbc_refresh"
 	csrfCookie    = "sbc_csrf"
-	maxFailures   = 10  // per email in the window
-	maxFailuresIP = 100 // per source address in the window
+	maxFailures   = 10 // per email in the window
+	maxFailuresIP = 25 // per source address in the window
 	failureWindow = 15 * time.Minute
 )
 
@@ -88,12 +88,13 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 	}
 	ip := remoteIP(r)
 	if byEmail, byIP, _ := h.Store.RecentFailedLogins(r.Context(), req.Email, ip, failureWindow); byEmail >= maxFailures || byIP >= maxFailuresIP {
+		h.noteAuthAbuse(r.Context(), ip, "sign in")
 		fail(w, http.StatusTooManyRequests, "too many failed logins, try again later")
 		return
 	}
 	u, err := h.Store.UserByEmail(r.Context(), req.Email)
 	if err != nil || u.Status != "active" || !auth.VerifyPassword(u.PasswordHash, req.Password) {
-		h.Store.RecordLoginAttempt(r.Context(), req.Email, ip, false)
+		h.noteAuthFailure(r, req.Email, "sign in")
 		fail(w, http.StatusUnauthorized, "invalid credentials")
 		return
 	}
@@ -103,7 +104,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if u.TOTPSecret == nil || !totp.Validate(strings.TrimSpace(req.TOTPCode), *u.TOTPSecret) {
-			h.Store.RecordLoginAttempt(r.Context(), req.Email, ip, false)
+			h.noteAuthFailure(r, req.Email, "second factor")
 			fail(w, http.StatusUnauthorized, "invalid totp code")
 			return
 		}
@@ -422,6 +423,7 @@ func (h *Handler) forgotPassword(w http.ResponseWriter, r *http.Request) {
 	ip := remoteIP(r)
 	// Same throttle as login: a burst of requests per address or per account is refused.
 	if byEmail, byIP, _ := h.Store.RecentFailedLogins(r.Context(), in.Email, ip, failureWindow); byEmail >= maxFailures || byIP >= maxFailuresIP {
+		h.noteAuthAbuse(r.Context(), ip, "password reset")
 		fail(w, http.StatusTooManyRequests, "too many requests, try again later")
 		return
 	}

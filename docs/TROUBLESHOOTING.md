@@ -62,6 +62,8 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 
 | Symptom | Check |
 |---|---|
+| A customer says the UI refuses them with "too many failed logins" | 25 failures from one address in 15 minutes throttles it, and the attempts are in `login_attempts`. It clears by itself; `DELETE FROM login_attempts WHERE remote_ip = '<ip>'` clears it now |
+| A customer address stops reaching the SBC | check System > Banned IPs. A customer or carrier address is never banned automatically (D-81), so a ban on one was manual, or the address is not on the customer yet |
 | No watchdog e-mail arrives | run `make live-watchdog-check`: it prints every check and sends nothing. If the checks are fine, the problem is SMTP; the service log shows the reason (`journalctl -u supersbc-watchdog.service -n 20`). Gmail needs an app password in `SBC_SMTP_PASSWORD`, not the account password |
 | Watchdog is silent during maintenance and you want to know why | a window is open: `make live-watchdog-check` prints it, `make live-watchdog-unmute` ends it. Anything still broken alerts on the next pass after it closes |
 | Watchdog alerts about something already fixed | it re-alerts every `SBC_WATCHDOG_REPEAT_MINUTES` while a check is still failing; `make live-watchdog-check` shows what it still sees |
