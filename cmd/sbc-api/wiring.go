@@ -57,6 +57,7 @@ type app struct {
 	internal *internalapi.Handler
 	gateways *gateways.Poller
 	admin    *admin.Handler
+	rollup   *reports.Rollup
 }
 
 func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *pgxpool.Pool, rdb *redis.Client, sup *esl.Supervisor) *app {
@@ -87,6 +88,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 		pipe.SetSTIR(stirV)
 	}
 	a := &app{cfg: cfg, log: log, db: pool, rdb: rdb, esl: sup, st: st, tables: tb, pipe: pipe, bill: bill, renderer: renderer, gateways: gw}
+	a.rollup = reports.NewRollup(reports.New(pool), log)
 	a.internal = internalapi.New(cfg.InternalSecret, log, pipe, bill, st)
 	a.admin = admin.New(admin.Deps{Cfg: cfg, Log: log, Store: st, Redis: rdb, Pipe: pipe, Bill: bill, Tables: tb, ESL: sup, Gateways: gw, Renderer: renderer, Version: version,
 		Reports:  admin.NewReports(reports.New(pool), cfg.Billing.LowBalanceThreshold),
@@ -94,6 +96,7 @@ func buildApp(ctx context.Context, cfg *config.Config, log *slog.Logger, pool *p
 		Invoices: invoice.New(pool, log, invoice.Operator{Name: cfg.Invoice.OperatorName, Address: cfg.Invoice.OperatorAddress, Footer: cfg.Invoice.Footer}),
 		Capture:  sipcapture.New(cfg.HEPDatabaseURL),
 		Quality:  qt,
+		Rollup:   a.rollup,
 		Mailer:   mail.New(mail.Config{Host: cfg.SMTP.Host, Port: cfg.SMTP.Port, Username: cfg.SMTP.Username, Password: cfg.SMTP.Password, From: cfg.SMTP.From, TLS: cfg.SMTP.TLS}),
 		Ready: func(ctx context.Context) any {
 			return health.Deps{DB: pool, Redis: rdb, ESL: sup, Profiles: []string{"external-ingress", "external-egress"}, Version: version, Node: cfg.NodeName}.Check(ctx)
@@ -186,7 +189,7 @@ func (a *app) startWorkers(ctx context.Context) {
 	go billing.NewReconciler(a.bill, a.esl).Run(ctx, time.Minute)
 	go a.gaugeLoop(ctx)
 	go a.expireBans(ctx)
-	go reports.NewRollup(reports.New(a.db), a.log).Run(ctx, time.Minute)
+	go a.rollup.Run(ctx, time.Minute)
 	go a.admin.Invoices.Run(ctx, time.Hour)
 	go a.admin.Quality.Run(ctx)
 }

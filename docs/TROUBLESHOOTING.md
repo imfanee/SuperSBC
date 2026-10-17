@@ -62,6 +62,8 @@ Symptoms first, then what to check. Commands assume the live stack (`make live-*
 
 | Symptom | Check |
 |---|---|
+| Dashboard says "no calls yet today" while the CDR list shows calls | the hourly roll-up stopped writing. System > Status shows "reports roll-up: stale" with the error, `docker logs supersbc-live-api-1 \| grep rollup` has it too. It catches up by itself once the error is fixed, and `sbc_reports_rollup_last_success_timestamp_seconds` alerts on it |
+| SIP trace empty for recent calls while older ones are fine | heplify-server lost its database when it started (a host reboot starts containers in any order) and discards packets silently. Restart it: `docker compose -p supersbc-live --env-file .env.live -f deploy/live/docker-compose.live.yml restart heplify`, then look for "postgres connection established" in its log |
 | UI shows "network error" or 502 | `docker logs supersbc-live-web-1` (nginx) and `supersbc-live-api-1`; `readyz` |
 | Reset e-mail never arrives | `SBC_SMTP_HOST` set? `docker logs supersbc-live-api-1 \| grep "reset e-mail"` shows the SMTP error (auth, TLS, relay refused); the forgot page still returns 202 by design; ten requests per address in 15 minutes are throttled (429) |
 | Login fails with correct password | account locked after failures (wait or admin reset), clock skew above a minute breaks TOTP, cookies blocked (Secure cookies over plain http: use https) |

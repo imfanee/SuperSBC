@@ -1,3 +1,4 @@
+import type React from "react";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, KeyRound } from "lucide-react";
@@ -28,6 +29,7 @@ import { dt } from "@/lib/utils";
 
 interface Status {
   ready: { ready: boolean; version: string; node: string; checks: Record<string, string> };
+  rollup?: { configured: boolean; last_success?: string; stale?: boolean; error?: string };
   version: string;
   node: string;
   config: Record<string, unknown>;
@@ -120,10 +122,27 @@ export function SystemPage() {
               </CardHeader>
               <CardContent>
                 <KV
-                  items={Object.entries(checks).map(([k, v]) => [
-                    k,
-                    <Badge variant={v === "ok" ? "success" : "danger"}>{v}</Badge>,
-                  ])}
+                  items={[
+                    ...Object.entries(checks).map(([k, v]): [string, React.ReactNode] => [
+                      k,
+                      <Badge variant={v === "ok" ? "success" : "danger"}>{v}</Badge>,
+                    ]),
+                    ...(s?.rollup?.configured
+                      ? ([
+                          [
+                            "reports roll-up",
+                            <span className="flex items-center justify-end gap-2">
+                              <Badge variant={s.rollup.stale ? "danger" : "success"}>
+                                {s.rollup.stale ? "stale" : "ok"}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {s.rollup.error ? s.rollup.error : `last ${dt(s.rollup.last_success)}`}
+                              </span>
+                            </span>,
+                          ],
+                        ] as [string, React.ReactNode][])
+                      : []),
+                  ]}
                 />
               </CardContent>
             </Card>

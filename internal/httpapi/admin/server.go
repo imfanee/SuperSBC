@@ -31,6 +31,7 @@ import (
 	"github.com/imfanee/supersbc/internal/mail"
 	"github.com/imfanee/supersbc/internal/model"
 	"github.com/imfanee/supersbc/internal/quality"
+	"github.com/imfanee/supersbc/internal/reports"
 	"github.com/imfanee/supersbc/internal/sipcapture"
 	"github.com/imfanee/supersbc/internal/store"
 	"github.com/imfanee/supersbc/internal/tables"
@@ -57,6 +58,7 @@ type Deps struct {
 	Mailer   *mail.Mailer
 	Capture  *sipcapture.Store
 	Quality  *quality.Tracker
+	Rollup   *reports.Rollup
 }
 
 // Handler is the admin API.

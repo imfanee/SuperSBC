@@ -9,6 +9,13 @@ import (
 )
 
 var (
+	// RollupLastSuccess is when the hourly report roll-up last completed, so a
+	// roll-up that silently stops is visible to monitoring (D-78).
+	RollupLastSuccess = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "sbc_reports_rollup_last_success_timestamp_seconds",
+		Help: "Unix time of the last successful cdr_hourly_stats roll-up",
+	})
+
 	CallsInProgress = promauto.NewGauge(prometheus.GaugeOpts{
 		Namespace: "sbc", Name: "calls_in_progress", Help: "Calls with an open reservation (active_calls rows).",
 	})

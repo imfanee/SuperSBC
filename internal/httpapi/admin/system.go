@@ -117,10 +117,17 @@ func (h *Handler) systemStatus(w http.ResponseWriter, r *http.Request) {
 	if h.Ready != nil {
 		ready = h.Ready(r.Context())
 	}
+	rollup := map[string]any{"configured": false}
+	if h.Rollup != nil {
+		last, lastErr := h.Rollup.Health()
+		stale := time.Since(last) > 5*time.Minute
+		rollup = map[string]any{"configured": true, "last_success": last, "stale": stale, "error": lastErr}
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"ready":   ready,
 		"version": h.Version,
 		"node":    h.Cfg.NodeName,
+		"rollup":  rollup,
 		"config": map[string]any{
 			"reserve_minutes": h.Cfg.Billing.ReserveMinutes, "max_call_duration": h.Cfg.Billing.MaxCallDuration.String(), "orphan_timeout": h.Cfg.Billing.OrphanTimeout.String(),
 			"low_balance_threshold": h.Cfg.Billing.LowBalanceThreshold, "currency": h.Cfg.Billing.Currency,

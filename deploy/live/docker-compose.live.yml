@@ -172,7 +172,13 @@ services:
   heplify:
     image: sipcapture/heplify-server:latest
     working_dir: /root
-    command: ["./heplify-server"]
+    command:
+      - sh
+      - -c
+      # heplify-server gives up for good if the database is not accepting
+      # connections the moment it starts, and then silently drops every packet
+      # it receives, so wait for the port before starting it (D-78).
+      - 'until nc -z hepdb 5432; do echo "waiting for hepdb:5432"; sleep 1; done; exec ./heplify-server'
     environment:
       HEPLIFYSERVER_HEPADDR: 0.0.0.0:9060
       HEPLIFYSERVER_DBSHEMA: homer7

@@ -9,6 +9,8 @@ package integration
 import (
 	"context"
 	"errors"
+	"io"
+	"log/slog"
 	"os"
 	"sync"
 	"testing"
@@ -57,7 +59,7 @@ func setup(t *testing.T) *env {
 		t.Fatal(err)
 	}
 	// clean slate: keep schema, drop data
-	_, err = pool.Exec(ctx, `TRUNCATE cdrs, active_calls, ledger_entries, accounts, customer_ips, customers, route_carriers, routes, route_groups, rates, rate_groups, carriers, notifications, audit_log CASCADE`)
+	_, err = pool.Exec(ctx, `TRUNCATE cdrs, cdr_hourly_stats, active_calls, ledger_entries, accounts, customer_ips, customers, route_carriers, routes, route_groups, rates, rate_groups, carriers, notifications, audit_log CASCADE`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -438,5 +440,58 @@ func TestIntegrationHourlyRollupNullSafe(t *testing.T) {
 	}
 	if len(rows) != 1 || rows[0].Attempts != 7 || rows[0].Answered != 0 || rows[0].Rejected != 7 {
 		t.Fatalf("rows: %+v", rows)
+	}
+}
+
+// The roll-up worker itself must survive a second pass over the same hour:
+// recomputing an hour used to collide with its own rows on the unique key,
+// which froze cdr_hourly_stats and left the dashboard saying no calls today
+// while the CDR list showed them (D-78).
+func TestIntegrationRollupRepeatable(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	rollup := reports.NewRollup(reports.New(e.st.Pool()), slog.New(slog.NewTextHandler(io.Discard, nil)))
+	hour := time.Now().UTC().Truncate(time.Hour)
+	m, err := e.st.CustomerByIP(ctx, "172.28.0.101", 5060, "udp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cust := m.Customer.ID
+	for i := 0; i < 3; i++ {
+		if _, err = e.st.Pool().Exec(ctx, `
+			INSERT INTO cdrs (call_uuid, customer_id, caller_number_raw, caller_number, called_number_raw, called_number,
+			  start_time, end_time, disposition, billsec, duration, sell_price, cost)
+			VALUES ($1, $2, '15550001111', '15550001111', '442071234567', '442071234567', $3::timestamptz, $3::timestamptz + interval '10 seconds', 'answered', 10, 10, 0.01, 0.006)`,
+			uuid.New(), cust, hour.Add(time.Duration(i)*time.Minute)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// twice over, as the worker does every minute
+	for pass := 1; pass <= 2; pass++ {
+		if err := rollup.Once(ctx); err != nil {
+			t.Fatalf("rollup pass %d: %v", pass, err)
+		}
+	}
+	rows, err := reports.New(e.st.Pool()).HourlyFromRollup(ctx, reports.Range{From: hour, To: hour.Add(time.Hour)})
+	if err != nil {
+		t.Fatalf("hourly from rollup: %v", err)
+	}
+	if len(rows) != 1 || rows[0].Attempts != 3 || rows[0].Answered != 3 {
+		t.Fatalf("the roll-up should hold the three calls once, not duplicated or missing: %+v", rows)
+	}
+	// a late CDR in the same hour is picked up by the next pass
+	if _, err := e.st.Pool().Exec(ctx, `
+		INSERT INTO cdrs (call_uuid, customer_id, caller_number_raw, caller_number, called_number_raw, called_number,
+		  start_time, end_time, disposition, billsec, duration, sell_price, cost)
+		VALUES ($1, $2, '15550001111', '15550001111', '442071234567', '442071234567', $3::timestamptz, $3::timestamptz, 'rejected_route', 0, 0, 0, 0)`,
+		uuid.New(), cust, hour.Add(30*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if err := rollup.Once(ctx); err != nil {
+		t.Fatalf("rollup after a late cdr: %v", err)
+	}
+	rows, _ = reports.New(e.st.Pool()).HourlyFromRollup(ctx, reports.Range{From: hour, To: hour.Add(time.Hour)})
+	if len(rows) != 1 || rows[0].Attempts != 4 || rows[0].Rejected != 1 {
+		t.Fatalf("late cdr not rolled up: %+v", rows)
 	}
 }
