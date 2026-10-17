@@ -58,6 +58,8 @@ Durations use Go syntax (`30s`, `5m`, `4h`). Booleans are `true`/`false`.
 | `SBC_FS_LOG_LEVEL` | `info` | FreeSWITCH log level |
 | `SBC_FS_HEP_SERVER` | empty | HEPv3 capture target `udp:host:9060;hep=3;capture_id=N`; empty disables (live: `udp:172.29.0.1:9060;hep=3;capture_id=2`) |
 | `SBC_HEP_DATABASE_URL` | empty | HOMER capture database read by the CDR "SIP trace" viewer; empty disables the viewer (D-71) |
+| `SBC_PUBLIC_HOST` | none | the public name of this node, for example `sbc.softautonomi.com`: what the certificate is issued for and what the UI is reached on |
+| `SBC_PUBLIC_HTTP_PORT`, `SBC_PUBLIC_HTTPS_PORT` | `80`, `443` | where the UI is published on the public name |
 | `SBC_WATCHDOG_TO` | admin e-mail | who gets the watchdog reports, comma separated |
 | `SBC_WATCHDOG_FROM` | `Super SBC <smtp user>` | sender shown on the reports |
 | `SBC_WATCHDOG_IP` | node name | the address in every subject line |

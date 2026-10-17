@@ -130,3 +130,9 @@ Every choice the specification left open, and the reason it was made. Numbered s
   A problem raises one alert the moment it appears, repeats at most every thirty minutes while it lasts, and is followed by a recovery notice; the state lives in `/var/lib/supersbc/watchdog.json` so a restart never floods the inbox. The all clear goes out once a day with every check and the last 24 hours of traffic, and the subject line always carries the name and the public address, so a phone shows what is wrong and where before the mail is opened. A reboot between two passes alerts by itself even when every service came back, because three unplanned reboots in two days is the kind of thing a quiet recovery hides.
 
   The SMTP password is read from `.env.live`, which is git ignored, and never passed as an argument, so it cannot surface in the process list, the journal or a crash log.
+
+* **D-80 The node has a name and a certificate browsers trust.** The host answers to `sbc.softautonomi.com`, and the UI is served on 443 with a Let's Encrypt certificate instead of a self signed one on 8443. 8080 and 8443 stay published so nothing that already points at them breaks.
+
+  Renewal runs through the ACME webroot that nginx serves from a bind mount, not the standalone server, so a renewal never needs the web server stopped. The deploy hook distributes the result: the chain and key for nginx, and a concatenated `agent.pem` for FreeSWITCH so SIP TLS and WSS present the same certificate as the UI, then reloads both. The certificate is in the watchdog's checks, so it reports the days left in every all clear and alerts three weeks before expiry rather than on the morning it breaks.
+
+  The browser tab carries a mark that matches the one in the sidebar, the forwarded call glyph on the brand indigo, as an SVG with a three size `.ico` behind it for older clients, plus the touch and manifest icons so an installed window is branded too.

@@ -44,7 +44,7 @@ Containers: `supersbc-live-{api,web,freeswitch,postgres,redis}-1` (live), `super
 
 ### 4.1 Firewall (live)
 
-`deploy/live/nftables.conf` is the whole host firewall, applied and persisted by `make live-firewall`. It allows: ssh, 8080/8443 (web), 5060 UDP/TCP and 5061 TCP from the `customers` set, RTP 16384 to 32768, 5080/5081 from the `carriers` set; everything else to the host is dropped (ESL, the internal API, Postgres and Redis are only reachable from the docker bridges and loopback). It also drops the `banned` set and rate limits SIP per source (200 UDP packets per second, 30 new TCP connections per second) so a flood is dropped by the kernel before FreeSWITCH parses it.
+`deploy/live/nftables.conf` is the whole host firewall, applied and persisted by `make live-firewall`. It allows: ssh, 80/443 (web on the public name) and 8080/8443 (the older ports), 5060 UDP/TCP and 5061 TCP from the `customers` set, RTP 16384 to 32768, 5080/5081 from the `carriers` set; everything else to the host is dropped (ESL, the internal API, Postgres and Redis are only reachable from the docker bridges and loopback). It also drops the `banned` set and rate limits SIP per source (200 UDP packets per second, 30 new TCP connections per second) so a flood is dropped by the kernel before FreeSWITCH parses it.
 
 The three sets are managed by `sbc-fwsync` (`make live-fwsync` installs it as a systemd service, D-69): the API exports customer addresses, carrier gateway hosts plus each carrier's "extra signalling sources", and the bans to `deploy/live/state/firewall.json` on every change; the service applies them to nftables within about a second and keeps `firewall-sets.nft` for boot. Nothing to edit by hand: add the address on the customer or carrier in the UI. Check with `nft list set inet sbc customers|carriers|banned`, `systemctl status supersbc-fwsync` and `journalctl -u supersbc-fwsync`. Unresolvable carrier hostnames are logged and skipped. Check what is being dropped with the counters in `nft list chain inet sbc input`.
 
@@ -64,7 +64,7 @@ The SBC presents its own address in From, Contact, Via and SDP on both sides; cu
 
 ### 4.5 Web
 
-nginx terminates TLS on 8443 (8080 redirects), adds a strict Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff` and a referrer policy; the API adds the same headers. Put a CA issued certificate in `deploy/live/tls` before giving the URL to colleagues. An OWASP ASVS level 1 walkthrough is in [SECURITY.md](SECURITY.md).
+nginx terminates TLS on 443 for `SBC_PUBLIC_HOST` (80 redirects to it, and 8080/8443 stay published for anything that still uses them), adds a strict Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff` and a referrer policy; the API adds the same headers. `make live-tls` issues and installs the Let's Encrypt certificate for `SBC_PUBLIC_HOST` and renews it through the ACME webroot that nginx serves, so a renewal never stops the web server; the deploy hook also rebuilds `agent.pem` so SIP TLS and WSS present the same certificate. An OWASP ASVS level 1 walkthrough is in [SECURITY.md](SECURITY.md).
 
 ## 5. Capacity and tuning
 
@@ -76,8 +76,8 @@ nginx terminates TLS on 8443 (8080 redirects), adds a strict Content-Security-Po
 
 ## 6. Monitoring
 
-* `GET /readyz` (loopback 28080 on live, or `https://<ip>:8443/readyz`): `ready` plus per dependency checks; use it for your external monitoring.
-* `GET /metrics` (Prometheus): calls by disposition, rejections by reason, per carrier attempts and ASR, PDD histograms, concurrent calls and CPS gauges, revenue and cost counters, bans, STIR results, media modes, gateway states. `make live-monitoring` starts Prometheus and Grafana with the bundled dashboard at `https://<ip>:8443/grafana/`.
+* `GET /readyz` (loopback 28080 on live, or `https://sbc.softautonomi.com/readyz`): `ready` plus per dependency checks; use it for your external monitoring.
+* `GET /metrics` (Prometheus): calls by disposition, rejections by reason, per carrier attempts and ASR, PDD histograms, concurrent calls and CPS gauges, revenue and cost counters, bans, STIR results, media modes, gateway states. `make live-monitoring` starts Prometheus and Grafana with the bundled dashboard at `https://sbc.softautonomi.com/grafana/`.
 * Logs: JSON lines with `call_uuid`, `customer`, `carrier`, `step`, `code`. `make live-logs` follows all containers; `docker logs supersbc-live-api-1 | jq 'select(.call_uuid=="...")'` follows one call. FreeSWITCH logs are in the `fslogs` volume.
 * Watchdog: `make live-watchdog` installs a systemd timer that checks every service every five minutes. It e-mails one alert when something breaks, repeats it every 30 minutes while it lasts, sends a recovery notice, and sends a full all clear once a day at `SBC_WATCHDOG_REPORT_HOUR`. `make live-watchdog-check` prints the current state without sending anything, `make live-watchdog-report` sends the full report now. It needs SMTP in `.env.live`; with Gmail use an app password, never the account password.
 * SIP capture: on live, FreeSWITCH always mirrors SIP to `heplify` which stores it in `hepdb` for `HOMER_KEEP_DAYS` (30) days; every CDR has a "SIP trace" link that shows the whole call (D-71). The HOMER web UI is optional (`$(LIVE) --profile homer up -d`, 127.0.0.1:19081, admin / sipcapture). The System page SIP trace remains for ad hoc tracing of a profile in the FreeSWITCH log.

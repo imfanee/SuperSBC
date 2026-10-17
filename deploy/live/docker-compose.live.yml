@@ -140,10 +140,14 @@ services:
       dockerfile: Dockerfile.live
     image: supersbc/web:${SBC_VERSION:-live}
     ports:
+      - "${SBC_PUBLIC_HTTP_PORT:-80}:80"
+      - "${SBC_PUBLIC_HTTPS_PORT:-443}:443"
       - "${SBC_HTTP_PORT:-8080}:80"
       - "${SBC_HTTPS_PORT:-8443}:443"
     volumes:
       - ./tls:/etc/nginx/tls:ro
+      # Let's Encrypt drops its challenge files here (D-80).
+      - ./acme:/var/www/certbot:ro
     depends_on:
       - api
     restart: unless-stopped

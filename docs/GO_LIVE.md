@@ -25,7 +25,7 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 
 ## Onboarding the pilot customer
 
-1. Log in at https://51.38.218.42:8443 (accept the self-signed certificate, or install a real one: put `server.crt` and `server.key` in `deploy/live/tls/` and `make live-up`).
+1. Log in at https://sbc.softautonomi.com. The certificate is a real Let's Encrypt one, issued and renewed by `make live-tls` (D-80), so no browser warning.
 2. Rate groups: create the selling deck (CSV import) and the buying deck of your carrier.
 3. Carriers: create the carrier (gateway host, port, transport, buying deck, auth if any, `sip_options_ping` on). Then open 5080 for it:
    The firewall opens 5080 for the gateway host automatically (sbc-fwsync); add "Extra signalling sources" if the carrier uses more addresses. Check: `nft list set inet sbc carriers`.
@@ -34,7 +34,7 @@ The bootstrap admin password was printed once by `make live-init`; it is also in
 5. Customers: create the pilot customer with selling deck, route group, sensible limits (for example 10 concurrent calls, 2 CPS), add their source IP, top up the account.
 6. Routing simulator: enter the customer and a number as they would dial it; expect `200 OK (dial <carrier> first)`.
 7. Ask the customer for a test call; watch Live calls, then the CDR (click the row for attempts and RTP statistics) and the ledger on the customer's Account tab.
-8. `make live-monitoring` for Grafana at https://51.38.218.42:8443/grafana/ (admin / `GRAFANA_ADMIN_PASSWORD` from `.env.live`); enable `docker compose ... --profile backup up -d` or `make live-backup` before the pilot starts.
+8. `make live-monitoring` for Grafana at https://sbc.softautonomi.com/grafana/ (admin / `GRAFANA_ADMIN_PASSWORD` from `.env.live`); enable `docker compose ... --profile backup up -d` or `make live-backup` before the pilot starts.
 
 ## Daily checks during the pilot
 

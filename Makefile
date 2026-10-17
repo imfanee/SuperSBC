@@ -4,7 +4,7 @@ COMPOSE ?= docker compose
 GO ?= go
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
-.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-fwsync live-watchdog live-watchdog-report live-watchdog-check
+.PHONY: help up down logs ps build test test-unit test-integration lint lint-go lint-lua lint-web lint-emdash seed e2e e2e-ui reconcile replay-cdrs fmt web-build openapi clean rollback live-init live-up live-down live-ps live-logs live-reconcile live-replay-cdrs live-backup live-monitoring live-firewall homer-up homer-down live-fwsync live-tls live-watchdog live-watchdog-report live-watchdog-check
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -87,7 +87,7 @@ live-init: ## One-off: generate .env.live (random secrets) and a self-signed cer
 live-up: ## Build and start the live stack (FreeSWITCH on the host network, web on 8080/8443)
 	@test -f .env.live || (echo "run make live-init first"; exit 1)
 	$(LIVE) up -d --build
-	@echo "Live UI: https://$$(grep ^SBC_FS_NODE_IP .env.live | cut -d= -f2):8443"
+	@echo "Live UI: $$(grep ^SBC_PUBLIC_URL .env.live | cut -d= -f2-)"
 
 live-down: ## Stop the live stack (keeps data)
 	$(LIVE) --profile monitoring --profile backup down --remove-orphans
@@ -134,6 +134,13 @@ live-watchdog-report: ## Send the full all clear report now
 
 live-watchdog-check: ## Run the checks and print the result, sending nothing
 	/usr/local/bin/sbc-watchdog -env $(PWD)/.env.live -state /var/lib/supersbc/watchdog.json -dry-run -report
+
+live-tls: ## Issue or renew the Let's Encrypt certificate for SBC_PUBLIC_HOST and install it for nginx and FreeSWITCH
+	@host=$$(grep ^SBC_PUBLIC_HOST .env.live | cut -d= -f2); \
+	  mail=$$(grep ^SBC_BOOTSTRAP_ADMIN_EMAIL .env.live | cut -d= -f2); \
+	  mkdir -p deploy/live/acme; \
+	  certbot certonly --webroot -w $(PWD)/deploy/live/acme -d $$host --non-interactive --agree-tos -m $$mail --key-type ecdsa --keep-until-expiring; \
+	  SBC_TLS_DOMAIN=$$host SBC_LIVE_DIR=$(PWD)/deploy/live deploy/live/letsencrypt-deploy-hook.sh
 
 live-firewall: ## Apply and persist the nftables ruleset in deploy/live/nftables.conf (sets are filled by sbc-fwsync)
 	mkdir -p deploy/live/state && touch deploy/live/state/firewall-sets.nft
