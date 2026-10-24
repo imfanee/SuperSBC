@@ -479,6 +479,7 @@ func (h *Handler) previewRoute(w http.ResponseWriter, r *http.Request) {
 // @Param customer_id query string true "customer id"
 // @Param number query string true "dialled number as the customer would send it"
 // @Param caller query string false "caller id"
+// @Param codecs query string false "codecs the caller would offer in the INVITE, comma separated (e.g. G729); decides the egress codec list and the smart media mode (D-85)"
 // @Success 200 {object} map[string]any
 // @Router /routing/simulate [get]
 func (h *Handler) simulate(w http.ResponseWriter, r *http.Request) {
@@ -497,11 +498,15 @@ func (h *Handler) simulate(w http.ResponseWriter, r *http.Request) {
 	if caller == "" {
 		caller = "15550000000"
 	}
+	// What the caller would offer in the INVITE. The egress codec list and the
+	// smart media decision both depend on it (D-85), so the simulator has to
+	// be able to ask "what happens to a G.729 only caller".
+	offered := strings.TrimSpace(r.URL.Query().Get("codecs"))
 	steps := []map[string]any{}
 	step := func(name string, ok bool, detail any) {
 		steps = append(steps, map[string]any{"step": name, "ok": ok, "detail": detail})
 	}
-	res := map[string]any{"customer": cust, "input_number": number, "steps": nil, "expected_sip": "200 OK on answer"}
+	res := map[string]any{"customer": cust, "input_number": number, "offered_codecs": offered, "steps": nil, "expected_sip": "200 OK on answer"}
 	finish := func(code int, reason string) {
 		res["expected_sip"] = strings.TrimSpace(strings.Join([]string{itoa(code), reason}, " "))
 		res["steps"] = steps
@@ -570,7 +575,8 @@ func (h *Handler) simulate(w http.ResponseWriter, r *http.Request) {
 		finish(402, "Not enough funds")
 		return
 	}
-	route, err := h.Pipe.Route(r.Context(), cust, called, caller, sellConv, uuid.New().String())
+	route, err := h.Pipe.RouteWith(r.Context(), cust, called, caller, sellConv, uuid.New().String(),
+		callcontrol.RouteOpts{OfferedCodecs: offered})
 	if err != nil {
 		failErr(w, err)
 		return

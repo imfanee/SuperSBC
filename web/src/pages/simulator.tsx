@@ -18,8 +18,10 @@ export function SimulatorPage() {
   const [customerId, setCustomerId] = useState<string | null>(params.get("customer_id"));
   const [number, setNumber] = useState(params.get("number") ?? "");
   const [caller, setCaller] = useState("");
+  const [codecs, setCodecs] = useState("");
   const sim = useMutation({
-    mutationFn: () => get<Simulation>("/routing/simulate", { customer_id: customerId ?? "", number, caller }),
+    mutationFn: () =>
+      get<Simulation>("/routing/simulate", { customer_id: customerId ?? "", number, caller, codecs }),
     onError: (e) => toast.error(e.message),
   });
   const r = sim.data;
@@ -57,6 +59,15 @@ export function SimulatorPage() {
             </Field>
             <Field label="Caller (optional)">
               <Input value={caller} onChange={(e) => setCaller(e.target.value)} className="w-40 font-mono" />
+            </Field>
+            <Field label="Codecs offered (optional)" hint="what the caller puts in the INVITE, e.g. G729">
+              <Input
+                value={codecs}
+                onChange={(e) => setCodecs(e.target.value)}
+                placeholder="G729"
+                className="w-40 font-mono"
+                data-testid="sim-codecs"
+              />
             </Field>
             <Button type="submit" disabled={!customerId || !number || sim.isPending} data-testid="sim-submit">
               Simulate
