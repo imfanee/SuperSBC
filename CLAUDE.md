@@ -52,8 +52,12 @@ change in dev (`make up`, `make e2e`) before `make live-up`.
   the carrier's list and the call is transcoded (D-85).
 * `media_mode` is `anchor`, `smart`, `proxy` or `bypass`; the stricter of the
   customer's and the carrier's setting wins. `smart` proxies when the codecs
-  match and anchors when they do not (D-84). All live customers and carriers
-  are on `smart`.
+  match and anchors when they do not (D-84). **All live customers and carriers
+  are on `anchor`**: with the narrowing rule a matched call relays without
+  transcoding anyway, and anchoring keeps the outbound RTP counters, the real
+  codec names in the CDR and the option to interwork DTMF or SRTP. Proxying
+  would save about 4 millicores per call, measured, which is not worth the
+  blindness (docs/PERFORMANCE.md).
 * `matchedCodecs` in `internal/callcontrol/codec.go` decides both the egress
   codec list and the smart media mode. Keep it that way: if they ever
   disagree, a proxied call can get a codec neither leg can run.

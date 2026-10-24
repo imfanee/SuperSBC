@@ -20,9 +20,37 @@ At 50 CPS this host is CPU saturated (load average above 80 on 4 vCPUs, FreeSWIT
 
 The honest conclusion: **25 CPS with 100 % success is the sustainable rate of this 4 vCPU virtual machine**; 50 CPS needs a host with more cores or a dedicated FreeSWITCH host. The control plane is not the bottleneck: at 25 CPS the setup call from Lua to the API takes 10 ms on average and 39 ms at p95, and even in the saturated 50 CPS run 87 % of setup calls completed under 50 ms (the tail was CPU starvation, not database contention).
 
+## Media cost per mode
+
+Measured on the same host, 2026-10-24: 50 concurrent calls (100 channels) with
+the same PCMA audio in both directions in every run (about 1410 RTP packets per
+call), sampling FreeSWITCH's own cgroup CPU counter for 20 s mid-call.
+
+| Mode | Cores | Above idle | Per call |
+|------|------:|-----------:|---------:|
+| idle (10 gateways pinging) | 0.040 | | |
+| proxy (RTP relayed at the socket) | 0.199 | 0.159 | 3.2 mcores |
+| relay (anchored, one codec on both legs) | 0.393 | 0.353 | 7.1 mcores |
+| transcode (G.729 both ways) | 0.614 | 0.574 | 11.5 mcores |
+
+Anchoring a matched call costs about **4 mcores more per call than proxying**,
+or 2.2 times as much; G.729 transcoding costs 3.6 times as much as proxying.
+Extrapolated, media alone would cap this four core host near 1200 proxied,
+550 relayed or 340 transcoded concurrent calls, far beyond the 25 CPS the
+signalling path sustains. That is why every customer and carrier runs on
+`anchor`: the difference is unmeasurable at this traffic and anchoring keeps
+the outbound RTP counters, the real codec names in the CDR, and the option to
+interwork DTMF or SRTP. A proxied call records inbound packets, bytes and MOS
+but no outbound counters (`rtp_audio_out_packet_count` is 0) and reads
+`codec_in = codec_out = PROXY`.
+
+`docker stats` is useless for this on this host: it reported a flat 21.5 %
+whether 10 calls were up or none. The cgroup counter
+(`/sys/fs/cgroup/.../cpu.stat`, `usage_usec`) is the one to trust.
+
 ## Sizing guidance
 
-* FreeSWITCH: budget one modern core per 25 to 40 CPS of signalling with media relay (no transcoding); transcoding (G.711 to Opus) costs roughly one core per 30 to 40 concurrent calls.
+* FreeSWITCH: budget one modern core per 25 to 40 CPS of signalling with media relay (no transcoding); transcoding costs roughly one core per 90 concurrent G.729 calls on this host (see the table above), and G.711 to Opus is dearer still.
 * sbc-api: one call is about 15 short SQL statements (setup transaction, attempt updates, billing transaction). Postgres on an SSD sustains several hundred CPS per core; the API itself used 0.5 cores at 50 CPS.
 * Postgres: `synchronous_commit` stays `on` (money); the commit latency of the disk bounds the per-customer account lock time. On a slow virtual disk consider a separate volume for `pg_wal`.
 * Redis: negligible (admission counters and caches; 7 % of a core at 50 CPS).
