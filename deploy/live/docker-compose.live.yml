@@ -100,7 +100,10 @@ services:
     logging: *logging
 
   freeswitch:
-    image: safarov/freeswitch:1.10.12
+    # Built from deploy/freeswitch: the stock image's mod_g729 cannot transcode
+    # (D-86).
+    build: ../freeswitch
+    image: supersbc/freeswitch:1.10.12-bcg729
     env_file: ../../.env.live
     network_mode: host
     # Run FreeSWITCH directly: the image entrypoint also starts an Erlang epmd on 0.0.0.0:4369.

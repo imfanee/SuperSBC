@@ -90,7 +90,10 @@ services:
     logging: *logging
 
   freeswitch:
-    image: safarov/freeswitch:1.10.12
+    # Built from deploy/freeswitch: the stock image's mod_g729 cannot transcode
+    # (D-86). Same image in dev and live so a codec problem shows up here.
+    build: ./deploy/freeswitch
+    image: supersbc/freeswitch:1.10.12-bcg729
     env_file: .env
     # Run FreeSWITCH directly: the image entrypoint also starts an Erlang epmd on 0.0.0.0:4369.
     entrypoint: ["/usr/bin/freeswitch", "-nf", "-nonat"]
@@ -152,6 +155,16 @@ services:
     volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
     networks:
       sbc: { ipv4_address: 172.28.0.61 }
+    restart: unless-stopped
+  # Answers G.729 only and echoes the RTP, so a PCMA customer forces
+  # mod_bcg729 to encode on the way out and decode on the way back (D-86).
+  carrier-g729:
+    image: supersbc/sipp:3.7
+    profiles: [e2e]
+    command: ["-sf", "/scenarios/uas_answer_g729.xml", "-i", "172.28.0.64", "-p", "5060", "-mi", "172.28.0.64", "-mp", "6000", "-rtp_echo", "-nostdin", "-trace_err", "-error_file", "/dev/null", "-trace_msg", "-message_file", "/out/carrier-g729.msg"]
+    volumes: ["./tests/e2e/scenarios:/scenarios:ro", "./tests/e2e/out:/out"]
+    networks:
+      sbc: { ipv4_address: 172.28.0.64 }
     restart: unless-stopped
   carrier-503:
     image: supersbc/sipp:3.7

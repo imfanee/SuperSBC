@@ -70,6 +70,10 @@ var (
 		// Same UAS as carrier-answer but PCMU only: forces transcoding from a PCMA customer.
 		{"carrier-pcmu", "172.28.0.61", 5060, []rateRow{
 			{"44", "UK Fixed", "0.007000", "0", 60, 60}}, []string{"PCMU"}, 0, "", ""},
+		// G.729 only, answered by the carrier-g729 UAS: a PCMA customer is transcoded
+		// by mod_bcg729 and a G.729 customer relays (D-86).
+		{"carrier-g729", "172.28.0.64", 5060, []rateRow{
+			{"44", "UK Fixed", "0.007500", "0", 60, 60}}, []string{"G729"}, 0, "", ""},
 		// Same UAS, one channel: the second concurrent call must fail over.
 		{"carrier-cap1", "172.28.0.61", 5060, []rateRow{
 			{"44", "UK Fixed", "0.005000", "0", 60, 60}}, nil, 1, "", ""},
@@ -93,6 +97,7 @@ var (
 		{"4479", "UK Mobile number fault", []string{"carrier-404", "carrier-answer"}},
 		{"4476", "UK Mobile gateway down", []string{"carrier-down", "carrier-answer"}},
 		{"4421", "UK London transcode", []string{"carrier-pcmu"}},
+		{"4425", "UK London G.729", []string{"carrier-g729"}},
 		{"4422", "UK London capacity", []string{"carrier-cap1", "carrier-answer"}},
 		{"4423", "UK London bypass", []string{"carrier-bypass"}},
 		{"4424", "UK London privacy pass", []string{"carrier-privacy-pass"}},
@@ -182,7 +187,7 @@ func Run(ctx context.Context, st *store.Store, log *slog.Logger) error {
 	for _, c := range customers {
 		cust, err := st.UpsertCustomer(ctx, &model.Customer{
 			Name: c.name, Status: "active", RateGroupID: &sellID, RouteGroupID: &routeID,
-			MaxConcurrentCalls: c.maxCC, MaxCPS: c.maxCPS, AllowedCodecs: []string{"PCMA", "PCMU", "OPUS", "G722"},
+			MaxConcurrentCalls: c.maxCC, MaxCPS: c.maxCPS, AllowedCodecs: []string{"PCMA", "PCMU", "OPUS", "G722", "G729"},
 			IntlPrefix: "00", BlockedPrefixesEnabled: true, Notes: "Demo customer",
 			MediaMode: c.media, SRTPMode: c.srtp, RequireTLS: c.requireTLS, STIRMode: c.stir, TLSSubject: c.tlsSubject,
 		})

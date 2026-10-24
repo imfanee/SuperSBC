@@ -156,13 +156,18 @@ fs_cli> uuid_kill <uuid> MANAGER_REQUEST                                # hang u
 fs_cli> sofia global siptrace on                                        # trace everything to the log
 ```
 
-Codecs: the profiles negotiate `SBC_FS_INGRESS_CODECS` / `SBC_FS_EGRESS_CODECS` (default `PCMA,PCMU,OPUS,G722`); each customer and carrier narrows the list. G.729 pass-through works with the stock `mod_g729`; transcoding to or from G.729 needs a codec module the image does not ship (`mod_bcg729` built against bcg729, or a licensed module).
+Codecs: the profiles negotiate `SBC_FS_INGRESS_CODECS` / `SBC_FS_EGRESS_CODECS` (default `PCMA,PCMU,OPUS,G722`); each customer and carrier narrows the list. G.729 is transcoded as well as relayed: the FreeSWITCH image is built from `deploy/freeswitch`, which replaces the pass-through `mod_g729` with `mod_bcg729` (D-86). Confirm after any image change:
+
+```sh
+docker exec supersbc-live-freeswitch-1 sh -c 'ls /usr/lib/freeswitch/mod/ | grep 729'   # mod_bcg729.so, and no mod_g729.so
+docker logs supersbc-live-freeswitch-1 2>&1 | grep -c "Adding Codec G729"               # 12 implementations
+```
 
 The SBC avoids that transcode instead of relying on it (D-85). If any codec in the ingress INVITE is allowed by both the customer and the carrier, the egress INVITE offers only the matching codecs, so the carrier cannot answer with anything else: a G.729 only caller is offered `G729` alone and a carrier that allows G.729 answers G.729. If nothing matches, the egress INVITE offers the carrier's codecs and the call is transcoded, which is the only way to bridge two different codecs.
 
 Set `media_mode = smart` on the customer and the carrier to take FreeSWITCH out of the media path whenever the two sides match: the attempt is proxied when the codecs match and anchored when they do not (D-84). The stricter side wins, so both the customer and the carrier have to be `smart` (or looser) for it to take effect.
 
-When a call does end up transcoding into a codec with no encoder, FreeSWITCH logs `This codec is only usable in passthrough mode!` followed by `Codec G.729 encoder error!` and the call fails with `NORMAL_TEMPORARY_FAILURE`. The CDR shows it without reading logs: different `codec_in` and `codec_out`, and `media_mode = transcode`.
+`This codec is only usable in passthrough mode!` followed by `Codec G.729 encoder error!` and a call that fails with `NORMAL_TEMPORARY_FAILURE` means the stock `mod_g729` is loaded again: the image is not the one from `deploy/freeswitch`. Transcoded calls are visible in the CDRs without reading logs, by different `codec_in` and `codec_out` with `media_mode = transcode`.
 
 ```sh
 docker exec supersbc-live-postgres-1 psql -U supersbc -d supersbc -c \
@@ -171,7 +176,7 @@ docker exec supersbc-live-postgres-1 psql -U supersbc -d supersbc -c \
        and start_time > now() - interval '1 day' order by start_time desc limit 20;"
 ```
 
-Either give the carrier the caller's codec in `allowed_codecs`, or build `mod_bcg729` into the FreeSWITCH image if the carriers genuinely cannot take G.729. A carrier whose `allowed_codecs` claims a codec its gateway cannot do will now answer 488 instead of falling back, because the egress offer is narrowed to the match: fix the carrier's list.
+Transcoding itself works (D-86), so a `transcode` row is a working call, not a failure; it just costs CPU. A carrier whose `allowed_codecs` claims a codec its gateway cannot do answers 488 instead of falling back, because the egress offer is narrowed to the match: fix the carrier's list.
 
 Capacity: `SBC_FS_MAX_SESSIONS` and `SBC_FS_SESSIONS_PER_SECOND` count both legs (a call is two sessions). `SBC_ROUTING_GLOBAL_MAX_CHANNELS` and `SBC_ROUTING_GLOBAL_MAX_CPS` cap admitted calls in the API.
 

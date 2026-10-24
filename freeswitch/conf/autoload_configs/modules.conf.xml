@@ -11,7 +11,8 @@
     <load module="mod_json_cdr"/>
     <load module="mod_lua"/>
     <load module="mod_opus"/>
-    <load module="mod_g729"/>
+    <!-- G.729 with real transcoding, not the pass-through stub (D-86). -->
+    <load module="mod_bcg729"/>
     <load module="mod_amr"/>
     <load module="mod_tone_stream"/>
     <load module="mod_sndfile"/>

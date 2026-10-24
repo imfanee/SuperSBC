@@ -1,0 +1,8 @@
+<configuration name="bcg729.conf" description="G.729 codec (bcg729)">
+  <settings>
+    <!-- Annex B VAD/DTX. Off means every frame is sent and fmtp advertises
+         annexb=no, which is what carriers interoperate with most reliably
+         (D-86). Turning it on saves bandwidth on silence. -->
+    <param name="use-vad" value="false"/>
+  </settings>
+</configuration>
