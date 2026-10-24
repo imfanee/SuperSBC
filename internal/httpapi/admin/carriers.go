@@ -50,7 +50,7 @@ type carrierInput struct {
 	IgnoreEarlyMedia      bool     `json:"ignore_early_media"`
 	Notes                 string   `json:"notes"`
 	Currency              string   `json:"currency" validate:"omitempty,len=3"`
-	MediaMode             string   `json:"media_mode" validate:"omitempty,oneof=anchor proxy bypass"`
+	MediaMode             string   `json:"media_mode" validate:"omitempty,oneof=anchor smart proxy bypass"`
 	DTMFMode              string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
 	SRTPMode              string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
 	PrivacyMode           string   `json:"privacy_mode" validate:"omitempty,oneof=anonymize pass ignore"`

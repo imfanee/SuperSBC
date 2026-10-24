@@ -58,7 +58,7 @@ const schema = z.object({
   charge_failed_attempts: z.boolean(),
   notes: z.string(),
   currency: z.string(),
-  media_mode: z.enum(["anchor", "proxy", "bypass"]),
+  media_mode: z.enum(["anchor", "smart", "proxy", "bypass"]),
   dtmf_mode: z.enum(["rfc2833", "info", "inband"]),
   srtp_mode: z.enum(["off", "optional", "mandatory"]),
   privacy_mode: z.enum(["anonymize", "pass", "ignore"]),
@@ -250,8 +250,8 @@ export function CarrierForm({
           [
             "media_mode",
             "Media",
-            ["anchor", "proxy", "bypass"],
-            "bypass only when the customer allows it too",
+            ["anchor", "smart", "proxy", "bypass"],
+            "smart proxies the media when this carrier shares a codec with the caller and anchors when it does not; bypass only when the customer allows it too",
           ],
           [
             "dtmf_mode",

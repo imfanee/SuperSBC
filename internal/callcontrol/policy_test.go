@@ -13,6 +13,9 @@ func TestMediaModeFor(t *testing.T) {
 	cases := []struct{ c, k, want string }{
 		{"anchor", "bypass", "anchor"}, {"bypass", "anchor", "anchor"}, {"bypass", "bypass", "bypass"},
 		{"bypass", "proxy", "proxy"}, {"proxy", "bypass", "proxy"}, {"", "bypass", "anchor"},
+		// smart is more conservative than proxy and less than anchor
+		{"smart", "smart", "smart"}, {"smart", "proxy", "smart"}, {"proxy", "smart", "smart"},
+		{"smart", "bypass", "smart"}, {"smart", "anchor", "anchor"}, {"anchor", "smart", "anchor"},
 	}
 	for _, x := range cases {
 		if got := MediaModeFor(x.c, x.k); got != x.want {
@@ -77,5 +80,35 @@ func TestApplyHeaderRules(t *testing.T) {
 	}
 	if canonicalHeader("p-asserted-identity") != "P-Asserted-Identity" {
 		t.Error("canonical header")
+	}
+}
+
+func TestResolveMediaMode(t *testing.T) {
+	cust := []string{"PCMA", "PCMU", "G729"}
+	carr := []string{"PCMA", "PCMU", "G729"}
+	cases := []struct {
+		name     string
+		mode     string
+		offered  string
+		customer []string
+		carrier  []string
+		want     string
+	}{
+		{"a final mode is left alone", "anchor", "G729@8000h", cust, carr, "anchor"},
+		{"proxy stays proxy", "proxy", "", cust, carr, "proxy"},
+		{"bypass stays bypass", "bypass", "", cust, carr, "bypass"},
+		{"a codec both sides allow is proxied", "smart", "G729@8000h@20i@8000b", cust, carr, "proxy"},
+		{"a codec the carrier refuses is anchored", "smart", "G722@16000h", cust, []string{"PCMA", "PCMU"}, "anchor"},
+		{"a codec the customer is not allowed is anchored", "smart", "G729@8000h", []string{"PCMA"}, carr, "anchor"},
+		{"telephone-event alone does not count as a shared codec", "smart", "telephone-event@8000h", cust, carr, "anchor"},
+		{"an offer we cannot see is anchored", "smart", "", cust, carr, "anchor"},
+		{"one shared codec among several is enough", "smart", "G722@16000h,PCMA@8000h", cust, carr, "proxy"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := ResolveMediaMode(c.mode, c.offered, c.customer, c.carrier); got != c.want {
+				t.Errorf("got %q want %q", got, c.want)
+			}
+		})
 	}
 }

@@ -54,7 +54,7 @@ const customerSchema = z.object({
   blocked_prefixes_enabled: z.boolean(),
   notes: z.string(),
   currency: z.string().length(3).optional().or(z.literal("")),
-  media_mode: z.enum(["anchor", "proxy", "bypass"]),
+  media_mode: z.enum(["anchor", "smart", "proxy", "bypass"]),
   dtmf_mode: z.enum(["rfc2833", "info", "inband"]),
   srtp_mode: z.enum(["off", "optional", "mandatory"]),
   require_tls: z.boolean(),
@@ -212,8 +212,8 @@ export function CustomerForm({
           [
             "media_mode",
             "Media",
-            ["anchor", "proxy", "bypass"],
-            "anchor: relay and transcode; proxy: relay untouched; bypass: direct media when the carrier allows it too",
+            ["anchor", "smart", "proxy", "bypass"],
+            "anchor: relay and transcode; smart: proxy when the caller and the carrier share a codec, anchor when they do not; proxy: relay untouched; bypass: direct media. The stricter side wins, so smart, proxy and bypass need the carrier set to the same or looser.",
           ],
           ["dtmf_mode", "DTMF from customer", ["rfc2833", "info", "inband"], ""],
           [

@@ -36,7 +36,7 @@ Customers > New customer:
 | Default country code, international prefix | how national numbers and `00`/`011` style numbers are turned into E.164 (see [CALL_FLOW.md](CALL_FLOW.md), D-26) |
 | Trust P-Asserted-Identity | take the caller number from PAI instead of From |
 | Apply block lists | whether the global and per customer blocked prefixes apply |
-| Media | `anchor` (relay and transcode), `proxy` (relay without transcoding), `bypass` (media direct between customer and carrier when the carrier allows it too) |
+| Media | `anchor` (relay and transcode), `smart` (proxy when the caller and the carrier share a codec, anchor when they do not), `proxy` (relay without transcoding), `bypass` (media direct between customer and carrier when the carrier allows it too) |
 | DTMF | `rfc2833`, `info`, `inband` |
 | SRTP | `off`, `optional`, `mandatory` (plain offers get `488 SRTP required`) |
 | STIR/SHAKEN | `ignore`, `verify` (record the attestation), `require` (reject unverified calls with 428/436/438) |

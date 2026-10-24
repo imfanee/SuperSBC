@@ -20,7 +20,9 @@ type SetupRequest struct {
 	Caller    string `json:"caller"`
 	Called    string `json:"called"`
 	SIPCallID string `json:"sip_call_id"`
-	// Codecs offered by the customer (from FreeSWITCH), informational.
+	// Codecs offered by the customer (FreeSWITCH ep_codec_string on the
+	// a-leg). The carrier leg offers these first so the two legs relay
+	// instead of transcode (D-83).
 	OfferedCodecs string `json:"offered_codecs"`
 	Node          string `json:"node"`
 	// SRTPOffered is true when the customer's SDP carried crypto attributes.

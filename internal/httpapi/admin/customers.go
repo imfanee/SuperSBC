@@ -55,7 +55,7 @@ type customerInput struct {
 	BlockedPrefixesEnabled *bool    `json:"blocked_prefixes_enabled"`
 	Notes                  string   `json:"notes"`
 	Currency               string   `json:"currency" validate:"omitempty,len=3"`
-	MediaMode              string   `json:"media_mode" validate:"omitempty,oneof=anchor proxy bypass"`
+	MediaMode              string   `json:"media_mode" validate:"omitempty,oneof=anchor smart proxy bypass"`
 	DTMFMode               string   `json:"dtmf_mode" validate:"omitempty,oneof=rfc2833 info inband"`
 	SRTPMode               string   `json:"srtp_mode" validate:"omitempty,oneof=off optional mandatory"`
 	RequireTLS             bool     `json:"require_tls"`

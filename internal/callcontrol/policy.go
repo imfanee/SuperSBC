@@ -11,16 +11,61 @@ import (
 // Section 7 [M5] policies: media mode, DTMF interworking, privacy, SRTP and
 // header manipulation. Pure functions, unit tested.
 
-// MediaModeFor combines the customer and carrier media policies: anchoring
-// wins over proxying, proxying over bypass (the most conservative side decides).
+// MediaModeFor combines the customer and carrier media policies. The most
+// conservative side decides: anchor beats smart, smart beats proxy, proxy
+// beats bypass. "smart" is not a final answer; ResolveMediaMode turns it into
+// proxy or anchor once the call's codecs are known (D-84).
 func MediaModeFor(customer, carrier string) string {
 	if customer == "anchor" || carrier == "anchor" || customer == "" || carrier == "" {
 		return "anchor"
+	}
+	if customer == "smart" || carrier == "smart" {
+		return "smart"
 	}
 	if customer == "proxy" || carrier == "proxy" {
 		return "proxy"
 	}
 	return "bypass"
+}
+
+// ResolveMediaMode settles the media mode for one carrier leg. Every mode but
+// "smart" is already final. Smart proxies the media when the caller offered a
+// codec that both the customer and the carrier allow, because then the two
+// legs can run the same codec and FreeSWITCH has nothing to transcode; it
+// anchors otherwise, since bridging two different codecs needs an encoder
+// (D-84). An offer we cannot see is anchored, which always works.
+func ResolveMediaMode(mode, offered string, customerCodecs, carrierCodecs []string) string {
+	if mode != "smart" {
+		return mode
+	}
+	if sharedCodec(offered, customerCodecs, carrierCodecs) {
+		return "proxy"
+	}
+	return "anchor"
+}
+
+// sharedCodec reports whether any codec the caller offered is allowed by both
+// the customer and the carrier.
+func sharedCodec(offered string, customerCodecs, carrierCodecs []string) bool {
+	want := offeredCodecs(offered)
+	if len(want) == 0 || len(customerCodecs) == 0 || len(carrierCodecs) == 0 {
+		return false
+	}
+	for _, w := range want {
+		if containsFold(customerCodecs, w) && containsFold(carrierCodecs, w) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsFold(list []string, want string) bool {
+	for _, c := range list {
+		if strings.EqualFold(c, want) {
+			return true
+		}
+	}
+	return false
 }
 
 // dtmfVars returns the b-leg variables for a carrier DTMF mode.

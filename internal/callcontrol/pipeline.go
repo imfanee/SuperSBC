@@ -345,8 +345,9 @@ func (p *Pipeline) Route(ctx context.Context, cust *model.Customer, called, call
 
 // RouteOpts are per call flags that shape the carrier legs.
 type RouteOpts struct {
-	Privacy         bool // the caller asked for privacy (D-54)
-	ForwardIdentity bool // pass the verified STIR Identity header to the carrier (D-64)
+	Privacy         bool   // the caller asked for privacy (D-54)
+	ForwardIdentity bool   // pass the verified STIR Identity header to the carrier (D-64)
+	OfferedCodecs   string // the a-leg ep_codec_string, so the carrier leg can relay instead of transcode (D-83)
 }
 
 // RouteWith is Route with the per call options.
@@ -461,9 +462,9 @@ func (p *Pipeline) RouteWith(ctx context.Context, cust *model.Customer, called, 
 		ch := CarrierChoice{
 			CarrierID: c.ID, Name: c.Name, Gateway: c.GatewayName(), Priority: rc.Priority, Weight: rc.Weight,
 			DialNumber: dial, CallerID: ani, BuyRateID: &rid, BuyRatePerMin: &rate, BuyDestination: buy.Destination,
-			NegativeMargin: negative, FailoverSIPCodes: c.FailoverSIPCodes, Codecs: codecString(cust.AllowedCodecs, c.AllowedCodecs),
+			NegativeMargin: negative, FailoverSIPCodes: c.FailoverSIPCodes, Codecs: codecStringFor(cust.AllowedCodecs, c.AllowedCodecs, ro.OfferedCodecs),
 			IgnoreEarlyMedia: c.IgnoreEarlyMedia, Degraded: p.health.Degraded(c.ID),
-			MediaMode: MediaModeFor(cust.MediaMode, c.MediaMode),
+			MediaMode: ResolveMediaMode(MediaModeFor(cust.MediaMode, c.MediaMode), ro.OfferedCodecs, cust.AllowedCodecs, c.AllowedCodecs),
 		}
 		var extra []string
 		if privacy {
@@ -555,9 +556,15 @@ func buildDialNumber(called string, c model.Carrier) string {
 	return c.DNIPrefix + n
 }
 
-// codecString intersects customer and carrier codec lists, keeping the
-// carrier order; falls back to the carrier list when nothing intersects.
-func codecString(customer, carrier []string) string {
+// codecStringFor intersects the customer and carrier codec lists, keeping the
+// carrier order, and falls back to the carrier list when nothing intersects.
+// offered is the a-leg's FreeSWITCH ep_codec_string: any codec the caller
+// actually offered and both sides allow is moved to the front, so the carrier
+// answers with the codec already on the customer leg and the two legs relay
+// instead of transcode (D-83). Without this a G.729 only caller ends up
+// G.729 in, PCMA out, which needs an encoder the pass-through mod_g729 does
+// not have.
+func codecStringFor(customer, carrier []string, offered string) string {
 	if len(carrier) == 0 {
 		return strings.Join(customer, ",")
 	}
@@ -577,7 +584,50 @@ func codecString(customer, carrier []string) string {
 	if len(out) == 0 {
 		return strings.Join(carrier, ",")
 	}
-	return strings.Join(out, ",")
+	return strings.Join(preferOffered(out, offered), ",")
+}
+
+// preferOffered reorders an intersection so the codecs the caller offered
+// come first, in the order the caller listed them.
+func preferOffered(intersection []string, offered string) []string {
+	want := offeredCodecs(offered)
+	if len(want) == 0 {
+		return intersection
+	}
+	var first, rest []string
+	taken := map[string]bool{}
+	for _, w := range want {
+		for _, c := range intersection {
+			if strings.EqualFold(c, w) && !taken[strings.ToUpper(c)] {
+				first = append(first, c)
+				taken[strings.ToUpper(c)] = true
+			}
+		}
+	}
+	for _, c := range intersection {
+		if !taken[strings.ToUpper(c)] {
+			rest = append(rest, c)
+		}
+	}
+	return append(first, rest...)
+}
+
+// offeredCodecs parses a FreeSWITCH ep_codec_string
+// ("G729@8000h@20i@8000b,PCMU@8000h@20i@64000b") into plain codec names.
+// telephone-event is not an audio codec and is dropped.
+func offeredCodecs(s string) []string {
+	var out []string
+	for _, part := range strings.Split(s, ",") {
+		name := strings.TrimSpace(part)
+		if i := strings.IndexByte(name, '@'); i >= 0 {
+			name = name[:i]
+		}
+		if name == "" || strings.EqualFold(name, "telephone-event") {
+			continue
+		}
+		out = append(out, name)
+	}
+	return out
 }
 
 // dialString builds the FreeSWITCH originate string for one carrier
@@ -588,7 +638,6 @@ func (p *Pipeline) dialString(c CarrierChoice, callUUID string, extra []string) 
 		"sip_h_X-SBC-Call=" + callUUID,
 		"origination_caller_id_number=" + c.CallerID,
 		"origination_caller_id_name=" + c.CallerID,
-		"absolute_codec_string=^^:" + strings.ReplaceAll(c.Codecs, ",", ":"),
 		fmt.Sprintf("ignore_early_media=%t", c.IgnoreEarlyMedia),
 		fmt.Sprintf("originate_timeout=%d", p.cfg.Routing.OriginateTimeout),
 		fmt.Sprintf("progress_timeout=%d", p.cfg.Routing.ProgressTimeout),
@@ -600,6 +649,13 @@ func (p *Pipeline) dialString(c CarrierChoice, callUUID string, extra []string) 
 		fmt.Sprintf("media_hold_timeout=%d", p.cfg.Routing.MediaHoldTimeoutSec*1000),
 		"sbc_carrier_id=" + c.CarrierID.String(),
 		"sbc_attempt_seq=" + fmt.Sprint(c.Seq),
+	}
+	// Codec policy belongs to the leg FreeSWITCH negotiates itself. When the
+	// media is proxied or bypassed the SDP passes through untouched and the
+	// endpoints agree between themselves, so pinning a list here would be a
+	// lie (D-84).
+	if c.MediaMode != "proxy" && c.MediaMode != "bypass" {
+		vars = append(vars, "absolute_codec_string=^^:"+strings.ReplaceAll(c.Codecs, ",", ":"))
 	}
 	vars = append(vars, extra...)
 	return "{" + strings.Join(vars, ",") + "}sofia/gateway/" + c.Gateway + "/" + c.DialNumber
@@ -855,7 +911,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	}
 
 	// Steps 6 and 7
-	route, err := p.RouteWith(ctx, cust, called, caller, sell, req.CallUUID, RouteOpts{Privacy: req.Privacy, ForwardIdentity: forwardIdentity})
+	route, err := p.RouteWith(ctx, cust, called, caller, sell, req.CallUUID, RouteOpts{Privacy: req.Privacy, ForwardIdentity: forwardIdentity, OfferedCodecs: req.OfferedCodecs})
 	if err != nil {
 		return nil, err
 	}

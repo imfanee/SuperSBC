@@ -12,6 +12,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -493,5 +494,116 @@ func TestIntegrationRollupRepeatable(t *testing.T) {
 	rows, _ = reports.New(e.st.Pool()).HourlyFromRollup(ctx, reports.Range{From: hour, To: hour.Add(time.Hour)})
 	if len(rows) != 1 || rows[0].Attempts != 4 || rows[0].Rejected != 1 {
 		t.Fatalf("late cdr not rolled up: %+v", rows)
+	}
+}
+
+// A caller that offers only G.729 must be offered G.729 first on the carrier
+// leg, so the two legs relay the payload instead of asking FreeSWITCH for a
+// G.729 encoder it does not have (D-83).
+func TestIntegrationOfferedCodecLeadsCarrierLeg(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	cust, err := e.st.CustomerByName(ctx, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cust.AllowedCodecs = []string{"PCMA", "PCMU", "G729"}
+	if _, err := e.st.UpsertCustomer(ctx, cust); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"carrier-503", "carrier-answer"} {
+		car, err := e.st.CarrierByName(ctx, name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		car.AllowedCodecs = []string{"PCMA", "PCMU", "G729"}
+		if _, err := e.st.UpsertCarrier(ctx, car); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cust, _ = e.st.CustomerByName(ctx, "acme")
+
+	g729, err := e.pipe.RouteWith(ctx, cust, "447700900123", "1", nil, uuid.New().String(),
+		callcontrol.RouteOpts{OfferedCodecs: "G729@8000h@20i@8000b,telephone-event@8000h"})
+	if err != nil || len(g729.Carriers) == 0 {
+		t.Fatalf("route: %v %+v", err, g729)
+	}
+	for _, c := range g729.Carriers {
+		if c.Codecs != "G729,PCMA,PCMU" {
+			t.Errorf("%s offered %q, want G729 first", c.Name, c.Codecs)
+		}
+	}
+
+	// A PCMA caller is unaffected: the carrier preference still decides.
+	pcma, err := e.pipe.RouteWith(ctx, cust, "447700900123", "1", nil, uuid.New().String(),
+		callcontrol.RouteOpts{OfferedCodecs: "PCMA@8000h@20i@64000b"})
+	if err != nil || len(pcma.Carriers) == 0 {
+		t.Fatalf("route: %v %+v", err, pcma)
+	}
+	for _, c := range pcma.Carriers {
+		if c.Codecs != "PCMA,PCMU,G729" {
+			t.Errorf("%s offered %q, want the carrier order", c.Name, c.Codecs)
+		}
+	}
+}
+
+// Smart media proxies the attempt when the caller and the carrier share a
+// codec and anchors it when they do not (D-84). This also proves the
+// media_mode enum accepts 'smart' after the migration.
+func TestIntegrationSmartMediaMode(t *testing.T) {
+	e := setup(t)
+	ctx := context.Background()
+	cust, err := e.st.CustomerByName(ctx, "acme")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cust.AllowedCodecs = []string{"PCMA", "PCMU", "G729"}
+	cust.MediaMode = "smart"
+	if _, err := e.st.UpsertCustomer(ctx, cust); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"carrier-503", "carrier-answer"} {
+		car, err := e.st.CarrierByName(ctx, name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		car.AllowedCodecs = []string{"PCMA", "PCMU", "G729"}
+		car.MediaMode = "smart"
+		if _, err := e.st.UpsertCarrier(ctx, car); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cust, _ = e.st.CustomerByName(ctx, "acme")
+	if cust.MediaMode != "smart" {
+		t.Fatalf("customer media mode did not persist: %q", cust.MediaMode)
+	}
+
+	shared, err := e.pipe.RouteWith(ctx, cust, "447700900123", "1", nil, uuid.New().String(),
+		callcontrol.RouteOpts{OfferedCodecs: "G729@8000h@20i@8000b"})
+	if err != nil || len(shared.Carriers) == 0 {
+		t.Fatalf("route: %v %+v", err, shared)
+	}
+	for _, c := range shared.Carriers {
+		if c.MediaMode != "proxy" {
+			t.Errorf("%s: shared codec should be proxied, got %q", c.Name, c.MediaMode)
+		}
+		if strings.Contains(c.DialString, "absolute_codec_string") {
+			t.Errorf("%s: a proxied leg must not pin codecs: %s", c.Name, c.DialString)
+		}
+	}
+
+	// G.722 is not in the carriers' lists, so this one has to be anchored.
+	lonely, err := e.pipe.RouteWith(ctx, cust, "447700900123", "1", nil, uuid.New().String(),
+		callcontrol.RouteOpts{OfferedCodecs: "G722@16000h"})
+	if err != nil || len(lonely.Carriers) == 0 {
+		t.Fatalf("route: %v %+v", err, lonely)
+	}
+	for _, c := range lonely.Carriers {
+		if c.MediaMode != "anchor" {
+			t.Errorf("%s: no shared codec should anchor, got %q", c.Name, c.MediaMode)
+		}
+		if !strings.Contains(c.DialString, "absolute_codec_string") {
+			t.Errorf("%s: an anchored leg pins codecs: %s", c.Name, c.DialString)
+		}
 	}
 }

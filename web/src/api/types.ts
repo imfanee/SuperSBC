@@ -28,7 +28,7 @@ export interface Customer {
   intl_prefix: string;
   trust_pai: boolean;
   blocked_prefixes_enabled: boolean;
-  media_mode: "anchor" | "proxy" | "bypass";
+  media_mode: "anchor" | "smart" | "proxy" | "bypass";
   dtmf_mode: "rfc2833" | "info" | "inband";
   srtp_mode: "off" | "optional" | "mandatory";
   require_tls: boolean;
@@ -100,7 +100,7 @@ export interface Carrier {
   sip_options_ping: boolean;
   charge_failed_attempts: boolean;
   ignore_early_media: boolean;
-  media_mode: "anchor" | "proxy" | "bypass";
+  media_mode: "anchor" | "smart" | "proxy" | "bypass";
   dtmf_mode: "rfc2833" | "info" | "inband";
   srtp_mode: "off" | "optional" | "mandatory";
   privacy_mode: "anonymize" | "pass" | "ignore";
