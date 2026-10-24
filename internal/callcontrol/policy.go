@@ -38,34 +38,12 @@ func ResolveMediaMode(mode, offered string, customerCodecs, carrierCodecs []stri
 	if mode != "smart" {
 		return mode
 	}
-	if sharedCodec(offered, customerCodecs, carrierCodecs) {
+	// The same test that narrows the egress codec list (D-85): a match means
+	// both legs can run one codec, so there is nothing to transcode.
+	if len(matchedCodecs(offered, customerCodecs, carrierCodecs)) > 0 {
 		return "proxy"
 	}
 	return "anchor"
-}
-
-// sharedCodec reports whether any codec the caller offered is allowed by both
-// the customer and the carrier.
-func sharedCodec(offered string, customerCodecs, carrierCodecs []string) bool {
-	want := offeredCodecs(offered)
-	if len(want) == 0 || len(customerCodecs) == 0 || len(carrierCodecs) == 0 {
-		return false
-	}
-	for _, w := range want {
-		if containsFold(customerCodecs, w) && containsFold(carrierCodecs, w) {
-			return true
-		}
-	}
-	return false
-}
-
-func containsFold(list []string, want string) bool {
-	for _, c := range list {
-		if strings.EqualFold(c, want) {
-			return true
-		}
-	}
-	return false
 }
 
 // dtmfVars returns the b-leg variables for a carrier DTMF mode.

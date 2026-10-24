@@ -213,7 +213,7 @@ export function CustomerForm({
             "media_mode",
             "Media",
             ["anchor", "smart", "proxy", "bypass"],
-            "anchor: relay and transcode; smart: proxy when the caller and the carrier share a codec, anchor when they do not; proxy: relay untouched; bypass: direct media. The stricter side wins, so smart, proxy and bypass need the carrier set to the same or looser.",
+            "The egress INVITE always offers only the codecs the caller offered that this customer and the carrier both allow, so a match is never transcoded. This picks what happens to the media: anchor: relay; smart: proxy on a match, anchor when there is none; proxy: relay untouched; bypass: direct. The stricter side wins, so smart, proxy and bypass need the carrier set to the same or looser.",
           ],
           ["dtmf_mode", "DTMF from customer", ["rfc2833", "info", "inband"], ""],
           [

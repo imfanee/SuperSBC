@@ -497,10 +497,10 @@ func TestIntegrationRollupRepeatable(t *testing.T) {
 	}
 }
 
-// A caller that offers only G.729 must be offered G.729 first on the carrier
-// leg, so the two legs relay the payload instead of asking FreeSWITCH for a
-// G.729 encoder it does not have (D-83).
-func TestIntegrationOfferedCodecLeadsCarrierLeg(t *testing.T) {
+// A caller that offers only G.729 must be offered G.729 and nothing else on
+// the carrier leg, so the carrier cannot answer PCMA and ask FreeSWITCH for a
+// G.729 encoder it does not have (D-83, D-85).
+func TestIntegrationEgressCodecMatchesTheOffer(t *testing.T) {
 	e := setup(t)
 	ctx := context.Background()
 	cust, err := e.st.CustomerByName(ctx, "acme")
@@ -529,20 +529,21 @@ func TestIntegrationOfferedCodecLeadsCarrierLeg(t *testing.T) {
 		t.Fatalf("route: %v %+v", err, g729)
 	}
 	for _, c := range g729.Carriers {
-		if c.Codecs != "G729,PCMA,PCMU" {
-			t.Errorf("%s offered %q, want G729 first", c.Name, c.Codecs)
+		if c.Codecs != "G729" {
+			t.Errorf("%s offered %q, want G729 alone", c.Name, c.Codecs)
 		}
 	}
 
-	// A PCMA caller is unaffected: the carrier preference still decides.
-	pcma, err := e.pipe.RouteWith(ctx, cust, "447700900123", "1", nil, uuid.New().String(),
-		callcontrol.RouteOpts{OfferedCodecs: "PCMA@8000h@20i@64000b"})
-	if err != nil || len(pcma.Carriers) == 0 {
-		t.Fatalf("route: %v %+v", err, pcma)
+	// A caller with nothing in common with the carriers has to be transcoded,
+	// and then the carrier's own list is offered.
+	g722, err := e.pipe.RouteWith(ctx, cust, "447700900123", "1", nil, uuid.New().String(),
+		callcontrol.RouteOpts{OfferedCodecs: "G722@16000h"})
+	if err != nil || len(g722.Carriers) == 0 {
+		t.Fatalf("route: %v %+v", err, g722)
 	}
-	for _, c := range pcma.Carriers {
+	for _, c := range g722.Carriers {
 		if c.Codecs != "PCMA,PCMU,G729" {
-			t.Errorf("%s offered %q, want the carrier order", c.Name, c.Codecs)
+			t.Errorf("%s offered %q, want the carrier list", c.Name, c.Codecs)
 		}
 	}
 }

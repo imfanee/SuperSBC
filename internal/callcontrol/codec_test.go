@@ -11,53 +11,88 @@ func TestCodecStringFor(t *testing.T) {
 		want     string
 	}{
 		{
-			name:     "a G.729 only caller is offered G.729 first so neither leg transcodes",
+			name:     "a G.729 only caller is offered G.729 only, so the carrier cannot answer PCMA",
 			customer: []string{"PCMA", "PCMU", "G729"},
 			carrier:  []string{"PCMA", "PCMU", "G729"},
-			offered:  "G729@8000h@20i@8000b",
-			want:     "G729,PCMA,PCMU",
+			offered:  "G729@8000h@20i@8000b,telephone-event@8000h",
+			want:     "G729",
 		},
 		{
-			name:     "a PCMA caller keeps the carrier order",
+			name:     "a PCMA only caller is offered PCMA only",
 			customer: []string{"PCMA", "PCMU", "G729"},
 			carrier:  []string{"PCMA", "PCMU", "G729"},
 			offered:  "PCMA@8000h@20i@64000b,telephone-event@8000h",
-			want:     "PCMA,PCMU,G729",
+			want:     "PCMA",
 		},
 		{
-			name:     "the caller order is kept when it offers several we allow",
+			name:     "several matching codecs keep the caller's order",
 			customer: []string{"PCMA", "PCMU", "G729"},
 			carrier:  []string{"PCMA", "PCMU", "G729"},
 			offered:  "G729@8000h,PCMU@8000h",
-			want:     "G729,PCMU,PCMA",
+			want:     "G729,PCMU",
 		},
 		{
-			name:     "an offer the carrier does not allow does not reach the carrier leg",
+			name:     "only the matching ones are offered, the rest are dropped",
 			customer: []string{"PCMA", "PCMU", "OPUS"},
 			carrier:  []string{"PCMA", "PCMU"},
 			offered:  "OPUS@48000h,PCMU@8000h",
-			want:     "PCMU,PCMA",
+			want:     "PCMU",
 		},
 		{
-			name:     "no offer behaves as before",
+			name:     "no match means the carrier's codecs and a transcode",
+			customer: []string{"PCMA", "PCMU", "G722"},
+			carrier:  []string{"PCMA", "PCMU"},
+			offered:  "G722@16000h",
+			want:     "PCMA,PCMU",
+		},
+		{
+			name:     "a codec the customer is not allowed to use is not a match",
+			customer: []string{"PCMA"},
+			carrier:  []string{"PCMA", "G729"},
+			offered:  "G729@8000h",
+			want:     "PCMA",
+		},
+		{
+			name:     "telephone-event alone is not a match",
+			customer: []string{"PCMA", "PCMU"},
+			carrier:  []string{"PCMA", "PCMU"},
+			offered:  "telephone-event@8000h",
+			want:     "PCMA,PCMU",
+		},
+		{
+			name:     "no offer at all behaves as before: the intersection in carrier order",
 			customer: []string{"PCMA", "G729"},
 			carrier:  []string{"G729", "PCMA"},
 			offered:  "",
 			want:     "G729,PCMA",
 		},
 		{
-			name:     "an offer nobody allows leaves the intersection alone",
-			customer: []string{"PCMA", "PCMU"},
-			carrier:  []string{"PCMA", "PCMU"},
-			offered:  "G722@16000h",
-			want:     "PCMA,PCMU",
+			name:     "the carrier's spelling is used, not the offer's",
+			customer: []string{"g729"},
+			carrier:  []string{"G729"},
+			offered:  "g729@8000h",
+			want:     "G729",
 		},
 		{
-			name:     "no intersection still falls back to the carrier list",
+			name:     "lists with nothing in common fall back to the carrier",
 			customer: []string{"OPUS"},
 			carrier:  []string{"PCMA", "PCMU"},
 			offered:  "OPUS@48000h",
 			want:     "PCMA,PCMU",
+		},
+		{
+			name:     "a carrier without a list leaves the customer's",
+			customer: []string{"PCMA"},
+			carrier:  nil,
+			offered:  "PCMA@8000h",
+			want:     "PCMA",
+		},
+		{
+			name:     "a customer without a list leaves the carrier's",
+			customer: nil,
+			carrier:  []string{"PCMA", "G729"},
+			offered:  "G729@8000h",
+			want:     "PCMA,G729",
 		},
 	}
 	for _, c := range cases {
@@ -66,6 +101,20 @@ func TestCodecStringFor(t *testing.T) {
 				t.Errorf("got %q want %q", got, c.want)
 			}
 		})
+	}
+}
+
+// The egress list and the media decision must always agree: a narrowed list
+// means one codec on both legs, which is exactly when proxying is safe.
+func TestCodecNarrowingAgreesWithMediaMode(t *testing.T) {
+	cust := []string{"PCMA", "PCMU", "G729"}
+	carr := []string{"PCMA", "PCMU", "G729"}
+	for _, offered := range []string{"G729@8000h", "PCMA@8000h", "G729@8000h,PCMA@8000h", "G722@16000h", ""} {
+		narrowed := codecStringFor(cust, carr, offered) != "PCMA,PCMU,G729"
+		proxied := ResolveMediaMode("smart", offered, cust, carr) == "proxy"
+		if narrowed != proxied {
+			t.Errorf("offer %q: narrowed=%v proxied=%v", offered, narrowed, proxied)
+		}
 	}
 }
 

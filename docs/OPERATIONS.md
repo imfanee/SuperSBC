@@ -158,7 +158,9 @@ fs_cli> sofia global siptrace on                                        # trace 
 
 Codecs: the profiles negotiate `SBC_FS_INGRESS_CODECS` / `SBC_FS_EGRESS_CODECS` (default `PCMA,PCMU,OPUS,G722`); each customer and carrier narrows the list. G.729 pass-through works with the stock `mod_g729`; transcoding to or from G.729 needs a codec module the image does not ship (`mod_bcg729` built against bcg729, or a licensed module).
 
-The SBC avoids that transcode instead of relying on it. Any codec the caller offered that both the customer and the carrier allow is offered first on the carrier leg (D-83), so a G.729 only caller is answered with G.729 by a carrier that allows G.729 and the two legs relay the payload. Set `media_mode = smart` on the customer and the carrier to take FreeSWITCH out of the media path entirely whenever the two sides share a codec (D-84).
+The SBC avoids that transcode instead of relying on it (D-85). If any codec in the ingress INVITE is allowed by both the customer and the carrier, the egress INVITE offers only the matching codecs, so the carrier cannot answer with anything else: a G.729 only caller is offered `G729` alone and a carrier that allows G.729 answers G.729. If nothing matches, the egress INVITE offers the carrier's codecs and the call is transcoded, which is the only way to bridge two different codecs.
+
+Set `media_mode = smart` on the customer and the carrier to take FreeSWITCH out of the media path whenever the two sides match: the attempt is proxied when the codecs match and anchored when they do not (D-84). The stricter side wins, so both the customer and the carrier have to be `smart` (or looser) for it to take effect.
 
 When a call does end up transcoding into a codec with no encoder, FreeSWITCH logs `This codec is only usable in passthrough mode!` followed by `Codec G.729 encoder error!` and the call fails with `NORMAL_TEMPORARY_FAILURE`. The CDR shows it without reading logs: different `codec_in` and `codec_out`, and `media_mode = transcode`.
 
@@ -169,7 +171,7 @@ docker exec supersbc-live-postgres-1 psql -U supersbc -d supersbc -c \
        and start_time > now() - interval '1 day' order by start_time desc limit 20;"
 ```
 
-Either give the carrier the caller's codec in `allowed_codecs`, or build `mod_bcg729` into the FreeSWITCH image if the carriers genuinely cannot take G.729.
+Either give the carrier the caller's codec in `allowed_codecs`, or build `mod_bcg729` into the FreeSWITCH image if the carriers genuinely cannot take G.729. A carrier whose `allowed_codecs` claims a codec its gateway cannot do will now answer 488 instead of falling back, because the egress offer is narrowed to the match: fix the carrier's list.
 
 Capacity: `SBC_FS_MAX_SESSIONS` and `SBC_FS_SESSIONS_PER_SECOND` count both legs (a call is two sessions). `SBC_ROUTING_GLOBAL_MAX_CHANNELS` and `SBC_ROUTING_GLOBAL_MAX_CPS` cap admitted calls in the API.
 
