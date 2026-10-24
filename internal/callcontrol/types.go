@@ -20,11 +20,14 @@ type SetupRequest struct {
 	Caller    string `json:"caller"`
 	Called    string `json:"called"`
 	SIPCallID string `json:"sip_call_id"`
-	// Codecs offered by the customer (FreeSWITCH ep_codec_string on the
-	// a-leg). The carrier leg offers these first so the two legs relay
-	// instead of transcode (D-83).
+	// Codecs offered by the customer, as FreeSWITCH parsed them
+	// (ep_codec_string on the a-leg). Only codecs the sofia profile lists
+	// appear here, so it is a fallback, not the source of truth (D-87).
 	OfferedCodecs string `json:"offered_codecs"`
-	Node          string `json:"node"`
+	// OfferedSDP is the customer's INVITE body. The codecs in it decide the
+	// egress codec list and the smart media mode (D-85, D-87).
+	OfferedSDP string `json:"offered_sdp"`
+	Node       string `json:"node"`
 	// SRTPOffered is true when the customer's SDP carried crypto attributes.
 	SRTPOffered bool `json:"srtp_offered"`
 	// Privacy is true when the INVITE asked for caller privacy (Privacy header or anonymous From).

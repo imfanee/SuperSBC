@@ -167,6 +167,8 @@ The SBC avoids that transcode instead of relying on it (D-85). If any codec in t
 
 Set `media_mode = smart` on the customer and the carrier to take FreeSWITCH out of the media path whenever the two sides match: the attempt is proxied when the codecs match and anchored when they do not (D-84). The stricter side wins, so both the customer and the carrier have to be `smart` (or looser) for it to take effect.
 
+A proxied call costs visibility: FreeSWITCH never sees the payload, so the CDR reads `codec_in = codec_out = PROXY` with no `rtp_stats`, and `media_mode = proxy`. On `anchor` the same call relays (`media_mode = relay`) with the real codec names and RTP counters, because the narrowing rule already put the same codec on both legs. Choose per customer: `smart` to save the relay, `anchor` to keep the evidence.
+
 `This codec is only usable in passthrough mode!` followed by `Codec G.729 encoder error!` and a call that fails with `NORMAL_TEMPORARY_FAILURE` means the stock `mod_g729` is loaded again: the image is not the one from `deploy/freeswitch`. Transcoded calls are visible in the CDRs without reading logs, by different `codec_in` and `codec_out` with `media_mode = transcode`.
 
 ```sh

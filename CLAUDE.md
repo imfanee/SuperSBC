@@ -57,6 +57,15 @@ change in dev (`make up`, `make e2e`) before `make live-up`.
 * `matchedCodecs` in `internal/callcontrol/codec.go` decides both the egress
   codec list and the smart media mode. Keep it that way: if they ever
   disagree, a proxied call can get a codec neither leg can run.
+* **The offered codecs come from the INVITE's SDP** (`offered_sdp`), never
+  from `ep_codec_string`, which prefixes codecs with their module name and is
+  nil for a codec the sofia profile does not list, such as G.729 (D-87). A
+  whole release of this rule was a no-op because of that, with green unit
+  tests throughout: assert the egress INVITE on the wire, as
+  `tests/e2e/g729_test.go` does, or you are testing your own assumptions.
+* A proxied call reports `codec_in = codec_out = PROXY` and no RTP stats.
+  Anchored calls show the real codecs; both avoid transcoding when the codecs
+  match.
 
 ## Commands worth knowing
 

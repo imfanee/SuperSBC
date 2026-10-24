@@ -837,7 +837,7 @@ func (p *Pipeline) Setup(ctx context.Context, req SetupRequest) (*SetupResponse,
 	}
 
 	// Steps 6 and 7
-	route, err := p.RouteWith(ctx, cust, called, caller, sell, req.CallUUID, RouteOpts{Privacy: req.Privacy, ForwardIdentity: forwardIdentity, OfferedCodecs: req.OfferedCodecs})
+	route, err := p.RouteWith(ctx, cust, called, caller, sell, req.CallUUID, RouteOpts{Privacy: req.Privacy, ForwardIdentity: forwardIdentity, OfferedCodecs: offeredFrom(req.OfferedSDP, req.OfferedCodecs)})
 	if err != nil {
 		return nil, err
 	}

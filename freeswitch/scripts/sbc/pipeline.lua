@@ -121,7 +121,12 @@ function pipeline.run(session)
     caller = session:getVariable("sip_from_user") or session:getVariable("caller_id_number") or "",
     called = session:getVariable("destination_number") or session:getVariable("sip_req_user") or "",
     sip_call_id = session:getVariable("sip_call_id") or "",
+    -- What the customer actually offered. ep_codec_string is FreeSWITCH's own
+    -- view and is nil for a codec the profile does not list (a G.729 only
+    -- INVITE reads nil), so the raw SDP is the source of truth and the parsed
+    -- string is only a fallback (D-87).
     offered_codecs = session:getVariable("ep_codec_string") or "",
+    offered_sdp = session:getVariable("switch_r_sdp") or "",
     node = session:getVariable("switchname") or freeswitch.getGlobalVariable("hostname") or "",
     -- Section 7 [M5]: SRTP offered, privacy requested, network asserted identity
     srtp_offered = srtp_offered(session),

@@ -136,6 +136,60 @@ func TestG729_RelayWhenBothSidesHaveIt(t *testing.T) {
 	expectNoCodecErrors(t, since)
 }
 
+// With smart media on both sides, a call whose codecs match is proxied: the
+// SDP passes through, the carrier leg carries G.729 alone and FreeSWITCH does
+// no codec work at all (D-84, D-85). This is the half of the rule that was
+// silently broken while the offered codecs were read from ep_codec_string,
+// which is nil for a G.729 only INVITE (D-87).
+func TestG729_SmartProxiesAMatchedCall(t *testing.T) {
+	a := newAPIClient(t)
+	a.ok(a.login("admin@example.com", adminPassword(t)))
+	restore := setMediaMode(t, a, "/customers", "acme", "smart")
+	defer restore()
+	restoreCarrier := setMediaMode(t, a, "/carriers", "carrier-g729", "smart")
+	defer restoreCarrier()
+	time.Sleep(500 * time.Millisecond)
+
+	since := time.Now()
+	sc := scenario(t, "uac_call_g729.xml.tmpl", map[string]string{"__TALK__": "1500"})
+	res := placeCall(t, "customer-acme", sc, "442571234590", 1)
+	expectFinal(t, res, "200 OK")
+
+	cdr := lastCDR(t, "172.28.0.101", "442571234590", since)
+	expectField(t, cdr, "disposition", "answered")
+	waitCDRField(t, str(cdr["call_uuid"]), "media_mode", "proxy")
+
+	inv := inviteReceivedByCarrier2(t, str(cdr["call_uuid"]))
+	if !strings.Contains(inv, "RTP/AVP 18") {
+		t.Errorf("the proxied leg should carry the caller's G.729 offer:\n%s", inv)
+	}
+	if strings.Contains(inv, "absolute_codec_string") || strings.Contains(inv, "PCMA/8000") {
+		t.Errorf("a proxied leg must pass the SDP through untouched:\n%s", inv)
+	}
+	expectNoCodecErrors(t, since)
+}
+
+// setMediaMode changes a customer's or carrier's media mode and returns a
+// function that puts it back.
+func setMediaMode(t *testing.T, a *apiClient, path, name, mode string) func() {
+	t.Helper()
+	id := findByName(t, a, path, name)
+	kind := strings.TrimSuffix(strings.TrimPrefix(path, "/"), "s")
+	code, got := a.do("GET", path+"/"+id, nil)
+	a.mustOK(code, got, "read "+name)
+	body, ok := got[kind].(map[string]any)
+	if !ok {
+		t.Fatalf("%s payload has no %q object: %v", name, kind, got)
+	}
+	was, _ := body["media_mode"].(string)
+	body["media_mode"] = mode
+	a.ok(a.do("PUT", path+"/"+id, body))
+	return func() {
+		body["media_mode"] = was
+		a.do("PUT", path+"/"+id, body)
+	}
+}
+
 // Ten transcoded calls in a row: every one answers, FreeSWITCH stays up and
 // nothing in the log suggests the codec misbehaved.
 func TestG729_StableUnderLoad(t *testing.T) {
