@@ -238,6 +238,7 @@
                     "media_mode": {
                         "enum": [
                             "anchor",
+                            "smart",
                             "proxy",
                             "bypass"
                         ],
@@ -391,6 +392,7 @@
                     "media_mode": {
                         "enum": [
                             "anchor",
+                            "smart",
                             "proxy",
                             "bypass"
                         ],
@@ -1075,6 +1077,16 @@
                     "currency": {
                         "type": "string"
                     },
+                    "delete_reason": {
+                        "type": "string"
+                    },
+                    "deleted_at": {
+                        "description": "DeletedAt is set when an unpaid invoice was deleted (D-88); the row is\nkept, its status is \"deleted\" and its period may be invoiced again.",
+                        "type": "string"
+                    },
+                    "deleted_by": {
+                        "type": "string"
+                    },
                     "id": {
                         "type": "string"
                     },
@@ -1176,7 +1188,7 @@
                         "$ref": "#/components/schemas/invoice.Invoice"
                     },
                     "kind": {
-                        "description": "invoice | payment",
+                        "description": "invoice | invoice_deleted | payment",
                         "type": "string"
                     },
                     "payment": {
@@ -5384,6 +5396,43 @@
             }
         },
         "/invoices/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "invoice id",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "why it was deleted, kept with the invoice",
+                        "in": "query",
+                        "name": "reason",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/invoice.Invoice"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    }
+                },
+                "summary": "Delete an unpaid invoice (D-88): the invoice is kept and marked deleted, the invoice ledger shows a reversal, and its period can be invoiced again; 409 when payments are allocated to it or it is already deleted",
+                "tags": [
+                    "invoices"
+                ]
+            },
             "get": {
                 "parameters": [
                     {
@@ -6730,6 +6779,14 @@
                         "description": "caller id",
                         "in": "query",
                         "name": "caller",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "codecs the caller would offer in the INVITE, comma separated (e.g. G729); decides the egress codec list and the smart media mode (D-85)",
+                        "in": "query",
+                        "name": "codecs",
                         "schema": {
                             "type": "string"
                         }

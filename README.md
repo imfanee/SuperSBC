@@ -82,6 +82,43 @@ curl -s localhost:8080/readyz | jq
 | M6 Operations | done |
 | Section 7 SBC features (TLS/SRTP, header rules, privacy, 100rel, media bypass, DTMF, scanner bans) | done |
 
+## Bug fixes
+
+### Overlapping invoice could not be replaced (billing, D-88)
+
+A billing bug in SBC identified and fixed by Faisal Hanif | imfanee@gmail.com
+
+**The bug.** Invoice periods of one account may never overlap, so that every
+call is invoiced exactly once (D-72). There was, however, no way to remove an
+invoice. When an invoice was created for the wrong period, whether by the
+monthly worker or by an operator by mistake, any later invoice whose days
+touched that period was refused with `409 another invoice overlaps this
+period`, and the blocking invoice could not be deleted either. The account was
+stuck until someone edited the database by hand.
+
+**The fix.**
+
+* `DELETE /invoices/{id}?reason=...` (operator role) and a delete button on
+  the customer and carrier Invoices tab delete an **unpaid** invoice, one with
+  no payment allocated to it. An invoice with a payment is refused with 409.
+* The invoice is not removed. It is marked deleted (`deleted_at`,
+  `deleted_by`, `delete_reason`), its status becomes `deleted`, its number is
+  never reused, its PDF still renders titled `INVOICE (DELETED)`, and the
+  action is in the audit log (`invoice.delete`).
+* The invoice ledger keeps the original invoice row and adds an
+  "Invoice deleted" reversal row with the negated amount, who deleted it and
+  why, so the Invoiced and Outstanding totals net it out.
+* A deleted invoice no longer counts for the overlap rule, the one invoice
+  per period constraint (now a partial unique index on live invoices) or
+  payment allocation, so its days can be invoiced again straight away.
+* The prepaid call ledger and balance are not changed: an invoice is a
+  statement and never posted to it.
+* The monthly worker does not regenerate a month in which an invoice was
+  deleted, so it cannot undo the operator's correction an hour later.
+
+Migration `00023_invoice_delete.sql`; covered by `TestRoadmap_Invoices` in
+`tests/e2e/roadmap_test.go`.
+
 ## Licence
 
 MIT. `freeswitch/scripts/sbc/json.lua` is rxi/json.lua, MIT.

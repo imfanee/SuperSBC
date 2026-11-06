@@ -72,7 +72,7 @@ func InsertPayment(ctx context.Context, tx pgx.Tx, accountID uuid.UUID, amount d
 	}
 	rows, err := tx.Query(ctx, `SELECT i.id, i.number, i.period_start,
 			i.amount - COALESCE((SELECT sum(al.amount) FROM invoice_allocations al WHERE al.invoice_id = i.id), 0)
-		FROM invoices i WHERE i.account_id = $1 ORDER BY i.period_start FOR UPDATE OF i`, accountID)
+		FROM invoices i WHERE i.account_id = $1 AND i.deleted_at IS NULL ORDER BY i.period_start FOR UPDATE OF i`, accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (s *Service) InvoiceAllocations(ctx context.Context, invoiceID uuid.UUID) (
 
 // LedgerRow is one line of the invoice ledger: an invoice or a payment.
 type LedgerRow struct {
-	Kind        string       `json:"kind"` // invoice | payment
+	Kind        string       `json:"kind"` // invoice | invoice_deleted | payment
 	At          time.Time    `json:"at"`
 	Invoice     *Invoice     `json:"invoice,omitempty"`
 	Payment     *Payment     `json:"payment,omitempty"`
@@ -249,6 +249,12 @@ func (s *Service) InvoiceLedger(ctx context.Context, ownerType string, ownerID u
 			al = []Allocation{}
 		}
 		led.Rows = append(led.Rows, LedgerRow{Kind: "invoice", At: inv.CreatedAt, Invoice: &invs[k], Allocations: al})
+		// A deleted invoice stays as it was issued and gets a reversal row
+		// with the negated amount, so the totals net it out (D-88).
+		if inv.DeletedAt != nil {
+			invoiced = invoiced.Sub(a)
+			led.Rows = append(led.Rows, LedgerRow{Kind: "invoice_deleted", At: *inv.DeletedAt, Invoice: &invs[k], Allocations: []Allocation{}})
+		}
 	}
 	for k := range pays {
 		a, _ := decimal.NewFromString(pays[k].Amount)

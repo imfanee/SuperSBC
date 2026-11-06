@@ -40,7 +40,11 @@ func (s *Service) PDF(inv *Invoice, payments []Allocation) ([]byte, error) {
 		name = "SuperSBC"
 	}
 	pdf.CellFormat(100, 8, name, "", 0, "L", false, 0, "")
-	pdf.CellFormat(0, 8, "INVOICE", "", 1, "R", false, 0, "")
+	title := "INVOICE"
+	if inv.DeletedAt != nil {
+		title = "INVOICE (DELETED)"
+	}
+	pdf.CellFormat(0, 8, title, "", 1, "R", false, 0, "")
 	pdf.SetFont("Helvetica", "", 9)
 	pdf.SetTextColor(80, 80, 80)
 	addr := strings.Split(strings.ReplaceAll(s.Op.Address, "|", "\n"), "\n")
@@ -49,6 +53,9 @@ func (s *Service) PDF(inv *Invoice, payments []Allocation) ([]byte, error) {
 		"Period: " + inv.PeriodStart.Format("2 Jan 2006") + " to " + inv.PeriodEnd.Add(-time.Second).Format("2 Jan 2006") + periodKind(inv.Kind),
 		"Issued: " + inv.CreatedAt.UTC().Format("2 Jan 2006"),
 		"Currency: " + inv.Currency,
+	}
+	if inv.DeletedAt != nil {
+		right = append(right, "DELETED "+inv.DeletedAt.UTC().Format("2 Jan 2006")+": not payable")
 	}
 	for i := 0; i < len(addr) || i < len(right); i++ {
 		l, r := "", ""

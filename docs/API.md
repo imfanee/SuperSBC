@@ -112,6 +112,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 
 | Method | Path | Summary |
 |---|---|---|
+| `DELETE` | `/invoices/{id}` | Delete an unpaid invoice (D-88): the invoice is kept and marked deleted, the invoice ledger shows a reversal, and its period can be invoiced again; 409 when payments are allocated to it or it is already deleted<br>Query: `reason` |
 | `GET` | `/invoice-ledger` | Invoice ledger of a customer or carrier: invoices and payments with allocations, totals of invoiced, received, outstanding (D-72)<br>Query: `owner_type` (required), `owner_id` (required) |
 | `GET` | `/invoices/{id}.pdf` | Download one invoice as PDF |
 | `GET` | `/invoices/{id}/allocations` | Payments applied to one invoice |
@@ -165,7 +166,7 @@ Money is always a decimal string (`"0.020000"`). Lists accept `page`, `per_page`
 | `GET` | `/route-groups` | List route groups |
 | `GET` | `/routes/{id}/preview` | Buy rate and margin per carrier of a route for a sample number<br>Query: `number` (required), `sell_rate_group_id` |
 | `GET` | `/routes/{id}` | Get a route with its carriers |
-| `GET` | `/routing/simulate` | Routing simulator: the whole setup decision for a customer and number without dialling<br>Query: `customer_id` (required), `number` (required), `caller` |
+| `GET` | `/routing/simulate` | Routing simulator: the whole setup decision for a customer and number without dialling<br>Query: `customer_id` (required), `number` (required), `caller`, `codecs` |
 | `POST` | `/blocked-prefixes` | Block a prefix for every customer |
 | `POST` | `/customers/{id}/header-rules` | Add a header rule (egress: INVITE to the carrier; response: responses to the customer). Values may use {caller} {called} {customer} {carrier} {call_uuid} {node_ip} |
 | `POST` | `/route-groups/{id}/routes` | Create a route (optionally with its carriers) |

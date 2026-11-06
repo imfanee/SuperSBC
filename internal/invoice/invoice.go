@@ -55,6 +55,11 @@ type Invoice struct {
 	Paid      string    `json:"paid" db:"paid"`
 	Status    string    `json:"status" db:"status"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	// DeletedAt is set when an unpaid invoice was deleted (D-88); the row is
+	// kept, its status is "deleted" and its period may be invoiced again.
+	DeletedAt    *time.Time `json:"deleted_at" db:"deleted_at"`
+	DeletedBy    *string    `json:"deleted_by" db:"deleted_by"`
+	DeleteReason string     `json:"delete_reason" db:"delete_reason"`
 }
 
 // Operator is the issuer printed on the PDF.
@@ -81,6 +86,12 @@ var ErrExists = errors.New("invoice already exists for this period")
 
 // ErrOverlap is returned when another invoice of the account covers part of the period.
 var ErrOverlap = errors.New("another invoice overlaps this period")
+
+// ErrNotUnpaid is returned by Delete when payments are allocated to the invoice.
+var ErrNotUnpaid = errors.New("only unpaid invoices can be deleted: payments are allocated to this invoice")
+
+// ErrDeleted is returned by Delete when the invoice was already deleted.
+var ErrDeleted = errors.New("invoice already deleted")
 
 // Period returns the calendar month [start, end) that contains t, in UTC.
 func Period(t time.Time) (time.Time, time.Time) {
@@ -110,7 +121,7 @@ func (s *Service) GeneratePeriod(ctx context.Context, accountID uuid.UUID, start
 		return nil, err
 	}
 	var overlap string
-	err := s.pool.QueryRow(ctx, `SELECT number FROM invoices WHERE account_id = $1 AND period_start < $3 AND period_end > $2 ORDER BY period_start LIMIT 1`, accountID, start, end).Scan(&overlap)
+	err := s.pool.QueryRow(ctx, `SELECT number FROM invoices WHERE account_id = $1 AND deleted_at IS NULL AND period_start < $3 AND period_end > $2 ORDER BY period_start LIMIT 1`, accountID, start, end).Scan(&overlap)
 	if err == nil {
 		return nil, fmt.Errorf("%w (%s)", ErrOverlap, overlap)
 	} else if !errors.Is(err, pgx.ErrNoRows) {
@@ -200,6 +211,40 @@ func (s *Service) GeneratePeriod(ctx context.Context, accountID uuid.UUID, start
 	return inv, nil
 }
 
+// Delete marks an unpaid invoice deleted (D-88). The row stays, so the
+// number is never reused and the invoice ledger shows the reversal; the
+// period is free to be invoiced again. The prepaid call ledger is not touched:
+// an invoice never posted to it (D-72). An invoice with any payment allocated
+// is refused (ErrNotUnpaid).
+func (s *Service) Delete(ctx context.Context, id uuid.UUID, by, reason string) (*Invoice, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	// Lock the row: InsertPayment locks the account's invoices the same way,
+	// so a payment cannot be allocated to it while it is being deleted.
+	var deleted *time.Time
+	var paid decimal.Decimal
+	if err := tx.QueryRow(ctx, `SELECT i.deleted_at, COALESCE((SELECT sum(al.amount) FROM invoice_allocations al WHERE al.invoice_id = i.id), 0)
+		FROM invoices i WHERE i.id = $1 FOR UPDATE OF i`, id).Scan(&deleted, &paid); err != nil {
+		return nil, err
+	}
+	if deleted != nil {
+		return nil, ErrDeleted
+	}
+	if !paid.IsZero() {
+		return nil, ErrNotUnpaid
+	}
+	if _, err := tx.Exec(ctx, `UPDATE invoices SET deleted_at = now(), deleted_by = $2, delete_reason = $3 WHERE id = $1`, id, by, reason); err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return s.ByID(ctx, id)
+}
+
 // statusOf derives the invoice status from its amount and what was allocated to it.
 func statusOf(amount, paid string) string {
 	a, _ := decimal.NewFromString(amount)
@@ -221,24 +266,34 @@ func statusOf(amount, paid string) string {
 const cols = `i.id, i.number, i.account_id, i.owner_type, i.owner_id, i.owner_name, i.period_start, i.period_end, i.currency::text AS currency,
 	i.opening::text AS opening, i.topups::text AS topups, i.charges::text AS charges, i.costs::text AS costs, i.adjustments::text AS adjustments,
 	i.refunds::text AS refunds, i.closing::text AS closing, i.calls, i.billed_seconds, i.lines, i.kind, i.amount::text AS amount,
-	COALESCE((SELECT sum(al.amount) FROM invoice_allocations al WHERE al.invoice_id = i.id), 0)::text AS paid, i.created_at`
+	COALESCE((SELECT sum(al.amount) FROM invoice_allocations al WHERE al.invoice_id = i.id), 0)::text AS paid, i.created_at,
+	i.deleted_at, i.deleted_by, i.delete_reason`
+
+// setStatus derives the status of a loaded invoice.
+func (inv *Invoice) setStatus() {
+	if inv.DeletedAt != nil {
+		inv.Status = "deleted"
+		return
+	}
+	inv.Status = statusOf(inv.Amount, inv.Paid)
+}
 
 // fill derives the status of loaded invoices.
 func fill(invs []Invoice) []Invoice {
 	for k := range invs {
-		invs[k].Status = statusOf(invs[k].Amount, invs[k].Paid)
+		invs[k].setStatus()
 	}
 	return invs
 }
 
-// ByPeriod loads the invoice of an account for exactly [start, end).
+// ByPeriod loads the live (not deleted) invoice of an account for exactly [start, end).
 func (s *Service) ByPeriod(ctx context.Context, accountID uuid.UUID, start, end time.Time) (*Invoice, error) {
-	rows, _ := s.pool.Query(ctx, `SELECT `+cols+` FROM invoices i WHERE i.account_id = $1 AND i.period_start = $2 AND i.period_end = $3`, accountID, start, end)
+	rows, _ := s.pool.Query(ctx, `SELECT `+cols+` FROM invoices i WHERE i.account_id = $1 AND i.period_start = $2 AND i.period_end = $3 AND i.deleted_at IS NULL`, accountID, start, end)
 	inv, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[Invoice])
 	if err != nil {
 		return nil, err
 	}
-	inv.Status = statusOf(inv.Amount, inv.Paid)
+	inv.setStatus()
 	return inv, nil
 }
 
@@ -249,7 +304,7 @@ func (s *Service) ByID(ctx context.Context, id uuid.UUID) (*Invoice, error) {
 	if err != nil {
 		return nil, err
 	}
-	inv.Status = statusOf(inv.Amount, inv.Paid)
+	inv.setStatus()
 	return inv, nil
 }
 
@@ -272,12 +327,16 @@ func (s *Service) List(ctx context.Context, ownerType string, ownerID *uuid.UUID
 }
 
 // GenerateMonth generates last month's invoice for every account that had a
-// ledger movement or a non-zero balance. It is safe to call repeatedly.
+// ledger movement or a non-zero balance. It is safe to call repeatedly. An
+// account with a deleted invoice in the month is skipped, or the worker would
+// recreate a monthly invoice the operator just deleted to make room for a
+// custom one (D-88); its month is invoiced by hand.
 func (s *Service) GenerateMonth(ctx context.Context, at time.Time) (int, error) {
 	start, end := Period(at)
 	rows, err := s.pool.Query(ctx, `
 		SELECT id FROM accounts a
-		WHERE a.balance <> 0 OR EXISTS (SELECT 1 FROM ledger_entries l WHERE l.account_id = a.id AND l.created_at >= $1 AND l.created_at < $2)`, start, end)
+		WHERE (a.balance <> 0 OR EXISTS (SELECT 1 FROM ledger_entries l WHERE l.account_id = a.id AND l.created_at >= $1 AND l.created_at < $2))
+		  AND NOT EXISTS (SELECT 1 FROM invoices i WHERE i.account_id = a.id AND i.deleted_at IS NOT NULL AND i.period_start < $2 AND i.period_end > $1)`, start, end)
 	if err != nil {
 		return 0, err
 	}

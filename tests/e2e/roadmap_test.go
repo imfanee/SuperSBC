@@ -214,6 +214,44 @@ func TestRoadmap_Invoices(t *testing.T) {
 	if code, _ = gen(map[string]any{"period": "2999-01"}); code != 400 {
 		t.Fatalf("future period accepted: %d", code)
 	}
+
+	// Deleting an unpaid invoice (D-88) frees its days for a new invoice; the
+	// deleted one stays, marked, with a reversal row in the ledger.
+	if code, _ = a.do("DELETE", "/invoices/"+str(inv["id"]), nil); code != 409 {
+		t.Fatalf("deleting a paid invoice: %d", code)
+	}
+	code, apr := gen(map[string]any{"period": "2026-04"})
+	a.mustOK(code, apr, "april invoice")
+	sqlExec(t, fmt.Sprintf(`UPDATE invoices SET amount = 7 WHERE id = '%s'`, str(apr["id"])))
+	if code, _ = gen(map[string]any{"from": "2026-04-10", "to": "2026-05-01"}); code != 409 {
+		t.Fatalf("overlap with april should be 409: %d", code)
+	}
+	code, gone := a.do("DELETE", "/invoices/"+str(apr["id"])+"?reason=replaced+by+custom+period", nil)
+	if code != 200 || gone["status"] != "deleted" || gone["deleted_at"] == nil || gone["delete_reason"] != "replaced by custom period" {
+		t.Fatalf("delete unpaid invoice: %d %v", code, gone)
+	}
+	if code, _ = a.do("DELETE", "/invoices/"+str(apr["id"]), nil); code != 409 {
+		t.Fatalf("second delete: %d", code)
+	}
+	code, cust := gen(map[string]any{"from": "2026-04-10", "to": "2026-05-01"})
+	if code != 201 || cust["id"] == apr["id"] {
+		t.Fatalf("custom invoice over the deleted period: %d %v", code, cust)
+	}
+	code, led = a.do("GET", "/invoice-ledger?owner_type=customer&owner_id="+cid, nil)
+	a.mustOK(code, led, "ledger after delete")
+	reversals := 0
+	for _, r := range led["rows"].([]any) {
+		if r.(map[string]any)["kind"] == "invoice_deleted" {
+			reversals++
+		}
+	}
+	// the deleted 7.00 is netted out: still 60 invoiced, nothing outstanding
+	if reversals != 1 || led["invoiced"] != "60.000000" || led["outstanding"] != "0.000000" {
+		t.Fatalf("ledger after delete: reversals %d %v", reversals, led)
+	}
+	if code, pdf := a.do("GET", "/invoices/"+str(apr["id"])+".pdf", nil); code != 200 || !strings.HasPrefix(str(pdf["raw"]), "%PDF-") {
+		t.Fatalf("deleted invoice pdf: %d", code)
+	}
 }
 
 // STIR/SHAKEN (D-64): iota-stir requires a verified Identity header. The

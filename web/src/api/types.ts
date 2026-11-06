@@ -428,8 +428,11 @@ export interface Invoice {
   kind: "monthly" | "custom";
   amount: string;
   paid: string;
-  status: "open" | "partial" | "paid" | "overpaid" | "nothing_due";
+  status: "open" | "partial" | "paid" | "overpaid" | "nothing_due" | "deleted";
   created_at: string;
+  deleted_at: string | null;
+  deleted_by: string | null;
+  delete_reason: string;
 }
 
 export interface Allocation {
@@ -466,7 +469,7 @@ export interface InvoiceLedger {
   unallocated: string;
   outstanding: string;
   rows: {
-    kind: "invoice" | "payment";
+    kind: "invoice" | "invoice_deleted" | "payment";
     at: string;
     invoice?: Invoice;
     payment?: Payment;

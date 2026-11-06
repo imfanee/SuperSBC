@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -24,6 +25,7 @@ func (h *Handler) mountInvoices(r chi.Router) {
 	r.Get("/invoices/{id}", h.getInvoice)
 	r.Get("/invoices/{id}.pdf", h.invoicePDF)
 	r.With(operators).Post("/invoices/generate", h.generateInvoice)
+	r.With(operators).Delete("/invoices/{id}", h.deleteInvoice)
 	r.Get("/invoices/{id}/allocations", h.invoiceAllocations)
 	r.Get("/invoice-ledger", h.invoiceLedger)
 	r.With(operators).Post("/invoice-payments", h.createPayment)
@@ -181,6 +183,42 @@ func (h *Handler) generateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 	h.audit(r, "invoice.generate", "invoice", inv.ID.String(), nil, inv)
 	writeJSON(w, http.StatusCreated, inv)
+}
+
+// deleteInvoice godoc
+// @Summary Delete an unpaid invoice (D-88): the invoice is kept and marked deleted, the invoice ledger shows a reversal, and its period can be invoiced again; 409 when payments are allocated to it or it is already deleted
+// @Tags invoices
+// @Produce json
+// @Param id path string true "invoice id"
+// @Param reason query string false "why it was deleted, kept with the invoice"
+// @Success 200 {object} invoice.Invoice
+// @Router /invoices/{id} [delete]
+func (h *Handler) deleteInvoice(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathUUID(w, r, "id")
+	if !ok {
+		return
+	}
+	reason := strings.TrimSpace(r.URL.Query().Get("reason"))
+	if len(reason) > 2000 {
+		fail(w, http.StatusBadRequest, "reason is longer than 2000 characters")
+		return
+	}
+	before, err := h.Invoices.ByID(r.Context(), id)
+	if err != nil {
+		failErr(w, err)
+		return
+	}
+	inv, err := h.Invoices.Delete(r.Context(), id, principal(r.Context()).Email, reason)
+	if errors.Is(err, invoice.ErrNotUnpaid) || errors.Is(err, invoice.ErrDeleted) {
+		fail(w, http.StatusConflict, err.Error())
+		return
+	}
+	if err != nil {
+		failErr(w, err)
+		return
+	}
+	h.audit(r, "invoice.delete", "invoice", inv.ID.String(), before, inv)
+	writeJSON(w, http.StatusOK, inv)
 }
 
 // parseDay accepts YYYY-MM-DD (midnight UTC) or an RFC 3339 timestamp.

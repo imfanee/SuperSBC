@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, Receipt } from "lucide-react";
+import { FileText, Plus, Receipt, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
-import { get, post } from "@/api/client";
+import { del, get, post } from "@/api/client";
 import type { Invoice, InvoiceLedger, Payment } from "@/api/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Confirm } from "@/components/confirm";
 import { Field } from "@/components/form";
 import { useAuth } from "@/hooks/use-auth";
 import { dt, money } from "@/lib/utils";
@@ -24,6 +25,8 @@ function statusVariant(s: string): "success" | "warning" | "danger" | "secondary
       return "danger";
     case "overpaid":
       return "info";
+    case "deleted":
+      return "secondary";
     default:
       return "secondary";
   }
@@ -196,7 +199,9 @@ export function InvoicesTab({ ownerType, ownerId }: { ownerType: "customer" | "c
             </Button>
             <p className="basis-full text-xs text-muted-foreground">
               Monthly invoices are generated automatically after each month. Periods of one account never
-              overlap: a custom invoice replaces the monthly one for the days it covers.
+              overlap: a custom invoice replaces the monthly one for the days it covers. To invoice days that
+              an unpaid invoice already covers, delete that invoice first; it stays in the ledger marked
+              deleted.
             </p>
           </CardContent>
         </Card>
@@ -343,7 +348,15 @@ export function InvoicesTab({ ownerType, ownerId }: { ownerType: "customer" | "c
             <tbody>
               {(led?.rows ?? []).map((r) =>
                 r.kind === "invoice" && r.invoice ? (
-                  <InvoiceRow key={"i" + r.invoice.id} i={r.invoice} usage={usage(r.invoice)} />
+                  <InvoiceRow
+                    key={"i" + r.invoice.id}
+                    i={r.invoice}
+                    usage={usage(r.invoice)}
+                    canDelete={can("write")}
+                    onDeleted={refresh}
+                  />
+                ) : r.kind === "invoice_deleted" && r.invoice ? (
+                  <DeletedRow key={"d" + r.invoice.id} i={r.invoice} />
                 ) : r.payment ? (
                   <PaymentRow key={"p" + r.payment.id} p={r.payment} />
                 ) : null,
@@ -368,7 +381,30 @@ export function InvoicesTab({ ownerType, ownerId }: { ownerType: "customer" | "c
   );
 }
 
-function InvoiceRow({ i, usage }: { i: Invoice; usage: string }) {
+function InvoiceRow({
+  i,
+  usage,
+  canDelete,
+  onDeleted,
+}: {
+  i: Invoice;
+  usage: string;
+  canDelete: boolean;
+  onDeleted: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  // Only unpaid invoices can be deleted (D-88): nothing allocated, not deleted yet.
+  const deletable = canDelete && i.status !== "deleted" && Number(i.paid) === 0;
+  const remove = () =>
+    del(`/invoices/${i.id}?reason=${encodeURIComponent(reason)}`)
+      .then(() => {
+        toast.success(`Invoice ${i.number} deleted`);
+        setReason("");
+        onDeleted();
+      })
+      .catch((e) => {
+        toast.error(e.message);
+      });
   return (
     <tr className="border-t" data-testid="ledger-invoice">
       <td className="py-1.5 align-top">{dt(i.created_at)}</td>
@@ -395,11 +431,68 @@ function InvoiceRow({ i, usage }: { i: Invoice; usage: string }) {
       <td className="py-1.5 pr-4 text-right align-top tabular">{Number(i.paid) ? money(i.paid) : ""}</td>
       <td className="py-1.5 align-top">
         <Badge variant={statusVariant(i.status)}>{i.status.replace("_", " ")}</Badge>
-        {i.status !== "paid" && i.status !== "nothing_due" && (
+        {i.status !== "paid" && i.status !== "nothing_due" && i.status !== "deleted" && (
           <span className="ml-2 text-xs text-muted-foreground">
             due {money(String(Number(i.amount) - Number(i.paid)))}
           </span>
         )}
+      </td>
+      <td className="py-1.5 text-right align-top">
+        {deletable && (
+          <Confirm
+            trigger={
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2"
+                title="Delete this unpaid invoice"
+                data-testid={`invoice-delete-${i.number}`}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            }
+            title={`Delete invoice ${i.number}?`}
+            description={
+              <>
+                <div>
+                  The invoice is kept and marked deleted, the invoice ledger gets a reversal of{" "}
+                  {money(i.amount)} {i.currency}, and the period {periodLabel(i)} can be invoiced again. The
+                  prepaid balance is not changed.
+                </div>
+                <Input
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Reason (optional), e.g. replaced by a custom period"
+                  data-testid="invoice-delete-reason"
+                />
+              </>
+            }
+            onConfirm={remove}
+          />
+        )}
+      </td>
+    </tr>
+  );
+}
+
+function DeletedRow({ i }: { i: Invoice }) {
+  return (
+    <tr className="border-t bg-muted/20 text-muted-foreground" data-testid="ledger-invoice-deleted">
+      <td className="py-1.5 align-top">{dt(i.deleted_at!)}</td>
+      <td className="py-1.5 align-top">
+        <span className="inline-flex items-center gap-1">
+          <Undo2 className="size-4" /> Invoice deleted
+        </span>
+        <div className="font-mono text-xs">{i.number}</div>
+      </td>
+      <td className="py-1.5 align-top text-xs">
+        {periodLabel(i)} deleted{i.deleted_by ? ` by ${i.deleted_by}` : ""}
+        {i.delete_reason && <div>{i.delete_reason}</div>}
+      </td>
+      <td className="py-1.5 pr-3 text-right align-top tabular">{money(String(-Number(i.amount)))}</td>
+      <td />
+      <td className="py-1.5 align-top">
+        <Badge variant="secondary">reversal</Badge>
       </td>
       <td />
     </tr>
